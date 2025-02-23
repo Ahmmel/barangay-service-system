@@ -1,0 +1,40 @@
+// Things To Do:
+# Enable PDO Extension:
+
+Open php.ini (in C:\xampp\php\php.ini).
+Ensure these lines are not commented out (remove ; if needed):
+extension=pdo_mysql
+
+#Ensure mod_rewrite is enabled in Apache:
+Open your httpd.conf file (located in C:\xampp\apache\conf\httpd.conf).
+
+Find the following line:
+#LoadModule rewrite_module modules/mod_rewrite.so
+
+Uncomment it by removing the # at the beginning of the line:
+LoadModule rewrite_module modules/mod_rewrite.so
+
+Save the file and restart Apache from the XAMPP control panel.
+
+#Enable Rewrite Engine:
+To enable the Rewrite Engine in XAMPP, follow these steps:
+Step 1: Enable mod_rewrite in Apache
+Open XAMPP Control Panel.
+Click "Config" (next to Apache) → Select "Apache (httpd.conf)".
+In the file, find this line:
+
+#LoadModule rewrite_module modules/mod_rewrite.so
+Remove the # to enable it:
+
+LoadModule rewrite_module modules/mod_rewrite.so
+Save the file and close it.
+
+// Project Info
+ * Bootstrap v4.6.0 (https://getbootstrap.com/)
+
+#Xampp version 3.3.0
+
+#Primary Colors
+#251f21 - black
+#f1f0ef - white
+#bc9a8e - brown

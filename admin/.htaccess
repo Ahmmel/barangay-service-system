@@ -1,0 +1,5 @@
+RewriteEngine On
+
+# Redirect /admin or /admin/ to login.php
+RewriteCond %{THE_REQUEST} /admin/?\s [NC]
+RewriteRule ^$ login.php [L]

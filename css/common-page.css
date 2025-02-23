@@ -1,0 +1,38 @@
+.modal-lg {
+  max-width: 70% !important; /* Increase modal size */
+}
+
+.modal-content {
+  border-radius: 8px; /* Rounded corners */
+}
+
+.form-control-file {
+  cursor: pointer; /* Better UX for file input */
+}
+
+/* Add custom padding for the form */
+.modal-body {
+  padding: 2rem;
+}
+
+/* Style the video and capture button */
+#videoElement {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+#captureBtn {
+  margin-top: 1rem;
+  padding: 10px 20px;
+  font-size: 1rem;
+}
+
+#profileImagePreview {
+  margin-top: 1rem;
+  display: none;
+  width: 100%;
+  border-radius: 8px;
+  max-height: 250px;
+  object-fit: cover;
+}

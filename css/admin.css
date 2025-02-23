@@ -1,0 +1,86 @@
+/* Sidebar Brand Container */
+.sidebar-brand {
+  display: flex;
+  align-items: center; /* Vertically align content */
+  justify-content: flex-start; /* Align content to the left */
+  padding: 15px 20px; /* Add padding for a bit of breathing room */
+  text-decoration: none; /* Remove default anchor styling */
+  transition: background-color 0.3s ease; /* Smooth background color change */
+}
+
+.sidebar-brand:hover {
+  background-color: rgba(0, 0, 0, 0.1); /* Subtle hover effect */
+}
+
+/* Sidebar Logo Icon */
+.sidebar-brand-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px; /* Fixed width for the logo */
+  height: 40px; /* Fixed height for the logo */
+}
+
+/* Logo Image Styling */
+.sidebar-brand-icon img {
+  max-width: 100%; /* Ensure the image scales within its container */
+  height: auto; /* Maintain aspect ratio */
+  object-fit: contain; /* Prevent distortion */
+  transition: transform 0.3s ease; /* Smooth scaling effect */
+}
+
+/* Sidebar Brand Text */
+.sidebar-brand-text {
+  font-size: 1.25rem; /* Adjust text size */
+  font-weight: 600; /* Make the text bold */
+  color: #ffffffc7; /* Set a nice dark color for the text */
+  white-space: nowrap; /* Prevent the text from wrapping */
+  transition: color 0.3s ease; /* Smooth text color transition */
+}
+
+/* Hover effects for text */
+.sidebar-brand:hover .sidebar-brand-text {
+  color: #ffffff; /* Change text color on hover */
+}
+
+/* Hover effects for logo */
+.sidebar-brand:hover .sidebar-brand-icon img {
+  transform: scale(1.1); /* Slight zoom effect on hover */
+}
+
+.toggle-sidebar-divider {
+  margin: 0 1rem 35rem !important;
+}
+
+.bg-gradient-primary {
+  background-color: #251f21;
+  background-image: linear-gradient(180deg, #000000 10%, #312d2e 100%);
+  background-size: cover;
+}
+/* Responsiveness - Sidebar on smaller screens */
+@media (max-width: 768px) {
+  .sidebar-brand {
+    padding: 10px; /* Reduce padding on smaller screens */
+    justify-content: center; /* Center align logo and text */
+  }
+
+  .sidebar-brand-icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .sidebar-brand-text {
+    font-size: 1rem; /* Reduce text size */
+    margin-left: 10px; /* Add some space between logo and text */
+  }
+
+  #preview {
+    max-width: 200px;
+    height: 200px;
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+    border-radius: 50%;
+    justify-content: center;
+  }
+}

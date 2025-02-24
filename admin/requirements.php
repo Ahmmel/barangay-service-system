@@ -156,11 +156,11 @@ $requirements = $requirement->getAllRequirements();
                         foreach ($requirements as $requirement) {
                             echo "<tr id='requirementData_{$requirement['id']}'>
                                     <td>{$requirement['id']}</td>
-                                    <td>{$requirement['service_id']}</td>
+                                    <td>{$requirement['service_name']}</td>
                                     <td>{$requirement['description']}</td>
                                     <td>
                                         <button class='btn btn-info btn-sm' onclick='openEditRequirementModal({$requirement['id']})'>Edit</button>
-                                        <button class='btn btn-danger btn-sm deleteRequirement' data-id='{$requirement['id']}'>Delete</button>
+                                        <button class='btn btn-danger btn-sm' onclick='openDeleteRequirementModal({$requirement['id']})'>Delete</button>
                                     </td>
                                 </tr>";
                         }

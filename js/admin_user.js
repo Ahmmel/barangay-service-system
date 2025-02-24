@@ -21,6 +21,21 @@ passwordField.addEventListener("input", checkPassword);
 // Run the function once on page load in case password field is pre-filled
 checkPassword();
 
+document.addEventListener("DOMContentLoaded", function () {
+  const bodyContent = document.querySelector("body"); // Select the entire page
+
+  // Listen for any Bootstrap modal opening
+  document.querySelectorAll(".modal").forEach((modal) => {
+    modal.addEventListener("shown.bs.modal", function () {
+      bodyContent.setAttribute("inert", "true"); // Disable background interaction
+    });
+
+    modal.addEventListener("hidden.bs.modal", function () {
+      bodyContent.removeAttribute("inert"); // Restore interaction
+    });
+  });
+});
+
 // Handeles ajax Response
 function handleAjaxResponse(response, successMessage, errorMessage) {
   var result = JSON.parse(response);
@@ -28,21 +43,21 @@ function handleAjaxResponse(response, successMessage, errorMessage) {
   if (result.success) {
     // SweetAlert2 Success Popup
     Swal.fire({
-      title: 'Success!',
+      title: "Success!",
       text: successMessage,
-      icon: 'success',
-      confirmButtonText: 'OK',
-      confirmButtonColor: '#28a745',  // Green color for success
+      icon: "success",
+      confirmButtonText: "OK",
+      confirmButtonColor: "#28a745", // Green color for success
     });
     return true;
   } else {
     // SweetAlert2 Error Popup
     Swal.fire({
-      title: 'Error!',
+      title: "Error!",
       text: errorMessage,
-      icon: 'error',
-      confirmButtonText: 'OK',
-      confirmButtonColor: '#dc3545',  // Red color for error
+      icon: "error",
+      confirmButtonText: "OK",
+      confirmButtonColor: "#dc3545", // Red color for error
     });
     return false;
   }
@@ -50,11 +65,11 @@ function handleAjaxResponse(response, successMessage, errorMessage) {
 
 function showErrorException(errorMessage) {
   Swal.fire({
-    title: 'Error!',
+    title: "Error!",
     text: errorMessage,
-    icon: 'error',
-    confirmButtonText: 'OK',
-    confirmButtonColor: '#dc3545',  // Red color for error
+    icon: "error",
+    confirmButtonText: "OK",
+    confirmButtonColor: "#dc3545", // Red color for error
   });
 }
 
@@ -100,7 +115,7 @@ function openAddUserModal() {
         // Open the modal
         $("#addUserModal").modal("show");
       } else {
-        alert("Error fetching user prequesite.");
+        showErrorException("Error fetching user prequesite.");
       }
     },
     error: function (xhr, status, error) {
@@ -201,7 +216,7 @@ function openEditUserModal(userId) {
         // Open the modal
         $("#editUserModal").modal("show");
       } else {
-        alert("Error fetching user details.");
+        showErrorException("Error fetching user details.");
       }
     },
     error: function (xhr, status, error) {
@@ -213,18 +228,17 @@ function openEditUserModal(userId) {
 // Open the modal and set the user ID to delete
 function openDeleteUserModal(userId) {
   // Set the user ID in the hidden input field of the modal
-  $('#deleteUserId').val(userId);
+  $("#deleteUserId").val(userId);
 
   // Open the modal
-  $('#deleteUserModal').modal('show');
+  $("#deleteUserModal").modal("show");
 }
 //End of User Modals
-
 
 // Start of Service
 // Function to open the Add Service Modal
 function openAddServiceModal() {
-  $('#addServiceModal').modal('show');
+  $("#addServiceModal").modal("show");
 }
 
 // Function to open the Edit Service Modal and populate the fields
@@ -246,7 +260,7 @@ function openEditServiceModal(serviceId) {
         // Open the modal
         $("#editServiceModal").modal("show");
       } else {
-        alert("Error fetching service details.");
+        showErrorException("Error fetching service details.");
       }
     },
     error: function (xhr, status, error) {
@@ -258,44 +272,108 @@ function openEditServiceModal(serviceId) {
 // Open the modal and set the user ID to delete
 function openDeleteServiceModal(serviceId) {
   // Set the user ID in the hidden input field of the modal
-  $('#deleteServiceId').val(serviceId);
+  $("#deleteServiceId").val(serviceId);
 
   // Open the modal
-  $('#deleteServiceModal').modal('show');
+  $("#deleteServiceModal").modal("show");
 }
 // End of services
 
 // Start of Service requirements
-// Function to open the Add Service Modal
-function openAddServiceModal() {
+// Function to open the Add Requirement Modal
+function openAddRequirementModal() {
   // First, fetch the available services from the backend
   $.ajax({
-    url: "../controllers/ServiceController.php?action=getServices", // Endpoint to fetch all services
+    url: "../controllers/RequirementController.php?action=getServices", // Endpoint to fetch all services
     type: "GET",
-    success: function(response) {
+    success: function (response) {
       var result = JSON.parse(response); // Parse the JSON response
       if (result.length > 0) {
         // Populate the Service dropdown (select option)
-        var serviceDropdown = $("#addServiceName");
+        var serviceDropdown = $("#addRequirementServiceId");
         serviceDropdown.empty(); // Clear previous options
-        serviceDropdown.append('<option value="" disabled selected>Select Service</option>');
-        
-        result.forEach(function(service) {
-          serviceDropdown.append('<option value="' + service.id + '">' + service.service_name + '</option>');
+        serviceDropdown.append(
+          '<option value="" disabled selected>Select Service</option>'
+        );
+
+        result.forEach(function (service) {
+          serviceDropdown.append(
+            '<option value="' +
+              service.id +
+              '">' +
+              service.service_name +
+              "</option>"
+          );
         });
 
         // Once services are loaded, open the modal
-        $('#addServiceModal').modal('show');
+        $("#addRequirementModal").modal("show");
       } else {
-        alert("No services found.");
+        showErrorException("No services found.");
       }
     },
-    error: function(xhr, status, error) {
+    error: function (xhr, status, error) {
       showErrorException(error);
-    }
+    },
   });
 }
 
+// Function to open the Edit Requirement Modal and populate the fields
+function openEditRequirementModal(requirementId) {
+  $.ajax({
+    url: "../controllers/RequirementController.php?action=getRequirementById",
+    type: "GET",
+    data: {
+      requirement_id: requirementId, // Send the requirement ID to fetch data
+    },
+    success: function (response) {
+      var result = JSON.parse(response); // Parse the JSON response
+      if (result.success) {
+        // Populate the modal with the requirement data
+        $("#editRequirementId").val(result.requirement.id);
+        $("#editRequirementName").val(result.requirement.requirement_name);
+        $("#editRequirementDescription").val(result.requirement.description);
+        $("#editRequirementServiceId").val(result.requirement.service_id);
+        $("#editRequirementServiceId").attr("disabled", true); // Disable the service dropdown
+
+        console.log(result);
+        // Populate the services
+        var serviceDropdown = $("#editRequirementServiceId");
+        serviceDropdown.empty(); // Clear previous options
+
+        // Append the selected service to the dropdown
+        result.services.forEach(function (service) {
+          serviceDropdown.append(
+            '<option value="' +
+              service.id +
+              '" ' +
+              (service.id == result.requirement.service_id ? "selected" : "") +
+              ">" +
+              service.service_name +
+              "</option>"
+          );
+        });
+
+        // Open the modal
+        $("#editRequirementModal").modal("show");
+      } else {
+        showErrorException("Error fetching requirement details.");
+      }
+    },
+    error: function (xhr, status, error) {
+      showErrorException(error);
+    },
+  });
+}
+
+// open the delete requirement modal
+function openDeleteRequirementModal(requirementId) {
+  // Set the requirement ID in the hidden input field of the modal
+  $("#deleteRequirementId").val(requirementId);
+
+  // Open the modal
+  $("#deleteRequirementModal").modal("show");
+}
 // end of service requirements
 // Handle the Image Preview Action
 function previewImage(event) {
@@ -330,7 +408,6 @@ function editPreviewImage(event) {
 }
 
 $(document).ready(function () {
-
   // Users
   // Handle form submission with AJAX
   $("#addUserForm").submit(function (e) {
@@ -340,7 +417,7 @@ $(document).ready(function () {
     let password = $("#password").val();
     let confirmPassword = $("#confirmPassword").val();
     if (password !== confirmPassword) {
-      alert("Passwords do not match!");
+      showErrorException("Passwords do not match!");
       return;
     }
 
@@ -362,7 +439,19 @@ $(document).ready(function () {
         ) {
           $("#addUserModal").modal("hide"); // Close the modal
           $("#addUserForm")[0].reset(); // Reset the form
-          location.reload();
+
+          // Reload the page after successful addition
+          Swal.fire({
+            title: "Success!",
+            text: "User added successfully.",
+            icon: "success",
+            confirmButtonText: "OK",
+            confirmButtonColor: "#28a745", // Green color for success
+          }).then((result) => {
+            if (result.isConfirmed) {
+              location.reload();
+            }
+          });
         }
       },
       error: function (xhr, status, error) {
@@ -392,7 +481,19 @@ $(document).ready(function () {
           )
         ) {
           $("#editUserModal").modal("hide");
-          location.reload();
+
+          // Reload the page after successful update
+          Swal.fire({
+            title: "Success!",
+            text: "User updated successfully.",
+            icon: "success",
+            confirmButtonText: "OK",
+            confirmButtonColor: "#28a745", // Green color for success
+          }).then((result) => {
+            if (result.isConfirmed) {
+              location.reload();
+            }
+          });
         }
       },
       error: function (xhr, status, error) {
@@ -402,8 +503,8 @@ $(document).ready(function () {
   });
 
   // Handle the Delete Action
-  $('#confirmDeleteUserBtn').on('click', function() {
-    var userId = $('#deleteUserId').val(); // Get the user ID from the hidden field
+  $("#confirmDeleteUserBtn").on("click", function () {
+    var userId = $("#deleteUserId").val(); // Get the user ID from the hidden field
 
     if (userId) {
       $.ajax({
@@ -420,10 +521,9 @@ $(document).ready(function () {
               "Error deleting user."
             )
           ) {
-
-            $('#deleteUserModal').modal('hide');
+            $("#deleteUserModal").modal("hide");
             // Animate the row's slide-up effect before removal
-            $('#userData_' + userId).slideUp(500, function() {
+            $("#userData_" + userId).slideUp(500, function () {
               $(this).remove(); // Remove the element after the slide-up animation
             });
           }
@@ -432,29 +532,29 @@ $(document).ready(function () {
           showErrorException(error);
         },
       });
-      
+
       // Close the modal after the action is taken
-      $('#deleteUserModal').modal('hide');
+      $("#deleteUserModal").modal("hide");
     }
   });
- // End of user
+  // End of user
 
-// Services
+  // Services
   $("#addServiceForm").submit(function (e) {
     e.preventDefault(); // Prevent default form submission
-  
+
     var serviceName = $("#serviceName").val();
     var description = $("#description").val();
-  
+
     // You can add validation for your fields, for example:
     if (serviceName === "" || description === "") {
-      alert("Please fill out all fields!");
+      showErrorException("Please fill out all fields!");
       return;
     }
-  
+
     // Gather the form data
     var formData = new FormData(this);
-  
+
     $.ajax({
       url: "../controllers/ServiceController.php?action=add",
       type: "POST",
@@ -471,7 +571,19 @@ $(document).ready(function () {
         ) {
           $("#addServiceModal").modal("hide"); // Close the modal
           $("#addServiceForm")[0].reset(); // Reset the form
-          location.reload();
+
+          // Reload the page after successful addition
+          Swal.fire({
+            title: "Success!",
+            text: "Service added successfully.",
+            icon: "success",
+            confirmButtonText: "OK",
+            confirmButtonColor: "#28a745", // Green color for success
+          }).then((result) => {
+            if (result.isConfirmed) {
+              location.reload();
+            }
+          });
         }
       },
       error: function (xhr, status, error) {
@@ -479,7 +591,7 @@ $(document).ready(function () {
       },
     });
   });
-  
+
   $("#editServiceForm").submit(function (e) {
     e.preventDefault(); // Prevent default form submission
 
@@ -500,7 +612,19 @@ $(document).ready(function () {
           )
         ) {
           $("#editServiceModal").modal("hide");
-          location.reload();
+
+          // Reload the page after successful update
+          Swal.fire({
+            title: "Success!",
+            text: "Service updated successfully.",
+            icon: "success",
+            confirmButtonText: "OK",
+            confirmButtonColor: "#28a745", // Green color for success
+          }).then((result) => {
+            if (result.isConfirmed) {
+              location.reload();
+            }
+          });
         }
       },
       error: function (xhr, status, error) {
@@ -509,8 +633,8 @@ $(document).ready(function () {
     });
   });
 
-  $('#confirmDeleteServiceBtn').on('click', function() {
-    var serviceId = $('#deleteServiceId').val(); // Get the user ID from the hidden field
+  $("#confirmDeleteServiceBtn").on("click", function () {
+    var serviceId = $("#deleteServiceId").val(); // Get the user ID from the hidden field
 
     if (serviceId) {
       $.ajax({
@@ -527,10 +651,9 @@ $(document).ready(function () {
               "Error deleting service."
             )
           ) {
-
-            $('#deleteServiceModal').modal('hide');
+            $("#deleteServiceModal").modal("hide");
             // Animate the row's slide-up effect before removal
-            $('#serviceData_' + serviceId).slideUp(500, function() {
+            $("#serviceData_" + serviceId).slideUp(500, function () {
               $(this).remove(); // Remove the element after the slide-up animation
             });
           }
@@ -539,12 +662,138 @@ $(document).ready(function () {
           showErrorException(error);
         },
       });
-      
+
       // Close the modal after the action is taken
-      $('#deleteServiceModal').modal('hide');
+      $("#deleteServiceModal").modal("hide");
     }
   });
-// end of services
+  // end of services
 
+  // Service Requirements
+  $("#addRequirementForm").submit(function (e) {
+    e.preventDefault(); // Prevent default form submission
 
+    var requirementServiceId = $("#addRequirementServiceId").val();
+    var requirementDescription = $("#addRequirementDescription").val();
+
+    // You can add validation for your fields, for example:
+    if (requirementServiceId === "" || requirementDescription === "") {
+      showErrorException("Please fill out all fields!");
+      return;
+    }
+
+    // Create FormData from the form
+    var formData = new FormData(this);
+
+    $.ajax({
+      url: "../controllers/RequirementController.php?action=add",
+      type: "POST",
+      data: formData,
+      contentType: false,
+      processData: false,
+      success: function (response) {
+        if (
+          handleAjaxResponse(
+            response,
+            "Requirement added successfully",
+            "Error adding requirement. Please try again."
+          )
+        ) {
+          $("#addRequirementModal").modal("hide"); // Close the modal
+          $("#addRequirementForm")[0].reset(); // Reset the form
+
+          // Show success message and reload the page after successful addition
+          Swal.fire({
+            title: "Success!",
+            text: "Requirement added successfully.",
+            icon: "success",
+            confirmButtonText: "OK",
+            confirmButtonColor: "#28a745", // Green color for success
+          }).then((result) => {
+            if (result.isConfirmed) {
+              location.reload(); // Reload the page
+            }
+          });
+        }
+      },
+      error: function (xhr, status, error) {
+        showErrorException(error); // Show error if AJAX request fails
+      },
+    });
+  });
+
+  $("#editRequirementForm").submit(function (e) {
+    e.preventDefault(); // Prevent default form submission
+
+    var formData = new FormData(this);
+
+    $.ajax({
+      url: "../controllers/RequirementController.php?action=edit",
+      type: "POST",
+      data: formData,
+      contentType: false,
+      processData: false,
+      success: function (response) {
+        if (
+          handleAjaxResponse(
+            response,
+            "Requirement updated successfully.",
+            "Error updating requirement."
+          )
+        ) {
+          $("#editRequirementModal").modal("hide");
+          // Reload the page after successful update
+          Swal.fire({
+            title: "Success!",
+            text: "Requirement updated successfully.",
+            icon: "success",
+            confirmButtonText: "OK",
+            confirmButtonColor: "#28a745", // Green color for success
+          }).then((result) => {
+            if (result.isConfirmed) {
+              location.reload();
+            }
+          });
+        }
+      },
+      error: function (xhr, status, error) {
+        showErrorException(error);
+      },
+    });
+  });
+
+  $("#confirmDeleteRequirementBtn").on("click", function () {
+    var requirementId = $("#deleteRequirementId").val(); // Get the user ID from the hidden field
+
+    if (requirementId) {
+      $.ajax({
+        url: "../controllers/RequirementController.php?action=delete",
+        type: "POST",
+        data: {
+          requirement_id: requirementId,
+        },
+        success: function (response) {
+          if (
+            handleAjaxResponse(
+              response,
+              "Requirement deleted successfully.",
+              "Error deleting requirement."
+            )
+          ) {
+            $("#deleteRequirementModal").modal("hide");
+            // Animate the row's slide-up effect before removal
+            $("#requirementData_" + requirementId).slideUp(500, function () {
+              $(this).remove(); // Remove the element after the slide-up animation
+            });
+          }
+        },
+        error: function (xhr, status, error) {
+          showErrorException(error);
+        },
+      });
+
+      // Close the modal after the action is taken
+      $("#deleteRequirementModal").modal("hide");
+    }
+  });
 });

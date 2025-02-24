@@ -43,7 +43,7 @@ class RequirementController
     // Fetch all requirements
     public function getRequirements()
     {
-        $requirements = $this->requirementModel->getRequirements();
+        $requirements = $this->requirementModel->getAllRequirements();
         echo json_encode($requirements);
     }
 
@@ -53,18 +53,21 @@ class RequirementController
         if (isset($_GET['requirement_id']) && is_numeric($_GET['requirement_id'])) {
             $requirementId = $_GET['requirement_id'];
 
+            // Get the services
+            $services = $this->requirementModel->getServices();
             // Get the requirement details by ID
             $requirementDetails = $this->requirementModel->getRequirementById($requirementId);
 
-            if (!empty($requirementDetails)) {
+            if (!empty($requirementDetails) && !empty($services)) {
                 echo json_encode([
                     'success' => true,
-                    'requirement' => $requirementDetails
+                    'requirement' => $requirementDetails,
+                    'services' => $services
                 ]);
             } else {
                 echo json_encode([
                     'success' => false,
-                    'message' => 'Requirement not found.'
+                    'message' => 'Requirement or Service not found.'
                 ]);
             }
         } else {
@@ -132,6 +135,13 @@ class RequirementController
             ]);
         }
     }
+
+    // Fetch all services
+    public function getServices()
+    {
+        $services = $this->requirementModel->getServices();
+        echo json_encode($services);
+    }
 }
 
 $database = new Database();
@@ -162,7 +172,9 @@ switch ($action) {
     case 'getRequirementsByServiceId':
         $controller->getRequirementsByServiceId();
         break;
+    case 'getServices':
+        $controller->getServices();
+        break;
     default:
         echo json_encode(["error" => "Invalid request"]);
 }
-?>

@@ -33,8 +33,7 @@ class Requirement
     // Retrieve all requirements
     public function getAllRequirements()
     {
-        $query = "SELECT id, service_id, description FROM " . $this->table_name;
-
+        $query = "SELECT r.id, s.service_name, r.description FROM " . $this->table_name . " r JOIN services s ON r.service_id = s.id ORDER BY r.id DESC";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
 
@@ -114,5 +113,17 @@ class Requirement
 
         return $requirements;
     }
+
+    // Retrieve all services
+    public function getServices()
+    {
+        $query = "SELECT id, service_name FROM services";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+
+        // Fetch all services
+        $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return $services;
+    }
 }
-?>

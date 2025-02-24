@@ -314,11 +314,11 @@
 </div>
 
 <!-- Delete User Modal -->
-<div class="modal fade" id="deleteServiceModal" tabindex="-1" role="dialog" aria-labelledby="deleteServiceModalLabel" aria-hidden="true">
+<div class="modal fade" id="deleteUserModal" tabindex="-1" role="dialog" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header bg-danger text-white">
-        <h5 class="modal-title" id="deleteServiceModalLabel"><i class="fas fa-trash-alt mr-2"></i> <strong>Delete Service Confirmation</strong></h5>
+        <h5 class="modal-title" id="deleteUserModalLabel"><i class="fas fa-trash-alt mr-2"></i> <strong>Delete User Confirmation</strong></h5>
         <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
@@ -327,14 +327,14 @@
         <div class="text-center">
           <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
         </div>
-        <p class="text-center">Are you sure you want to permanently delete this service? This action cannot be undone, and all data related to this service will be lost. Please confirm your decision.</p>
-        <input type="hidden" id="deleteServiceId">
+        <p class="text-center">Are you sure you want to permanently delete this user? This action cannot be undone, and all data related to this user will be lost. Please confirm your decision.</p>
+        <input type="hidden" id="deleteUserId">
       </div>
       <div class="modal-footer d-flex justify-content-between">
         <!-- Left-aligned button (Cancel) -->
         <button type="button" class="btn btn-secondary btn-lg px-5" data-dismiss="modal"><i class="fas fa-times"></i> Cancel</button>
         <!-- Right-aligned button (Confirm) -->
-        <button type="button" id="confirmDeleteServiceBtn" class="btn btn-danger btn-lg px-5"><i class="fas fa-trash-alt"></i> Confirm Deletion</button>
+        <button type="button" id="confirmDeleteUserBtn" class="btn btn-danger btn-lg px-5"><i class="fas fa-trash-alt"></i> Confirm Deletion</button>
       </div>
     </div>
   </div>
@@ -354,7 +354,7 @@
       </div>
       <div class="modal-body">
         <!-- Add Service Form -->
-        <form id="addServiceForm" action="ServicesController.php?action=add" method="POST">
+        <form id="addServiceForm">
           <div class="form-row">
             <!-- Service Name -->
             <div class="form-group col-md-12">
@@ -424,23 +424,34 @@
 
 <!-- Modal for Deleting Service -->
 <div class="modal fade" id="deleteServiceModal" tabindex="-1" role="dialog" aria-labelledby="deleteServiceModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-sm" role="document"> <!-- Modal with small size -->
+  <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header bg-danger text-white">
-        <h5 class="modal-title" id="deleteServiceModalLabel"><i class="fas fa-trash-alt"></i> Delete Service</h5>
+        <h5 class="modal-title" id="deleteServiceModalLabel">
+          <i class="fas fa-trash-alt mr-2"></i> <strong>Delete Service Confirmation</strong>
+        </h5>
         <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
       <div class="modal-body">
-        <p>Are you sure you want to delete this service?</p>
-          <input type="hidden" id="deleteServiceId" name="serviceId" /> <!-- Hidden field for service ID -->
+        <div class="text-center">
+          <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+        </div>
+        <p class="text-center">
+          Are you sure you want to permanently delete this service? This action cannot be undone, and all related data will be lost. Please confirm your decision.
+        </p>
+        <input type="hidden" id="deleteServiceId">
       </div>
       <div class="modal-footer d-flex justify-content-between">
         <!-- Left-aligned button (Cancel) -->
-        <button type="button" class="btn btn-secondary btn-lg px-5" data-dismiss="modal"><i class="fas fa-times"></i> Cancel</button>
+        <button type="button" class="btn btn-secondary btn-lg px-5" data-dismiss="modal">
+          <i class="fas fa-times"></i> Cancel
+        </button>
         <!-- Right-aligned button (Confirm) -->
-        <button type="button" id="confirmDeleteUserBtn" class="btn btn-danger btn-lg px-5"><i class="fas fa-trash-alt"></i> Confirm Deletion</button>
+        <button type="button" id="confirmDeleteServiceBtn" class="btn btn-danger btn-lg px-5">
+          <i class="fas fa-trash-alt"></i> Confirm Deletion
+        </button>
       </div>
     </div>
   </div>
@@ -449,79 +460,120 @@
 
 <!-- Start of Requirement Modals -->
 <!-- Modal for Adding Requirement -->
-<div class="modal fade" id="addRequirementModal" tabindex="-1" aria-labelledby="addRequirementModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
+<div class="modal fade" id="addRequirementModal" tabindex="-1" role="dialog" aria-labelledby="addRequirementModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document"> <!-- Modal with larger size -->
     <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="addRequirementModalLabel">Add New Requirement</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="addRequirementModalLabel"><i class="fas fa-file-alt"></i> Add New Requirement</h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
       </div>
+
       <div class="modal-body">
+        <!-- Add Requirement Form -->
         <form id="addRequirementForm">
-          <!-- Service Select Dropdown -->
-          <div class="mb-3">
-            <label for="addServiceId" class="form-label">Service</label>
-            <select class="form-control" id="addServiceId" required>
-              <option value="">Select a Service</option>
-              <!-- Dynamically populated service options will go here -->
-            </select>
+          <div class="form-row">
+            <!-- Service Selection -->
+            <div class="form-group col-md-12">
+              <label for="addRequirementServiceId" class="form-label fw-bold"><i class="fas fa-cogs"></i> Select Service</label>
+              <select class="form-select" id="addRequirementServiceId" name="serviceId" required>
+                <option value="" disabled selected>-- Choose Service --</option>
+                <!-- Dynamically populated service options -->
+              </select>
+            </div>
           </div>
-          <div class="mb-3">
-            <label for="addDescription" class="form-label">Description</label>
-            <input type="text" class="form-control" id="addDescription" required>
+
+          <div class="form-row">
+            <!-- Requirement Description -->
+            <div class="form-group col-md-12">
+              <label for="addRequirementDescription" class="form-label fw-bold"><i class="fas fa-file-alt"></i> Requirement Description</label>
+              <textarea class="form-control" id="addRequirementDescription" name="description" rows="4" placeholder="Enter requirement details" required
+                style="width: 100%; resize: none; max-height: 150px;"></textarea>
+            </div>
           </div>
-          <button type="submit" class="btn btn-primary">Add Requirement</button>
+
+          <!-- Submit Button -->
+          <button type="submit" class="btn btn-primary mt-3 btn-block">
+            <i class="fas fa-suitcase"></i> Add Requirement
+          </button>
         </form>
       </div>
     </div>
   </div>
 </div>
 
+
 <!-- Edit Requirement Modal -->
 <div class="modal fade" id="editRequirementModal" tabindex="-1" aria-labelledby="editRequirementModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="editRequirementModalLabel">Edit Requirement</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      <div class="modal-header bg-warning text-white">
+        <h5 class="modal-title" id="editRequirementModalLabel"><i class="fas fa-edit"></i> Edit Requirement</h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
       </div>
       <div class="modal-body">
         <form id="editRequirementForm">
+          <!-- Hidden Requirement ID -->
           <input type="hidden" id="editRequirementId">
-          <!-- Service Select Dropdown -->
+
+          <!-- Service Selection -->
           <div class="mb-3">
-            <label for="editServiceId" class="form-label">Service</label>
-            <select class="form-control" id="editServiceId" required>
-              <option value="">Select a Service</option>
-              <!-- Dynamically populated service options will go here -->
+            <label for="editRequirementServiceId" class="form-label fw-bold">Select Service</label>
+            <select class="form-select" id="editRequirementServiceId" required>
+              <option value="" disabled selected>-- Choose Service --</option>
+              <!-- Dynamically populated service options -->
             </select>
           </div>
+
+          <!-- Requirement Description -->
           <div class="mb-3">
-            <label for="editDescription" class="form-label">Description</label>
-            <input type="text" class="form-control" id="editDescription" required>
+            <label for="editRequirementDescription" class="form-label fw-bold">Requirement Description</label>
+            <textarea class="form-control" id="editRequirementDescription" rows="4" placeholder="Enter requirement details" required
+              style="width: 100%; resize: none; max-height: 150px;"></textarea>
           </div>
-          <button type="submit" class="btn btn-primary">Update Requirement</button>
         </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-warning" form="editRequirementForm"><i class="fas fa-save"></i> Update Requirement</button>
       </div>
     </div>
   </div>
 </div>
 
 <!-- Delete Requirement Modal -->
-<div class="modal fade" id="deleteRequirementModal" tabindex="-1" aria-labelledby="deleteRequirementModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
+<div class="modal fade" id="deleteRequirementModal" tabindex="-1" role="dialog" aria-labelledby="deleteRequirementModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
     <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="deleteRequirementModalLabel">Delete Requirement</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="deleteRequirementModalLabel">
+          <i class="fas fa-trash-alt mr-2"></i> <strong>Delete Requirement Confirmation</strong>
+        </h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
       </div>
       <div class="modal-body">
-        <p>Are you sure you want to delete this requirement?</p>
+        <div class="text-center">
+          <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+        </div>
+        <p class="text-center">
+          Are you sure you want to permanently delete this requirement? This action cannot be undone, and all data related to this requirement will be lost. Please confirm your decision.
+        </p>
         <input type="hidden" id="deleteRequirementId">
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-danger" id="confirmDeleteRequirement">Delete</button>
+      <div class="modal-footer d-flex justify-content-between">
+        <!-- Left-aligned button (Cancel) -->
+        <button type="button" class="btn btn-secondary btn-lg px-5" data-dismiss="modal">
+          <i class="fas fa-times"></i> Cancel
+        </button>
+        <!-- Right-aligned button (Confirm) -->
+        <button type="button" id="confirmDeleteRequirementBtn" class="btn btn-danger btn-lg px-5">
+          <i class="fas fa-trash-alt"></i> Confirm Deletion
+        </button>
       </div>
     </div>
   </div>

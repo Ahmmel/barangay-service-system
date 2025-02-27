@@ -83,14 +83,12 @@ class RequirementController
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id = $_POST['requirementId'];
-            $serviceId = isset($_POST['serviceId']) ? $_POST['serviceId'] : null;
             $description = isset($_POST['description']) ? htmlspecialchars($_POST['description']) : null;
 
-            if ($serviceId && $description) {
+            if ($description) {
                 // Call the updateRequirement method from the model
                 $result = $this->requirementModel->updateRequirement(
                     $id,
-                    $serviceId,
                     $description
                 );
 

@@ -517,12 +517,12 @@
       <div class="modal-body">
         <form id="editRequirementForm">
           <!-- Hidden Requirement ID -->
-          <input type="hidden" id="editRequirementId">
+          <input type="hidden" id="editRequirementId" name="requirementId">
 
           <!-- Service Selection -->
           <div class="mb-3">
             <label for="editRequirementServiceId" class="form-label fw-bold">Select Service</label>
-            <select class="form-select" id="editRequirementServiceId" required>
+            <select class="form-select" id="editRequirementServiceId" name="serviceId" required>
               <option value="" disabled selected>-- Choose Service --</option>
               <!-- Dynamically populated service options -->
             </select>
@@ -531,7 +531,7 @@
           <!-- Requirement Description -->
           <div class="mb-3">
             <label for="editRequirementDescription" class="form-label fw-bold">Requirement Description</label>
-            <textarea class="form-control" id="editRequirementDescription" rows="4" placeholder="Enter requirement details" required
+            <textarea class="form-control" id="editRequirementDescription" rows="4" name="description" placeholder="Enter requirement details" required
               style="width: 100%; resize: none; max-height: 150px;"></textarea>
           </div>
         </form>

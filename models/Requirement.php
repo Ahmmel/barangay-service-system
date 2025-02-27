@@ -61,16 +61,15 @@ class Requirement
     }
 
     // Update an existing requirement
-    public function updateRequirement($id, $serviceId, $description)
+    public function updateRequirement($id, $description)
     {
         $query = "UPDATE " . $this->table_name . "
-                  SET service_id = :service_id, description = :description, modified_at = current_timestamp()
+                  SET description = :description, modified_at = current_timestamp()
                   WHERE id = :id";
 
         $stmt = $this->conn->prepare($query);
 
         // Bind the parameters
-        $stmt->bindParam(":service_id", $serviceId);
         $stmt->bindParam(":description", $description);
         $stmt->bindParam(":id", $id);
 

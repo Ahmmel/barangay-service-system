@@ -1,13 +1,30 @@
 (function ($) {
   "use strict"; // Start of use strict
 
+  // Function to toggle sidebar and update margin
+  function updateSidebarMargin() {
+    // Check if the sidebar is toggled (hidden or visible)
+    const isSidebarToggled = $(".sidebar").hasClass("toggled");
+
+    // Set the margin based on the sidebar visibility
+    const marginValue = isSidebarToggled ? "0 0 28rem" : "0 0 31.5rem";
+
+    // Apply the margin with !important using setProperty
+    $(".toggle-sidebar-divider")[0].style.setProperty(
+      "margin",
+      marginValue,
+      "important"
+    );
+  }
+
   // Toggle the side navigation
-  $("#sidebarToggle, #sidebarToggleTop").on("click", function (e) {
+  $("#sidebarToggle, #sidebarToggleTop").on("click", function () {
+    // Toggle the 'sidebar-toggled' class on the body and 'toggled' on the sidebar
     $("body").toggleClass("sidebar-toggled");
     $(".sidebar").toggleClass("toggled");
-    if ($(".sidebar").hasClass("toggled")) {
-      $(".sidebar .collapse").collapse("hide");
-    }
+
+    // Update the margin of the divider
+    updateSidebarMargin();
   });
 
   // Close any open menu accordions when window is resized below 768px

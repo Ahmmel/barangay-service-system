@@ -29,4 +29,10 @@ class SMSNotification
 
         return $this->semaphore->sendSMS($phoneNumber, $message);
     }
+
+    public function sendReminder($phoneNumber, $scheduledTime)
+    {
+        $message = "Reminder: Your transaction is scheduled at $scheduledTime today. Please arrive 10 minutes early.";
+        return $this->semaphore->sendSMS($phoneNumber, $message);
+    }
 }

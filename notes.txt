@@ -38,3 +38,38 @@ Save the file and close it.
 #251f21 - black
 #f1f0ef - white
 #bc9a8e - brown
+
+Cron Job Name	Schedule	Command
+Move Transactions to Queue	Every 30 minutes	*/30 * * * * php /path/to/cron_move_transactions.php
+Notify Users About Transactions	Every 30 minutes	*/30 * * * * php /path/to/cron_notify_users.php
+Mark No-Show Transactions	Every 30 minutes	*/30 * * * * php /path/to/cron_mark_no_show.php
+Daily Cleanup	Every midnight	0 0 * * * php /path/to/cron_cleanup.php
+
+
+//Steps to add cronjob in windows
+1️⃣ Use a Batch File (.bat) and Run It in Background
+Instead of setting up Task Scheduler, you can create a batch file and let it run every few minutes.
+
+Steps
+Open Notepad and paste this:
+------------------------------------------------------------------------------
+
+@echo off
+:start
+echo Running cron jobs at %time%
+
+REM Execute your cron job scripts using PHP
+C:\xampp\php\php.exe "C:\xampp\htdocs\your_project\cron_daily_cleanup.php"
+C:\xampp\php\php.exe "C:\xampp\htdocs\your_project\cron_notify_users.php"
+C:\xampp\php\php.exe "C:\xampp\htdocs\your_project\cron_process_queue.php"
+C:\xampp\php\php.exe "C:\xampp\htdocs\your_project\cron_auto_cancel.php"
+
+echo Completed cron jobs at %time%
+timeout /t 1800 >nul  REM Waits 30 minutes before restarting
+
+------------------------------------------------------------------------------
+goto start
+This runs cron_process.php using PHP every 30 minutes (1800 seconds).
+Save the file as cronjob.bat.
+Double-click cronjob.bat to start running it in the background.
+👉 To stop it, open Task Manager, find cronjob.bat, and end the process.

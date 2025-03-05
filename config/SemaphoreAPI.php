@@ -5,7 +5,7 @@ class SemaphoreAPI
 
     public function __construct()
     {
-        $this->apiKey = "YOUR_SEMAPHORE_API_KEY"; // Replace with your actual API key
+        $this->apiKey = "5dc0a197e4958f1d5d88ecf168135d96"; // Replace with your actual API key
     }
 
     public function sendSMS($phoneNumber, $message)

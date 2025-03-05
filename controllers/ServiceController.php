@@ -4,12 +4,10 @@ require_once '../models/Service.php';
 
 class ServiceController
 {
-    private $conn;
     private $serviceModel;
 
     public function __construct($db)
     {
-        $this->conn = $db;
         $this->serviceModel = new Service($db);
     }
 
@@ -129,4 +127,3 @@ switch ($action) {
     default:
         echo json_encode(["error" => "Invalid request"]);
 }
-?>

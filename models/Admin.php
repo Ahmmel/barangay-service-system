@@ -9,14 +9,14 @@ class Admin
         $this->conn = $db;
     }
 
-    public function login($email, $password)
+    // Login Admin
+    public function login($identifier, $password)
     {
-        $query = "SELECT * FROM " . $this->table_name . " WHERE email = :email";
+        $query = "SELECT * FROM " . $this->table_name . " WHERE email = :identifier OR username = :identifier";
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':email', $email);
+        $stmt->bindParam(":identifier", $identifier);
         $stmt->execute();
         $admin = $stmt->fetch(PDO::FETCH_ASSOC);
-
         if ($admin && password_verify($password, $admin['password'])) {
             return $admin;
         }

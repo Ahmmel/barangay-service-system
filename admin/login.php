@@ -42,7 +42,7 @@ unset($_SESSION['error']); // Remove error after displaying it
                             <!-- Login Form -->
                             <form class="user" action="../controllers/AuthController.php" method="POST">
                                 <div class="form-group">
-                                    <input type="email" class="form-control form-control-user" name="email" placeholder="Enter Email Address" required>
+                                    <input type="text" class="form-control form-control-user" name="email" placeholder="Enter Email Address Or Username" required>
                                 </div>
                                 <div class="form-group">
                                     <input type="password" class="form-control form-control-user" name="password" placeholder="Enter Password" required>

@@ -79,6 +79,33 @@ class Transaction
         }
     }
 
+    // Get all transactions with user details and services
+    public function getAllTransactions()
+    {
+        $query = "
+        SELECT 
+            t.id AS transaction_id,
+            t.queue_id,
+            t.status,
+            t.created_at,
+            t.updated_at,
+            u.first_name,
+            u.last_name,
+            u.mobile_number,
+            GROUP_CONCAT(s.service_name ORDER BY s.service_name ASC SEPARATOR ', ') AS services
+        FROM transactions t
+        JOIN users u ON t.user_id = u.id
+        LEFT JOIN transaction_services ts ON t.id = ts.transaction_id
+        LEFT JOIN services s ON ts.service_id = s.id
+        GROUP BY t.id
+        ORDER BY t.created_at DESC";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     // Get a single transaction by its ID
     public function getTransactionById($id)
     {

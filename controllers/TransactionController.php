@@ -48,6 +48,13 @@ class TransactionController
         }
     }
 
+    // Get all transactions
+    public function getAllTransactions()
+    {
+        $transactions = $this->TransactionModel->getAllTransactions();
+        echo json_encode($transactions);
+    }
+
     // Get Transaction by ID
     public function getTransactionById()
     {

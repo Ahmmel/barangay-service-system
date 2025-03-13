@@ -243,9 +243,10 @@ $services = $service->getServices();
             <table class="table table-bordered table-striped" id="serviceTable">
                 <thead class="thead-dark">
                     <tr>
-                        <th>Id</th>
-                        <th>Service Name</th>
-                        <th>Description</th>
+                        <th>Transaction Code</th>
+                        <th>Transaction Description</th>
+                        <th>Note</th>
+                        <th>Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -258,9 +259,10 @@ $services = $service->getServices();
                                     <td>{$service['id']}</td>
                                     <td>{$service['service_name']}</td>
                                     <td>{$service['description']}</td>
+                                    <td>pending</td>
                                     <td>
-                                        <button class='btn btn-info btn-sm' onclick='openEditServiceModal({$service['id']})'>Edit</button>
-                                        <button class='btn btn-danger btn-sm' onclick='openDeleteServiceModal({$service['id']})'>Delete</button>
+                                        <button class='btn btn-secondary btn-sm' onclick='openEditServiceModal({$service['id']})'>Update</button>
+                                        <button class='btn btn-info btn-sm' onclick='openDeleteServiceModal({$service['id']})'>Close</button>
                                     </td>
                                 </tr>";
                         }

@@ -578,5 +578,56 @@
     </div>
   </div>
 </div>
-
 <!-- End of Requirement Modals -->
+<!-- Start of Transaction Modals -->
+<!-- Modal for Adding Transaction -->
+<div class="modal fade" id="addTransactionModal" tabindex="-1" role="dialog" aria-labelledby="addTransactionModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document"> <!-- Modal with larger size -->
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title" id="addTransactionModalLabel"><i class="fas fa-exchange-alt"></i> Add Transaction</h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- Add Transaction Form -->
+        <form id="addTransactionForm" action="TransactionController.php?action=add" method="POST" onsubmit="return validateServices()">
+
+          <!-- User ID Input -->
+          <div class="form-row">
+            <div class="form-group col-md-12">
+              <label for="addUserId"><i class="fas fa-user"></i> User ID</label>
+              <input type="text" class="form-control" id="addUserId" name="userId" placeholder="Enter user ID" required autocomplete="off" />
+            </div>
+          </div>
+
+          <!-- List of Services (Multiple Select with Search) -->
+          <div class="form-row">
+            <div class="form-group col-md-12">
+              <label for="addServices"><i class="fas fa-cogs"></i> Select Services</label>
+              <br>
+              <select class="form-control" id="addServices" name="services[]" multiple required>
+                <!-- Dynamically populated service options -->
+              </select>
+              <small id="serviceHelp" class="form-text text-muted">Select 1 to 3 services.</small>
+            </div>
+          </div>
+
+          <!-- Status (Pending, Disabled) -->
+          <div class="form-row">
+            <div class="form-group col-md-12">
+              <label for="addStatus"><i class="fas fa-clock"></i> Status</label>
+              <input type="text" class="form-control" id="addStatus" name="status" value="Pending" disabled />
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" class="btn btn-success mt-3 btn-block">
+            <i class="fas fa-exchange-alt"></i> Add Transaction
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

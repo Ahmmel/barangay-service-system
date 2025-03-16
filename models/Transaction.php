@@ -12,6 +12,19 @@ class Transaction
         $this->conn = $database->getConnection();
     }
 
+    // Get all services and queues for transaction prerequisites
+    public function getServices()
+    {
+        $query = "SELECT id, service_name FROM services";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+
+        // Fetch all services
+        $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return $services;
+    }
+
     // Create a new transaction with associated services
     public function createTransactionWithServices($userId, $serviceIds, $queueId = null, $scheduledTime)
     {
@@ -85,9 +98,11 @@ class Transaction
         $query = "
         SELECT 
             t.id AS transaction_id,
+            t.transaction_code,
             t.queue_id,
             t.status,
             t.created_at,
+            t.date_closed ,
             t.updated_at,
             u.first_name,
             u.last_name,

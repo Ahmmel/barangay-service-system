@@ -13,6 +13,12 @@ class TransactionController
         $this->SMS = new SMSNotification();
     }
 
+    // Get Transaction Prequisites
+    public function getServices()
+    {
+        $services = $this->TransactionModel->getServices();
+        echo json_encode($services);
+    }
     // Handle Add Transaction with services
     public function addTransactionWithServices()
     {
@@ -140,6 +146,9 @@ switch ($action) {
         break;
     case 'getByStatus':
         $controller->getTransactionByStatus();
+        break;
+    case 'getServices':
+        $controller->getServices();
         break;
     default:
         echo json_encode(['error' => 'Invalid request']);

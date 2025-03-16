@@ -407,6 +407,53 @@ function editPreviewImage(event) {
   }
 }
 
+//Function to open the add Transaction Modal and populate the fields
+function openAddTransactionModal() {
+  // First, fetch the available services from the backend
+  $.ajax({
+    url: "../controllers/TransactionController.php?action=getServices", // Endpoint to fetch all services
+    type: "GET",
+    success: function (response) {
+      var result = JSON.parse(response); // Parse the JSON response
+      if (result.length > 0) {
+        // Populate the Service dropdown (select option)
+        var serviceDropdown = $("#addServices");
+        serviceDropdown.empty(); // Clear previous options
+
+        result.forEach(function (service) {
+          serviceDropdown.append(
+            '<option value="' +
+              service.id +
+              '">' +
+              service.service_name +
+              "</option>"
+          );
+        });
+
+        // Once services are loaded, show the modal and initialize Select2
+        $("#addTransactionModal").modal("show");
+      } else {
+        showErrorException("No services found.");
+      }
+    },
+    error: function (xhr, status, error) {
+      showErrorException(error);
+    },
+  });
+}
+
+// Function to validate the selected services
+function validateServices() {
+  const services = document.getElementById("addServices");
+  const selectedServices = services.selectedOptions.length;
+
+  if (selectedServices < 1 || selectedServices > 3) {
+    alert("Please select between 1 and 3 services.");
+    return false; // Prevent form submission
+  }
+
+  return true; // Allow form submission
+}
 $(document).ready(function () {
   // Users
   // Handle form submission with AJAX
@@ -796,4 +843,5 @@ $(document).ready(function () {
       $("#deleteRequirementModal").modal("hide");
     }
   });
+  // End of Service Requirements
 });

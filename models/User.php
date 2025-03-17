@@ -41,9 +41,6 @@ class User
         return false;
     }
 
-
-
-    // Fetch all users
     // Fetch all users from the database
     public function getUsers()
     {
@@ -105,7 +102,6 @@ class User
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-
     // Update user information
     public function updateUser(
         $id,
@@ -154,7 +150,6 @@ class User
         }
         return false;
     }
-
 
     public function updatePassword($id, $password)
     {
@@ -222,5 +217,15 @@ class User
             return $user;
         }
         return false;
+    }
+
+    // Check if user exists
+    public function checkUserExist($userId)
+    {
+        $query = "SELECT * FROM user_details WHERE id = :userId LIMIT 1";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":userId", $userId, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }

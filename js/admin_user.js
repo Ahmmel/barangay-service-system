@@ -454,6 +454,7 @@ function validateServices() {
 
   return true; // Allow form submission
 }
+
 $(document).ready(function () {
   // Users
   // Handle form submission with AJAX
@@ -844,4 +845,81 @@ $(document).ready(function () {
     }
   });
   // End of Service Requirements
+
+  // start of transactions
+  $("#verifyChangeBtn").on("click", function () {
+    var userId = $("#addUserId").val();
+    var button = $("#verifyChangeBtn");
+
+    // Disable the Add Transaction button initially
+    var addTransactionButton = $("#addTransactionButton"); // Assuming the Add Transaction button has this ID
+
+    if (userId) {
+      // If the button says "Verify", send AJAX request to check user existence
+      if (button.text() === "Verify") {
+        // AJAX call to check if the user exists
+        $.ajax({
+          url: "../controllers/UsersController.php?action=checkUserExist", // Replace with your server-side script
+          method: "POST",
+          data: { userId: userId },
+          success: function (response) {
+            var data = JSON.parse(response); // Assuming the response is JSON
+
+            if (data.success) {
+              // User exists, update UI
+              button.text("Change"); // Change button text to "Change"
+              $("#addUserId").prop("disabled", true); // Disable the user ID field
+              $("#userIdError").hide(); // Hide error message
+
+              // Enable the Add Transaction button
+              addTransactionButton.prop("disabled", false); // Enable Add Transaction button
+
+              // Check if profile picture is null and set a default based on gender_id
+              var profilePicture = data.user.profile_picture;
+              if (!profilePicture) {
+                // If profile_picture is null, set the default based on gender_id
+                profilePicture =
+                  data.user.gender_id == 2
+                    ? "../images/default_male.png"
+                    : "../images/default_female.png";
+              }
+
+              // Populate the modal with user information
+              $("#userInfo").show(); // Show the user information section
+              // Update the modal with the returned user data or the default image
+              $("#userInfo img").attr("src", profilePicture); // Update profile picture
+              $("#userInfo .full-name").text(data.user.full_name); // Update full name
+              $("#userInfo .birthdate").text(data.user.birthdate); // Update birthdate
+            } else {
+              // User doesn't exist, show error
+              $("#userIdError").show();
+              $("#userInfo").hide(); // Hide user info section if user doesn't exist
+
+              // Disable the Add Transaction button if user does not exist
+              addTransactionButton.prop("disabled", true); // Disable Add Transaction button
+            }
+          },
+          error: function () {
+            // Handle AJAX errors
+            console.log("An error occurred while checking the user.");
+          },
+        });
+      } else {
+        // If the button says "Change", enable the input and clear it
+        $("#addUserId").prop("disabled", false); // Enable the input field
+        $("#addUserId").val(""); // Clear the input field
+        $("#userIdError").hide(); // Hide any error message
+        $("#userInfo").hide(); // Hide the user information section
+        button.text("Verify"); // Change button text back to "Verify"
+
+        // Disable the Add Transaction button if user changes ID
+        addTransactionButton.prop("disabled", true); // Disable Add Transaction button
+      }
+    } else {
+      $("#userIdError").show(); // Show error if user ID is empty
+
+      // Disable the Add Transaction button if user ID is empty
+      addTransactionButton.prop("disabled", true); // Disable Add Transaction button
+    }
+  });
 });

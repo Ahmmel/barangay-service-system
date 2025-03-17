@@ -598,7 +598,31 @@
           <div class="form-row">
             <div class="form-group col-md-12">
               <label for="addUserId"><i class="fas fa-user"></i> User ID</label>
-              <input type="text" class="form-control" id="addUserId" name="userId" placeholder="Enter user ID" required autocomplete="off" />
+              <div class="input-group">
+                <input type="text" class="form-control" id="addUserId" name="userId" placeholder="Enter user ID" required autocomplete="off" />
+                <div class="input-group-append">
+                  <button type="button" class="btn btn-primary" id="verifyChangeBtn">Verify</button>
+                </div>
+              </div>
+              <small id="userIdError" class="form-text text-danger" style="display: none;">User does not exist. Please check the ID.</small>
+            </div>
+          </div>
+
+          <!-- User Information Below the User ID -->
+          <div class="form-row" id="userInfo" style="display: none;">
+            <div class="form-group col-md-12">
+              <label><i class="fas fa-id-card"></i> User Information</label>
+              <div class="row">
+                <div class="col-md-2">
+                  <img src="profile.png" alt="Profile Picture" style="margin:auto; width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center;" />
+                </div>
+                <div class="col-md-10">
+                  <strong>Full Name:</strong>
+                  <p class="full-name"></p>
+                  <strong>Birthdate:</strong>
+                  <p class="birthdate"></p>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -623,7 +647,7 @@
           </div>
 
           <!-- Submit Button -->
-          <button type="submit" class="btn btn-success mt-3 btn-block">
+          <button type="submit" id="addTransactionButton" class="btn btn-success mt-3 btn-block" disabled>
             <i class="fas fa-exchange-alt"></i> Add Transaction
           </button>
         </form>

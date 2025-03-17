@@ -265,6 +265,28 @@ class UserController
             ]);
         }
     }
+
+    // Check if a user exists
+    public function checkUserExist()
+    {
+        if (isset($_POST['userId'])) {
+            $userId = $_POST['userId'];
+            $user = $this->userModel->checkUserExist($userId);
+            if ($user) {
+                echo json_encode(["success" => true, "user" => $user[0]]);
+            } else {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Invalid User.'
+                ]);
+            }
+        } else {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Invalid User.'
+            ]);
+        }
+    }
 }
 
 
@@ -295,6 +317,9 @@ switch ($action) {
         break;
     case 'getUserPrequisite':
         $controller->getUserPrequisite();
+        break;
+    case 'checkUserExist':
+        $controller->checkUserExist();
         break;
     default:
         echo json_encode(["error" => "Invalid request"]);

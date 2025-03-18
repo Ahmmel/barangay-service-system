@@ -593,7 +593,7 @@
       <div class="modal-body">
         <!-- Add Transaction Form -->
         <form id="addTransactionForm" action="TransactionController.php?action=add" method="POST" onsubmit="return validateServices()">
-
+          <input type="hidden" name="userId" id="transactionUserId" />
           <!-- User ID Input -->
           <div class="form-row">
             <div class="form-group col-md-12">
@@ -631,7 +631,7 @@
             <div class="form-group col-md-12">
               <label for="addServices"><i class="fas fa-cogs"></i> Select Services</label>
               <br>
-              <select class="form-control" id="addServices" name="services[]" multiple required>
+              <select class="form-control" id="addServices" name="serviceIds[]" multiple required>
                 <!-- Dynamically populated service options -->
               </select>
               <small id="serviceHelp" class="form-text text-muted">Select 1 to 3 services.</small>

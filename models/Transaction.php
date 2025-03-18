@@ -26,30 +26,28 @@ class Transaction
     }
 
     // Create a new transaction with associated services
-    public function createTransactionWithServices($userId, $serviceIds, $queueId = null, $scheduledTime)
+    public function createTransactionWithServices($userId, $serviceIds, $transactionCode, $scheduledTime)
     {
-        if (!$this->isValidBookingTime($scheduledTime)) {
-            return ["success" => false, "message" => "Booking must be at least 30 minutes in advance."];
-        }
-
-        if (!$this->isWithinBookingHours($scheduledTime)) {
-            return ["success" => false, "message" => "Bookings can only be made between 8:00 AM - 4:30 PM, Monday to Saturday."];
+        $maxTransactions = $this->getMaxTransactionsPerDay();
+        if ($this->getTodaysTransactionCount() >= $maxTransactions) {
+            return ["success" => false, "message" => "The maximum number of transactions for today has been reached."];
         }
 
         if ($this->hasUserMadeTransactionToday($userId)) {
             return ["success" => false, "message" => "You can only book one transaction per day."];
         }
 
-        $maxTransactions = $this->getMaxTransactionsPerDay();
-        if ($this->getTodaysTransactionCount() >= $maxTransactions) {
-            return ["success" => false, "message" => "The maximum number of transactions for today has been reached."];
+        if (!$this->isWithinBookingHours($scheduledTime)) {
+            return ["success" => false, "message" => "Bookings can only be made between 8:00 AM - 4:30 PM, Monday to Saturday."];
+        }
+
+        if (!$this->isValidBookingTime($scheduledTime)) {
+            return ["success" => false, "message" => "Booking must be at least 30 minutes in advance."];
         }
 
         try {
             // Start the transaction
             $this->conn->beginTransaction();
-            $transactionCode = "TRX-" . date("Ymd") . "-" . strtoupper(substr(uniqid(), -5));
-
             // Insert the transaction into the transactions table
             $query = "INSERT INTO " . $this->table_name . " (user_id, queue_id, status) VALUES (:user_id, :queue_id, 'In Progress')";
             $stmt = $this->conn->prepare($query);
@@ -80,7 +78,7 @@ class Transaction
             return [
                 'success' => true,
                 'message' => 'Transaction created successfully!',
-                'transaction_id' => $transactionId
+                'transaction_code' => $transactionCode
             ];
         } catch (Exception $e) {
             // Rollback the transaction if an error occurs

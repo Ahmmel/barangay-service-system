@@ -54,7 +54,7 @@ function handleAjaxResponse(response, successMessage, errorMessage) {
     // SweetAlert2 Error Popup
     Swal.fire({
       title: "Error!",
-      text: errorMessage,
+      text: result.message ?? errorMessage,
       icon: "error",
       confirmButtonText: "OK",
       confirmButtonColor: "#dc3545", // Red color for error
@@ -419,8 +419,7 @@ function openAddTransactionModal() {
         // Populate the Service dropdown (select option)
         var serviceDropdown = $("#addServices");
         serviceDropdown.empty(); // Clear previous options
-
-        result.forEach(function (service) {
+        result.forEach((service) => {
           serviceDropdown.append(
             '<option value="' +
               service.id +
@@ -456,8 +455,7 @@ function validateServices() {
 }
 
 $(document).ready(function () {
-  // Users
-  // Handle form submission with AJAX
+  // Start Of Users
   $("#addUserForm").submit(function (e) {
     e.preventDefault(); // Prevent default form submission
 
@@ -585,9 +583,9 @@ $(document).ready(function () {
       $("#deleteUserModal").modal("hide");
     }
   });
-  // End of user
+  // End Of User
 
-  // Services
+  // Start Of Services
   $("#addServiceForm").submit(function (e) {
     e.preventDefault(); // Prevent default form submission
 
@@ -715,9 +713,9 @@ $(document).ready(function () {
       $("#deleteServiceModal").modal("hide");
     }
   });
-  // end of services
+  // End Of Services
 
-  // Service Requirements
+  //Start of Service Requirements
   $("#addRequirementForm").submit(function (e) {
     e.preventDefault(); // Prevent default form submission
 
@@ -828,12 +826,12 @@ $(document).ready(function () {
               "Error deleting requirement."
             )
           ) {
-            $("#deleteRequirementModal").modal("hide");
             // Animate the row's slide-up effect before removal
             $("#requirementData_" + requirementId).slideUp(500, function () {
               $(this).remove(); // Remove the element after the slide-up animation
             });
           }
+          $("#deleteRequirementModal").modal("hide");
         },
         error: function (xhr, status, error) {
           showErrorException(error);
@@ -846,7 +844,54 @@ $(document).ready(function () {
   });
   // End of Service Requirements
 
-  // start of transactions
+  // Start of Transactions
+  $("#addTransactionForm").submit(function (e) {
+    e.preventDefault(); // Prevent default form submission
+
+    // Validate the selected services
+    if (!validateServices()) {
+      return;
+    }
+
+    var formData = new FormData(this);
+
+    $.ajax({
+      url: "../controllers/TransactionController.php?action=add",
+      type: "POST",
+      data: formData,
+      contentType: false,
+      processData: false,
+      success: function (response) {
+        if (
+          handleAjaxResponse(
+            response,
+            "Transaction added successfully.",
+            "Error adding transaction."
+          )
+        ) {
+          // Reload the page after successful addition
+          Swal.fire({
+            title: "Success!",
+            text: "Transaction added successfully.",
+            icon: "success",
+            confirmButtonText: "OK",
+            confirmButtonColor: "#28a745", // Green color for success
+          }).then((result) => {
+            if (result.isConfirmed) {
+              location.reload();
+            }
+          });
+        }
+
+        $("#addTransactionModal").modal("hide"); // Close the modal
+        $("#addTransactionForm")[0].reset(); // Reset the form
+      },
+      error: function (xhr, status, error) {
+        showErrorException(error);
+      },
+    });
+  });
+
   $("#verifyChangeBtn").on("click", function () {
     var userId = $("#addUserId").val();
     var button = $("#verifyChangeBtn");
@@ -866,6 +911,7 @@ $(document).ready(function () {
             var data = JSON.parse(response); // Assuming the response is JSON
 
             if (data.success) {
+              $("#transactionUserId").val(data.user.id);
               // User exists, update UI
               button.text("Change"); // Change button text to "Change"
               $("#addUserId").prop("disabled", true); // Disable the user ID field

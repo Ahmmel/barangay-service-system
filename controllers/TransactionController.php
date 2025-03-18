@@ -1,15 +1,18 @@
 <?php
 require_once '../config/database.php';
 require_once '../models/Transaction.php';
+require_once '../models/Queue.php';
 require_once '../models/SMSNotification.php';
 class TransactionController
 {
     private $TransactionModel;
+    private $QueueModel;
     private $SMS;
 
     public function __construct($db)
     {
         $this->TransactionModel = new Transaction($db);
+        $this->QueueModel = new Queue($db);
         $this->SMS = new SMSNotification();
     }
 
@@ -22,35 +25,57 @@ class TransactionController
     // Handle Add Transaction with services
     public function addTransactionWithServices()
     {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // Collect necessary parameters
-            $userId = $_POST['userId'];
-            $serviceIds = isset($_POST['serviceIds']) ? $_POST['serviceIds'] : [];
-            $queueId = isset($_POST['queueId']) ? $_POST['queueId'] : null;
-            $scheduledTime = isset($_POST['scheduledTime']) ? $_POST['scheduledTime'] : null;
+        // Check if the request method is POST
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+            return;
+        }
 
-            // Ensure serviceIds is always an array
-            if (!is_array($serviceIds)) {
-                $serviceIds = [$serviceIds];  // Convert single service ID into an array
+        // Collect parameters from POST data
+        $userId = isset($_POST['userId']) ? $_POST['userId'] : null;
+        $serviceIds = isset($_POST['serviceIds']) ? $_POST['serviceIds'] : [];
+        $scheduledTime = isset($_POST['scheduledTime']) ? $_POST['scheduledTime'] : null;
+
+        // Ensure serviceIds is an array
+        if (!is_array($serviceIds)) {
+            $serviceIds = [$serviceIds];
+        }
+
+        // Validate inputs
+        if (empty($userId) || empty($serviceIds)) {
+            echo json_encode(['success' => false, 'message' => 'User ID and service IDs are required']);
+            return;
+        }
+
+        try {
+            // Generate a unique transaction code
+            $transactionCode = "Q-" . date("Ymd") . "-" . strtoupper(substr(uniqid(), -5));
+
+            // Add the queue entry
+            $queueId = $this->QueueModel->addQueue($userId, $transactionCode, $scheduledTime);
+
+            if (!$queueId) {
+                throw new Exception('Failed to create a queue entry');
             }
 
-            // Validate inputs
-            if (empty($userId) || empty($serviceIds)) {
-                echo json_encode(['success' => false, 'message' => 'User ID and service IDs are required']);
-                return;
+            // Create the transaction with services
+            $result = $this->TransactionModel->createTransactionWithServices($userId, $serviceIds, $transactionCode, $queueId, $scheduledTime);
+
+            if (!$result['success']) {
+                throw new Exception($result['message'] ?? 'Failed to create transaction with services');
             }
 
-            // Call the model method to create a transaction with services
-            $result = $this->TransactionModel->createTransactionWithServices($userId, $serviceIds, $queueId, $scheduledTime);
-
-            if ($result['success']) {
-                $userPhone = $this->TransactionModel->getUserPhoneNumber($userId);
-                if ($userPhone) {
-                    $this->SMS->sendTransactionConfirmation($userPhone, $result['transaction_code'], $scheduledTime);
-                }
+            // Send SMS confirmation if phone number is available
+            $userPhone = $this->TransactionModel->getUserPhoneNumber($userId);
+            if ($userPhone) {
+                $this->SMS->sendTransactionConfirmation($userPhone, $result['transaction_code'], $scheduledTime);
             }
 
+            // Return the result
             echo json_encode($result);
+        } catch (Exception $e) {
+            // Return an error message if anything goes wrong
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
         }
     }
 

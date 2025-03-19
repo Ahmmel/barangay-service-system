@@ -81,7 +81,7 @@ function openAddUserModal() {
   preview.style.display = "none"; // Hide the preview if there was an image before
 
   $.ajax({
-    url: "../controllers/UsersController.php?action=getUserPrequisite", // Endpoint to fetch user data
+    url: "../controllers/UserController.php?action=getUserPrequisite", // Endpoint to fetch user data
     type: "GET",
     success: function (response) {
       var result = JSON.parse(response); // Parse the JSON response
@@ -127,7 +127,7 @@ function openAddUserModal() {
 // Open the Edit User Modal
 function openEditUserModal(userId) {
   $.ajax({
-    url: "../controllers/UsersController.php?action=getUserById", // Endpoint to fetch user data
+    url: "../controllers/UserController.php?action=getUserById", // Endpoint to fetch user data
     type: "GET",
     data: {
       user_id: userId, // Send the user ID to fetch data
@@ -454,6 +454,23 @@ function validateServices() {
   return true; // Allow form submission
 }
 
+//function to open search transaction modal
+function openSearchTransactionModal() {
+  $("#searchTransactionModal").modal("show");
+}
+
+$("#searchTransactionForm").submit(function (e) {
+  e.preventDefault(); // Prevent default form submission
+
+  var transactionCode = $("#transactionCode").val();
+
+  // You can add validation for the field
+  if (transactionCode === "") {
+    showErrorException("Please enter a transaction code.");
+    return;
+  }
+});
+
 $(document).ready(function () {
   // Start Of Users
   $("#addUserForm").submit(function (e) {
@@ -470,7 +487,7 @@ $(document).ready(function () {
     var formData = new FormData(this);
 
     $.ajax({
-      url: "../controllers/UsersController.php?action=add", // PHP script to handle the request
+      url: "../controllers/UserController.php?action=add", // PHP script to handle the request
       type: "POST",
       data: formData,
       contentType: false,
@@ -513,7 +530,7 @@ $(document).ready(function () {
     var formData = new FormData(this);
 
     $.ajax({
-      url: "../controllers/UsersController.php?action=edit",
+      url: "../controllers/UserController.php?action=edit",
       type: "POST",
       data: formData,
       contentType: false,
@@ -554,7 +571,7 @@ $(document).ready(function () {
 
     if (userId) {
       $.ajax({
-        url: "../controllers/UsersController.php?action=delete",
+        url: "../controllers/UserController.php?action=delete",
         type: "POST",
         data: {
           user_id: userId,
@@ -904,7 +921,7 @@ $(document).ready(function () {
       if (button.text() === "Verify") {
         // AJAX call to check if the user exists
         $.ajax({
-          url: "../controllers/UsersController.php?action=checkUserExist", // Replace with your server-side script
+          url: "../controllers/UserController.php?action=checkUserExist",
           method: "POST",
           data: { userId: userId },
           success: function (response) {
@@ -967,5 +984,74 @@ $(document).ready(function () {
       // Disable the Add Transaction button if user ID is empty
       addTransactionButton.prop("disabled", true); // Disable Add Transaction button
     }
+  });
+
+  $("#searchTransactionForm").submit(function (e) {
+    e.preventDefault(); // Prevent default form submission
+
+    var transactionCode = $("#transactionCode").val(); // Get the transaction code from the input field
+
+    // You can add validation for the field
+    if (transactionCode === "") {
+      showErrorException("Please enter a transaction code.");
+      return;
+    }
+
+    // Perform the AJAX request to check if the transaction exists
+    $.ajax({
+      url: "../controllers/TransactionController.php?action=getTransactionByCode",
+      type: "POST",
+      data: {
+        transaction_code: transactionCode, // Send the transaction code
+      },
+      success: function (response) {
+        var data = JSON.parse(response); // Assuming the response is JSON
+
+        if (data.success) {
+          // Create a new row with the transaction data
+          var transactionRow = `
+            <tr id="transactionData_${
+              data.transaction.transaction_id
+            }" style="display: none;">
+              <td>${data.transaction.transaction_code}</td>
+              <td>${data.transaction.first_name} ${
+            data.transaction.middle_name ? data.transaction.middle_name : ""
+          } ${data.transaction.suffix ? data.transaction.suffix : ""}</td>
+              <td>${data.transaction.services}</td>
+              <td>${data.transaction.created_at}</td>
+              <td>${data.transaction.updated_at}</td>
+              <td>${data.transaction.date_closed || ""}</td>
+              <td>${data.transaction.status}</td>
+              <td>
+                <button class="btn btn-info btn-sm" onclick="openEditTransactionModal(${
+                  data.transaction.transaction_id
+                })">Update</button>
+                <button class="btn btn-danger btn-sm" onclick="openDeleteTransactionModal(${
+                  data.transaction.transaction_id
+                })">Set to Cancelled</button>
+              </td>
+            </tr>
+          `;
+
+          $("#transactionCode").val("");
+          $("#searchTransactionModal").modal("hide"); // Close the modal
+
+          // Add the new row to the table
+          $("#transactionTable tbody").empty(); // Clear the existing rows
+          $("#transactionTable tbody").append(transactionRow);
+
+          // Animate the new row with a fade-in effect
+          $("#transactionData_" + data.transaction.transaction_id).fadeIn(500);
+        } else {
+          // Show error if transaction not found
+          showErrorException(
+            "Transaction not found. Please check the code and try again."
+          );
+        }
+      },
+      error: function (xhr, status, error) {
+        showErrorException(error);
+      },
+    });
   });
 });

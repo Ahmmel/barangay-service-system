@@ -36,7 +36,7 @@
       </div>
       <div class="modal-body">
         <!-- Add User Form -->
-        <form id="addUserForm" action="UsersController.php?action=add" method="POST" enctype="multipart/form-data">
+        <form id="addUserForm" method="POST" enctype="multipart/form-data">
           <div class="form-row">
             <!-- First Name, Middle Name, Last Name -->
             <div class="form-group col-md-4">
@@ -180,7 +180,7 @@
       </div>
       <div class="modal-body">
         <!-- Edit User Form -->
-        <form id="editUserForm" action="UsersController.php?action=edit" method="POST" enctype="multipart/form-data">
+        <form id="editUserForm" method="POST" enctype="multipart/form-data">
           <input type="hidden" id="editUserId" name="userId">
 
           <!-- First Name, Middle Name, Last Name -->
@@ -393,7 +393,7 @@
       </div>
       <div class="modal-body">
         <!-- Edit Service Form -->
-        <form id="editServiceForm" action="ServicesController.php?action=edit" method="POST">
+        <form id="editServiceForm" method="POST">
           <input type="hidden" id="editServiceId" name="serviceId" /> <!-- Hidden field for service ID -->
 
           <div class="form-row">
@@ -580,6 +580,7 @@
 </div>
 <!-- End of Requirement Modals -->
 <!-- Start of Transaction Modals -->
+
 <!-- Modal for Adding Transaction -->
 <div class="modal fade" id="addTransactionModal" tabindex="-1" role="dialog" aria-labelledby="addTransactionModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document"> <!-- Modal with larger size -->
@@ -592,7 +593,7 @@
       </div>
       <div class="modal-body">
         <!-- Add Transaction Form -->
-        <form id="addTransactionForm" action="TransactionController.php?action=add" method="POST" onsubmit="return validateServices()">
+        <form id="addTransactionForm" method="POST" onsubmit="return validateServices()">
           <input type="hidden" name="userId" id="transactionUserId" />
           <!-- User ID Input -->
           <div class="form-row">
@@ -614,7 +615,7 @@
               <label><i class="fas fa-id-card"></i> User Information</label>
               <div class="row">
                 <div class="col-md-2">
-                  <img src="profile.png" alt="Profile Picture" style="margin:auto; width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center;" />
+                  <img src="" alt="Profile Picture" style="margin:auto; width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center;" />
                 </div>
                 <div class="col-md-10">
                   <strong>Full Name:</strong>
@@ -649,6 +650,42 @@
           <!-- Submit Button -->
           <button type="submit" id="addTransactionButton" class="btn btn-success mt-3 btn-block" disabled>
             <i class="fas fa-exchange-alt"></i> Add Transaction
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for Search Transaction -->
+<div class="modal fade" id="searchTransactionModal" tabindex="-1" role="dialog" aria-labelledby="searchTransactionModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document"> <!-- Modal with larger size -->
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="searchTransactionModalLabel"><i class="fas fa-search"></i> Search Transaction</h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- Search Transaction Form -->
+        <form id="searchTransactionForm">
+          <div class="form-row">
+            <!-- Transaction Code -->
+            <div class="form-group col-md-12">
+              <label for="transactionCode"><i class="fas fa-code"></i> Transaction Code</label>
+              <input type="text" class="form-control" id="transactionCode" name="transactionCode" placeholder="Enter transaction code" required autocomplete="off" />
+            </div>
+          </div>
+
+          <!-- Error Message -->
+          <div id="error-message" class="alert alert-danger d-none" role="alert">
+            <strong>Error:</strong> Transaction not found.
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" class="btn btn-primary mt-3 btn-block">
+            <i class="fas fa-search"></i> Search
           </button>
         </form>
       </div>

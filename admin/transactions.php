@@ -172,9 +172,10 @@ $transactions = $transaction->getAllTransactions();
                     <?php
                     if ($transactions) {
                         foreach ($transactions as $transaction) {
+                            $fullname = trim($transaction['first_name'] . ' ' . $transaction['last_name'] . ' ' . ($transaction['middle_name'] ?? '') . ' ' . ($transaction['suffix'] ?? ''));
                             echo "<tr id='transactionData_{$transaction['transaction_id']}'>
                                     <td>{$transaction['transaction_code']}</td>
-                                    <td>{$transaction['first_name']} {$transaction['last_name']}</td>
+                                    <td>{$fullname}</td>
                                     <td>{$transaction['services']}</td>
                                     <td>{$transaction['created_at']}</td>
                                     <td>{$transaction['updated_at']}</td>

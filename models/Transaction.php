@@ -103,7 +103,9 @@ class Transaction
             t.date_closed ,
             t.updated_at,
             u.first_name,
+            u.middle_name,
             u.last_name,
+            u.suffix,
             u.mobile_number,
             GROUP_CONCAT(s.service_name ORDER BY s.service_name ASC SEPARATOR ', ') AS services
         FROM transactions t
@@ -119,66 +121,37 @@ class Transaction
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Get a single transaction by its ID
-    public function getTransactionById($id)
+    // Get transaction by transaction_code
+    public function getTransactionByCode($transactionCode)
     {
-        $query = "SELECT id, user_id, queue_id, status, created_at, updated_at
-                  FROM " . $this->table_name . " WHERE id = :id";
+        $query = "
+        SELECT 
+            t.id AS transaction_id,
+            t.transaction_code,
+            t.queue_id,
+            t.status,
+            t.created_at,
+            t.date_closed ,
+            t.updated_at,
+            u.first_name,
+            u.middle_name,
+            u.last_name,
+            u.suffix,
+            u.mobile_number,
+            GROUP_CONCAT(s.service_name ORDER BY s.service_name ASC SEPARATOR ', ') AS services
+        FROM transactions t
+        JOIN users u ON t.user_id = u.id
+        LEFT JOIN transaction_services ts ON t.id = ts.transaction_id
+        LEFT JOIN services s ON ts.service_id = s.id
+        WHERE t.transaction_code = :transactionCode
+        GROUP BY t.id
+        ORDER BY t.created_at DESC";
 
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":id", $id);
-
-        $stmt->execute();
-
-        // Fetch the transaction details
+        $stmt->execute([':transactionCode' => $transactionCode]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    // Get all transactions for a user
-    public function getTransactionsByUser($userId)
-    {
-        $query = "SELECT id, user_id, queue_id, status, created_at, updated_at
-                  FROM " . $this->table_name . " WHERE user_id = :user_id";
-
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":user_id", $userId);
-        $stmt->execute();
-
-        // Fetch all transactions
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    // Get all services for a specific transaction
-    public function getServicesForTransaction($transactionId)
-    {
-        $query = "SELECT s.id, s.service_name, ts.status as service_status, ts.completed_at
-                  FROM transaction_services ts
-                  JOIN services s ON ts.service_id = s.id
-                  WHERE ts.transaction_id = :transaction_id";
-
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":transaction_id", $transactionId);
-        $stmt->execute();
-
-        // Return associated services
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    //Get all transactions by status
-    public function getTransactionsByStatus($status)
-    {
-        $query = "SELECT s.id, s.service_name, ts.status as service_status, ts.completed_at
-                  FROM transaction_services ts
-                  JOIN services s ON ts.service_id = s.id
-                  WHERE status = :status";
-
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":status", $status);
-        $stmt->execute();
-
-        // Fetch all transactions
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
 
     // Update the status of a transaction
     public function updateTransactionStatus($transactionId, $status, $reason = null)

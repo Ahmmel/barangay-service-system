@@ -86,18 +86,6 @@ class TransactionController
         echo json_encode($transactions);
     }
 
-    // Get Transaction by ID
-    public function getTransactionById()
-    {
-        if (isset($_GET['transaction_id'])) {
-            $transactionId = $_GET['transaction_id'];
-            $transaction = $this->TransactionModel->getTransactionById($transactionId);
-            echo json_encode($transaction);
-        } else {
-            echo json_encode(['success' => false, 'message' => 'Transaction ID is required']);
-        }
-    }
-
     // Update Transaction Status
     public function updateTransactionStatus()
     {
@@ -122,27 +110,18 @@ class TransactionController
         }
     }
 
-    // Get all services for a transaction
-    public function getServicesForTransaction()
+    // Get Transaction by Code
+    public function getTransactionByCode()
     {
-        if (isset($_GET['transaction_id'])) {
-            $transactionId = $_GET['transaction_id'];
-            $services = $this->TransactionModel->getServicesForTransaction($transactionId);
-            echo json_encode($services);
-        } else {
-            echo json_encode(['success' => false, 'message' => 'Transaction ID is required']);
-        }
-    }
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $transactionCode = $_POST['transaction_code'];
+            if (empty($transactionCode)) {
+                echo json_encode(['success' => false, 'message' => 'Transaction code is required']);
+                return;
+            }
 
-    // Get transactions by status
-    public function getTransactionByStatus()
-    {
-        if (isset($_GET['status'])) {
-            $status = $_GET['status'];
-            $transactions = $this->TransactionModel->getTransactionsByStatus($status);
-            echo json_encode($transactions);
-        } else {
-            echo json_encode(['success' => false, 'message' => 'Status is required']);
+            $transaction = $this->TransactionModel->getTransactionByCode($transactionCode);
+            echo json_encode(['success' => true, 'transaction' => $transaction]);
         }
     }
 }
@@ -160,20 +139,14 @@ switch ($action) {
     case 'add':
         $controller->addTransactionWithServices();
         break;
-    case 'getTransactionById':
-        $controller->getTransactionById();
-        break;
     case 'updateStatus':
         $controller->updateTransactionStatus();
         break;
-    case 'getServicesForTransaction':
-        $controller->getServicesForTransaction();
-        break;
-    case 'getByStatus':
-        $controller->getTransactionByStatus();
-        break;
     case 'getServices':
         $controller->getServices();
+        break;
+    case 'getTransactionByCode':
+        $controller->getTransactionByCode();
         break;
     default:
         echo json_encode(['error' => 'Invalid request']);

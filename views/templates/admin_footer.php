@@ -12,7 +12,7 @@
 <script src="../vendor/jquery/jquery.js"></script>
 <!-- Custom scripts for all pages-->
 <script src="../js/admin.js"></script>
-<script src="../js/admin_user.js"></script>
+<script src="../js/custom_process.js"></script>
 <script src="../vendor/bootstrap/js/bootstrap.bundle.js"></script>
 <!-- Select2 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>

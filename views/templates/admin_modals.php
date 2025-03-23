@@ -692,3 +692,52 @@
     </div>
   </div>
 </div>
+
+<!-- Modal for updating Transaction -->
+<div class="modal fade" id="updateTransaction" tabindex="-1" role="dialog" aria-labelledby="updateTransactionLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="updateTransactionLabel"><i class="fas fa-info-circle"></i> Transaction Information</h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- Transaction Info -->
+        <div class="mb-4">
+          <div class="row">
+            <div class="col-md-6">
+              <p><strong><i class="fas fa-user"></i> Applicant Name:</strong> <span id="applicantName"></span></p>
+              <p><strong><i class="fas fa-hashtag"></i> Transaction Code:</strong> <span id="updateTransactionCode"></span></p>
+            </div>
+            <div class="col-md-6">
+              <p><strong><i class="fas fa-calendar-alt"></i> Date Requested:</strong> <span id="dateRequested"></span></p>
+              <p><strong><i class="fas fa-calendar-check"></i> Last Date Updated:</strong> <span id="dateLastUpdated"></span></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Services Table -->
+        <h6 class="font-weight-bold mb-3"><i class="fas fa-cogs"></i> Services Requested</h6>
+        <table class="table table-hover table-bordered">
+          <thead class="thead-dark">
+            <tr>
+              <th><i class="fas fa-box"></i> Service</th>
+              <th><i class="fas fa-check-circle"></i> Status</th>
+              <th><i class="fas fa-cogs"></i> Action</th>
+            </tr>
+          </thead>
+          <tbody id="serviceList">
+            <!-- Dynamically populated services -->
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-footer d-flex justify-content-center">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+          <i class="fas fa-times"></i> Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

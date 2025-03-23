@@ -152,6 +152,44 @@ class Transaction
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
+    // Get transaction by transaction_id
+    public function getTransactionById($transactionId)
+    {
+        $query = "
+                    SELECT 
+                        t.id AS transaction_id,
+                        t.transaction_code,
+                        t.queue_id,
+                        t.status,
+                        t.created_at,
+                        t.date_closed,
+                        t.updated_at,
+                        u.first_name,
+                        u.middle_name,
+                        u.last_name,
+                        u.suffix,
+                        GROUP_CONCAT(
+                            CONCAT(
+                                '{\"id\":', s.id, 
+                                ',\"name\":\"', s.service_name, 
+                                '\",\"status\":\"', ts.status, '\"}'
+                            )
+                            ORDER BY s.service_name ASC SEPARATOR ', '
+                        ) AS services
+                    FROM transactions t
+                    JOIN users u ON t.user_id = u.id
+                    LEFT JOIN transaction_services ts ON t.id = ts.transaction_id
+                    LEFT JOIN services s ON ts.service_id = s.id
+                    WHERE t.id = :transactionId
+                    GROUP BY t.id
+                    ORDER BY t.created_at DESC;
+                ";
+
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([':transactionId' => $transactionId]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
 
     // Update the status of a transaction
     public function updateTransactionStatus($transactionId, $status, $reason = null)

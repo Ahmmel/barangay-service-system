@@ -182,8 +182,7 @@ $transactions = $transaction->getAllTransactions();
                                     <td>{$transaction['date_closed']}</td>
                                     <td>{$transaction['status']}</td>
                                     <td>
-                                        <button class='btn btn-info btn-sm' onclick='openEditTransactionModal({$transaction['transaction_id']})'>Update</button>
-                                        <button class='btn btn-danger btn-sm' onclick='openDeleteTransactionModal({$transaction['transaction_id']})'>Set to Cancelled</button>
+                                        <button class='btn btn-info btn-sm' onclick='openUpdateTransactionModal({$transaction['transaction_id']})'>Update Status</button>
                                     </td>
                                 </tr>";
                         }

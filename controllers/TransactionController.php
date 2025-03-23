@@ -121,7 +121,30 @@ class TransactionController
             }
 
             $transaction = $this->TransactionModel->getTransactionByCode($transactionCode);
-            echo json_encode(['success' => true, 'transaction' => $transaction]);
+            if ($transaction) {
+                echo json_encode(['success' => true, 'transaction' => $transaction]);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Transaction not found']);
+            }
+        }
+    }
+
+    // Get Transaction by ID
+    public function getTransactionById()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+            $transactionId = $_GET['transaction_id'];
+            if (empty($transactionId)) {
+                echo json_encode(['success' => false, 'message' => 'Transaction ID is required']);
+                return;
+            }
+
+            $transaction = $this->TransactionModel->getTransactionById($transactionId);
+            if ($transaction) {
+                echo json_encode(['success' => true, 'transaction' => $transaction]);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Transaction not found']);
+            }
         }
     }
 }
@@ -147,6 +170,9 @@ switch ($action) {
         break;
     case 'getTransactionByCode':
         $controller->getTransactionByCode();
+        break;
+    case 'getTransactionById':
+        $controller->getTransactionById();
         break;
     default:
         echo json_encode(['error' => 'Invalid request']);

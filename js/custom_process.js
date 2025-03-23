@@ -471,6 +471,197 @@ $("#searchTransactionForm").submit(function (e) {
   }
 });
 
+function shouldShowActions(status) {
+  const allowedStatuses = ["Open", "Pending", "Cancelled"];
+  return allowedStatuses.includes(status);
+}
+
+// Function to open the edit transaction modal
+function openUpdateTransactionModal(transactionId) {
+  $.ajax({
+    url: "../controllers/TransactionController.php?action=getTransactionById",
+    type: "GET",
+    data: { transaction_id: transactionId },
+    success: function (response) {
+      var result = JSON.parse(response);
+
+      if (result.success) {
+        // Create the full name with proper handling of missing fields
+        const firstName = result.transaction.first_name || "";
+        const middleName = result.transaction.middle_name
+          ? result.transaction.middle_name + " "
+          : ""; // Add space if middle name exists
+        const lastName = result.transaction.last_name || "";
+        const suffix = result.transaction.suffix
+          ? ", " + result.transaction.suffix
+          : ""; // Add a comma if suffix exists
+        const transactionCode = result.transaction.transaction_code;
+
+        const fullName =
+          `${firstName} ${middleName}${lastName}${suffix}`.trim();
+
+        // Assign the full name to the input field
+        $("#applicantName").text(fullName);
+        $("#updateTransactionCode").text(transactionCode);
+
+        // Format the created and updated date
+        const formattedCreatedAt = formatDate(result.transaction.created_at);
+        const formattedUpdatedAt = formatDate(result.transaction.updated_at);
+
+        // Set the formatted date values
+        $("#dateRequested").text(formattedCreatedAt);
+        $("#dateLastUpdated").text(formattedUpdatedAt);
+
+        const services = JSON.parse("[" + result.transaction.services + "]"); // Convert services string to array
+
+        // Function to generate action buttons for a service
+        const getServiceActions = (service) => {
+          if (shouldShowActions(service.status)) {
+            return `
+              <td>${getStatusHtml(service.status)}</td>
+              <td>
+                <button class="btn btn-info btn-sm btn-action" onclick="updateStatus(${
+                  service.id
+                })">Change Status</button>
+              </td>
+              <tr id="reasonRow_${service.id}" style="display:none;">
+                <td colspan="3">
+                  <label for="reason_${service.id}">Reason</label>
+                  <textarea id="reason_${
+                    service.id
+                  }" class="form-control" rows="3"></textarea>
+                  <button class="btn btn-danger btn-sm mt-2" onclick="updateToClosed(${
+                    service.id
+                  })">Set to cancelled</button>
+                  <button class="btn btn-success btn-sm mt-2" onclick="updateToPending(${
+                    service.id
+                  })">Set to closed</button>
+                  <button class="btn btn-secondary btn-sm mt-2" onclick="cancelReason(${
+                    service.id
+                  })">Cancel Action</button>
+                </td>
+              </tr>
+            `;
+          }
+          return `<td>${getStatusHtml(service.status)}</td>`;
+        };
+
+        // Build the service list HTML with the action buttons
+        const serviceListHtml = services
+          .map(
+            (service) => `
+          <tr>
+            <td>${service.name}</td>
+            ${getServiceActions(service)}
+          </tr>
+        `
+          )
+          .join(""); // Use map and join to build the table rows
+
+        // Insert the service rows into the table
+        $("#serviceList").html(serviceListHtml);
+
+        // Show the modal
+        $("#updateTransaction").modal("show");
+      } else {
+        showErrorException("Error fetching transaction details.");
+      }
+    },
+    error: function (xhr, status, error) {
+      showErrorException(error);
+    },
+  });
+}
+
+// Function to show the reason textbox and hide other action buttons
+function updateStatus(serviceId) {
+  // Hide the action buttons for the service
+  $(`#reasonRow_${serviceId}`).toggle();
+  $(`.btn-action`).toggle();
+  $(`#serviceList tr:eq(${serviceId}) td button`).hide(); // Hide all action buttons for this service
+}
+
+// Function to save the reason and update the service status to closed
+function saveReason(serviceId) {
+  const reason = $(`#reason_${serviceId}`).val();
+
+  if (!reason) {
+    alert("Please provide a reason before saving.");
+    return;
+  }
+
+  // Save the reason (You can also send this to the server if needed)
+  console.log("Reason for service ID " + serviceId + ": " + reason);
+
+  // Example: Updating the service status (you might want to update the server as well)
+  $(`#serviceList tr:eq(${serviceId}) td`).html(`
+    Service Closed. Reason: ${reason}
+  `);
+
+  // Optionally, you can send the status update to the server to save the change:
+  // $.ajax({
+  //   url: "../controllers/TransactionController.php?action=updateServiceStatus",
+  //   type: "POST",
+  //   data: {
+  //     service_id: serviceId,
+  //     status: "Closed",
+  //     reason: reason
+  //   },
+  //   success: function(response) {
+  //     // Handle the response and update the UI accordingly
+  //   },
+  //   error: function(xhr, status, error) {
+  //     showErrorException(error);
+  //   }
+  // });
+
+  // Hide the reason textbox and show the other action buttons again
+  $(`#reasonRow_${serviceId}`).hide();
+  $(`#serviceList tr:eq(${serviceId}) td button`).show();
+}
+
+// Function to cancel the reason entry and show the action buttons again
+function cancelReason(serviceId) {
+  // Clear the reason textarea
+  $(`#reason_${serviceId}`).val("");
+
+  // Hide the reason textbox and remove its row
+  $(`#reasonRow_${serviceId}`).hide();
+
+  // Show the action buttons again
+  $(`#serviceList tr:eq(${serviceId}) td button`).show();
+  $(`.btn-action`).show();
+}
+
+function formatDate(dateString) {
+  const options = { year: "numeric", month: "long", day: "numeric" };
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", options);
+}
+
+// Function to check if actions should be visible based on the transaction status
+function shouldShowActions(status) {
+  // Define the statuses that allow actions
+  const allowedStatuses = ["Open", "Pending"];
+  return allowedStatuses.includes(status);
+}
+
+function getStatusHtml(status) {
+  // Return different HTML based on the status
+  switch (status) {
+    case "Open":
+      return '<span class="badge badge-secondary"><i class="fas fa-spinner"></i> Open</span>';
+    case "Pending":
+      return '<span class="badge badge-warning"><i class="fas fa-clock"></i> Pending</span>';
+    case "Cancelled":
+      return '<span class="badge badge-danger"><i class="fas fa-times-circle"></i> Cancelled</span>';
+    case "Closed":
+      return '<span class="badge badge-success"><i class="fas fa-check-circle"></i> Closed</span>';
+    default:
+      return '<span class="badge badge-secondary"><i class="fas fa-question-circle"></i> Unknown</span>';
+  }
+}
+
 $(document).ready(function () {
   // Start Of Users
   $("#addUserForm").submit(function (e) {
@@ -1033,7 +1224,6 @@ $(document).ready(function () {
             </tr>
           `;
 
-          $("#transactionCode").val("");
           $("#searchTransactionModal").modal("hide"); // Close the modal
 
           // Add the new row to the table
@@ -1051,6 +1241,9 @@ $(document).ready(function () {
       },
       error: function (xhr, status, error) {
         showErrorException(error);
+      },
+      complete: function () {
+        $("#transactionCode").val("");
       },
     });
   });

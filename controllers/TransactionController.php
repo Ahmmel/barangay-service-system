@@ -90,11 +90,11 @@ class TransactionController
     public function updateTransactionStatus()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $transactionId = $_POST['transactionId'];
+            $transactionServiceId = $_POST['transaction_service_id'];
             $status = $_POST['status'];
             $reason = $_POST['reason'] ?? null;
 
-            if (empty($transactionId) || empty($status)) {
+            if (empty($transactionServiceId) || empty($status)) {
                 echo json_encode(['success' => false, 'message' => 'Transaction ID and status are required']);
                 return;
             }
@@ -105,7 +105,7 @@ class TransactionController
             }
 
             // Update the transaction status
-            $result = $this->TransactionModel->updateTransactionStatus($transactionId, $status, $reason);
+            $result = $this->TransactionModel->updateTransactionStatus($transactionServiceId, $status, $reason);
             echo json_encode(['success' => $result]);
         }
     }
@@ -162,7 +162,7 @@ switch ($action) {
     case 'add':
         $controller->addTransactionWithServices();
         break;
-    case 'updateStatus':
+    case 'updateServiceStatus':
         $controller->updateTransactionStatus();
         break;
     case 'getServices':

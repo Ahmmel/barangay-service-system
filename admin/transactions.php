@@ -182,7 +182,7 @@ $transactions = $transaction->getAllTransactions();
                                     <td>{$transaction['date_closed']}</td>
                                     <td>{$transaction['status']}</td>
                                     <td>
-                                        <button class='btn btn-info btn-sm' onclick='openUpdateTransactionModal({$transaction['transaction_id']})'>Update Status</button>
+                                        <button class='btn btn-info btn-sm' style='display: " . ($transaction['status'] != 'Closed' ? 'block' : 'none') . ";' onclick='openUpdateTransactionModal({$transaction['transaction_id']})'>Update Status</button>
                                     </td>
                                 </tr>";
                         }

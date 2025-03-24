@@ -170,7 +170,7 @@ class Transaction
                         u.suffix,
                         GROUP_CONCAT(
                             CONCAT(
-                                '{\"id\":', s.id, 
+                                '{\"id\":', ts.id, 
                                 ',\"name\":\"', s.service_name, 
                                 '\",\"status\":\"', ts.status, '\"}'
                             )
@@ -192,19 +192,58 @@ class Transaction
     }
 
     // Update the status of a transaction
-    public function updateTransactionStatus($transactionId, $status, $reason = null)
+    public function updateTransactionStatus($id, $status, $reason = null)
     {
-        $query = "UPDATE transactions SET status = :status, updated_at = NOW() WHERE id = :transactionId";
-        $stmt = $this->conn->prepare($query);
-        $stmt->execute([':status' => $status, ':transactionId' => $transactionId]);
+        // Start a transaction to ensure atomicity
+        $this->conn->beginTransaction();
 
-        // Insert reason if status is Pending
-        if ($status === "Pending" && $reason) {
-            $reasonQuery = "INSERT INTO transaction_logs (transaction_id, status, reason) VALUES (:transactionId, :status, :reason)";
-            $reasonStmt = $this->conn->prepare($reasonQuery);
-            $reasonStmt->execute([':transactionId' => $transactionId, ':status' => $status, ':reason' => $reason]);
+        // First, update the transaction_services table with the new status
+        $updateQuery = "UPDATE transaction_services SET status = :status, reason = :reason, completed_at = NOW() WHERE id = :id";
+        $stmt = $this->conn->prepare($updateQuery);
+
+        // Execute the update query
+        $stmt->execute([':status' => $status, ':reason' => $reason, ':id' => $id]);
+
+        // If the transaction_services table wasn't updated, rollback and return false
+        if ($stmt->rowCount() === 0) {
+            $this->conn->rollBack();
+            return false;  // No rows affected, so we return false early
         }
 
+        // Fetch the transaction_id for the given transaction service ID
+        $query = "SELECT transaction_id FROM transaction_services WHERE id = :id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([':id' => $id]);
+
+        $transaction = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$transaction) {
+            // If no transaction is found, rollback and return false
+            $this->conn->rollBack();
+            return false;
+        }
+
+        $transaction_id = $transaction['transaction_id'];
+
+        // Check if there are any other records with the same transaction_id and pending status
+        $query = "SELECT COUNT(*) FROM transaction_services WHERE transaction_id = :transaction_id AND status = 'pending'";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([':transaction_id' => $transaction_id]);
+
+        $pendingCount = $stmt->fetchColumn();
+
+        // If no pending records exist, proceed to update the other table
+        if ($pendingCount == 0) {
+            // Example query to update the other table (replace with actual query)
+            $updateTransaction = "UPDATE " . $this->table_name . " SET status = 'Closed', updated_at = NOW(),  date_closed = NOW() WHERE id = :transaction_id";
+            $stmt = $this->conn->prepare($updateTransaction);
+            $stmt->execute([':transaction_id' => $transaction_id]);
+        }
+
+        // Commit the transaction
+        $this->conn->commit();
+
+        // Return whether any row was affected in the last update
         return $stmt->rowCount() > 0;
     }
 

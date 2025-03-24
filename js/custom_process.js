@@ -514,43 +514,11 @@ function openUpdateTransactionModal(transactionId) {
 
         const services = JSON.parse("[" + result.transaction.services + "]"); // Convert services string to array
 
-        // Function to generate action buttons for a service
-        const getServiceActions = (service) => {
-          if (shouldShowActions(service.status)) {
-            return `
-              <td>${getStatusHtml(service.status)}</td>
-              <td>
-                <button class="btn btn-info btn-sm btn-action" onclick="updateStatus(${
-                  service.id
-                })">Change Status</button>
-              </td>
-              <tr id="reasonRow_${service.id}" style="display:none;">
-                <td colspan="3">
-                  <label for="reason_${service.id}">Reason</label>
-                  <textarea id="reason_${
-                    service.id
-                  }" class="form-control" rows="3"></textarea>
-                  <button class="btn btn-danger btn-sm mt-2" onclick="updateToClosed(${
-                    service.id
-                  })">Set to cancelled</button>
-                  <button class="btn btn-success btn-sm mt-2" onclick="updateToPending(${
-                    service.id
-                  })">Set to closed</button>
-                  <button class="btn btn-secondary btn-sm mt-2" onclick="cancelReason(${
-                    service.id
-                  })">Cancel Action</button>
-                </td>
-              </tr>
-            `;
-          }
-          return `<td>${getStatusHtml(service.status)}</td>`;
-        };
-
         // Build the service list HTML with the action buttons
         const serviceListHtml = services
           .map(
             (service) => `
-          <tr>
+          <tr id="service_${service.id}">
             <td>${service.name}</td>
             ${getServiceActions(service)}
           </tr>
@@ -573,47 +541,111 @@ function openUpdateTransactionModal(transactionId) {
   });
 }
 
+// Function to generate action buttons for a service
+const getServiceActions = (service) => {
+  if (shouldShowActions(service.status)) {
+    return `
+      <td>${getStatusHtml(service.status)}</td>
+      <td>
+        <button class="btn btn-info btn-sm btn-action" onclick="updateStatus(${
+          service.id
+        })">
+          <i class="fas fa-sync-alt"></i> Change Status
+        </button>
+      </td>
+      <tr id="reasonRow_${service.id}" style="display:none;">
+        <td colspan="3">
+          <div class="reason-container">
+            <label for="reason_${service.id}" class="form-label">Reason</label>
+            <textarea id="reason_${
+              service.id
+            }" class="form-control" rows="3" placeholder="Enter reason here..."></textarea>
+            
+            <div class="mt-3 d-flex justify-content-start">
+              <button class="btn btn-danger btn-sm btn-rounded ml-2" onclick="processStatusChanged(${
+                service.id
+              }, 'Cancelled')">
+                <i class="fas fa-times-circle"></i> Set to Cancelled
+              </button>
+              <button class="btn btn-success btn-sm btn-rounded ml-2" onclick="processStatusChanged(${
+                service.id
+              }, 'Closed')">
+                <i class="fas fa-check-circle"></i> Set to Closed
+              </button>
+              <button class="btn btn-secondary btn-sm btn-rounded ml-2" onclick="cancelReason(${
+                service.id
+              })">
+                <i class="fas fa-ban"></i> Cancel Action
+              </button>
+            </div>
+          </div>
+        </td>
+      </tr>
+    `;
+  }
+
+  return `<td>${getStatusHtml(service.status)}</td>`;
+};
+
 // Function to show the reason textbox and hide other action buttons
 function updateStatus(serviceId) {
   // Hide the action buttons for the service
   $(`#reasonRow_${serviceId}`).toggle();
   $(`.btn-action`).toggle();
-  $(`#serviceList tr:eq(${serviceId}) td button`).hide(); // Hide all action buttons for this service
+  $("#serviceList tr").not('[id^="reasonRow_"]').hide();
+  $(`#serviceList tr:eq(${serviceId})`).show();
+  $(`#service_${serviceId}`).show();
 }
 
 // Function to save the reason and update the service status to closed
-function saveReason(serviceId) {
+function processStatusChanged(serviceId, status) {
+  // Get the reason from the textarea
   const reason = $(`#reason_${serviceId}`).val();
 
+  // Check if a reason has been provided
   if (!reason) {
-    alert("Please provide a reason before saving.");
+    showErrorException("Please provide a reason before saving.");
     return;
   }
 
-  // Save the reason (You can also send this to the server if needed)
+  // Log the reason for debugging
   console.log("Reason for service ID " + serviceId + ": " + reason);
 
-  // Example: Updating the service status (you might want to update the server as well)
+  // Example: Updating the service status on the page
   $(`#serviceList tr:eq(${serviceId}) td`).html(`
     Service Closed. Reason: ${reason}
   `);
 
-  // Optionally, you can send the status update to the server to save the change:
-  // $.ajax({
-  //   url: "../controllers/TransactionController.php?action=updateServiceStatus",
-  //   type: "POST",
-  //   data: {
-  //     service_id: serviceId,
-  //     status: "Closed",
-  //     reason: reason
-  //   },
-  //   success: function(response) {
-  //     // Handle the response and update the UI accordingly
-  //   },
-  //   error: function(xhr, status, error) {
-  //     showErrorException(error);
-  //   }
-  // });
+  // Send the data to the server using AJAX
+  $.ajax({
+    url: "../controllers/TransactionController.php?action=updateServiceStatus",
+    type: "POST",
+    data: {
+      transaction_service_id: serviceId,
+      status: status,
+      reason: reason,
+    },
+    success: function (response) {
+      var result = JSON.parse(response);
+
+      if (result.success) {
+        Swal.fire({
+          title: "Success!",
+          text: "Service status updated successfully.",
+          icon: "success",
+          confirmButtonText: "OK",
+          confirmButtonColor: "#28a745", // Green color for success
+        }).then((result) => {
+          if (result.isConfirmed) {
+            location.reload();
+          }
+        });
+      }
+    },
+    error: function (xhr, status, error) {
+      showErrorException(error);
+    },
+  });
 
   // Hide the reason textbox and show the other action buttons again
   $(`#reasonRow_${serviceId}`).hide();
@@ -630,6 +662,7 @@ function cancelReason(serviceId) {
 
   // Show the action buttons again
   $(`#serviceList tr:eq(${serviceId}) td button`).show();
+  $("#serviceList tr").not('[id^="reasonRow_"]').show();
   $(`.btn-action`).show();
 }
 

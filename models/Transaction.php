@@ -26,34 +26,19 @@ class Transaction
     }
 
     // Create a new transaction with associated services
-    public function createTransactionWithServices($userId, $serviceIds, $transactionCode, $scheduledTime)
+    public function createTransactionWithServices($userId, $serviceIds, $type, $transactionCode, $queueId, $scheduledTime)
     {
-        $maxTransactions = $this->getMaxTransactionsPerDay();
-        if ($this->getTodaysTransactionCount() >= $maxTransactions) {
-            return ["success" => false, "message" => "The maximum number of transactions for today has been reached."];
-        }
-
-        if ($this->hasUserMadeTransactionToday($userId)) {
-            return ["success" => false, "message" => "You can only book one transaction per day."];
-        }
-
-        if (!$this->isWithinBookingHours($scheduledTime)) {
-            return ["success" => false, "message" => "Bookings can only be made between 8:00 AM - 4:30 PM, Monday to Saturday."];
-        }
-
-        if (!$this->isValidBookingTime($scheduledTime)) {
-            return ["success" => false, "message" => "Booking must be at least 30 minutes in advance."];
-        }
-
         try {
             // Start the transaction
             $this->conn->beginTransaction();
             // Insert the transaction into the transactions table
-            $query = "INSERT INTO " . $this->table_name . " (user_id, queue_id, status) VALUES (:user_id, :queue_id, 'In Progress')";
+            $query = "INSERT INTO " . $this->table_name . " (transaction_code, user_id, queue_id, type, status, created_at) VALUES (:transactionCode, :user_id, :queue_id, :type, 'Open', :scheduledTime)";
             $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(":transactionCode", $transactionCode);
             $stmt->bindParam(":user_id", $userId);
             $stmt->bindParam(":queue_id", $queueId);
-            $stmt->bindParam(":transactionCode", $transactionCode);
+            $stmt->bindParam(":type", $type);
+            $stmt->bindParam(":scheduledTime", $scheduledTime);
 
             $stmt->execute();
 
@@ -88,6 +73,28 @@ class Transaction
                 'message' => 'Error: ' . $e->getMessage()
             ];
         }
+    }
+
+    public function validateTransaction($maxTransactions, $userId, $scheduledTime)
+    {
+        $maxTransactions = $this->getMaxTransactionsPerDay();
+        if ($this->getTodaysTransactionCount() >= $maxTransactions) {
+            return ["success" => false, "message" => "The maximum number of transactions for today has been reached."];
+        }
+
+        if ($this->hasUserMadeTransactionToday($userId)) {
+            return ["success" => false, "message" => "You can only book one transaction per day."];
+        }
+
+        if (!$this->isWithinBookingHours($scheduledTime)) {
+            return ["success" => false, "message" => "Bookings can only be made between 8:00 AM - 4:30 PM, Monday to Saturday."];
+        }
+
+        if (!$this->isValidBookingTime($scheduledTime)) {
+            return ["success" => false, "message" => "Booking must be at least 30 minutes in advance."];
+        }
+
+        return ["success" => true];
     }
 
     // Get all transactions with user details and services
@@ -267,13 +274,13 @@ class Transaction
         return null;
     }
 
-    public function getUserPhoneNumber($userId)
+    public function getUserMobileNumber($userId)
     {
-        $query = "SELECT phone FROM users WHERE id = :userId";
+        $query = "SELECT mobile_number FROM users WHERE id = :userId";
         $stmt = $this->conn->prepare($query);
         $stmt->execute([':userId' => $userId]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $user ? $user['phone'] : null;
+        return $user ? $user['mobile_number'] : null;
     }
 
     // Rule: Transactions must be booked at least 30 minutes from now
@@ -301,11 +308,14 @@ class Transaction
     //Rule: A user can only make one transaction per day
     public function hasUserMadeTransactionToday($userId)
     {
+        // SQL query to count transactions for the user today
         $query = "SELECT COUNT(*) FROM transactions WHERE user_id = :userId AND DATE(created_at) = CURDATE()";
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":userId", $userId);
+        $stmt->bindParam(":userId", $userId, PDO::PARAM_INT);
         $stmt->execute();
-        return $stmt->fetchColumn() > 0;
+
+        // Fetch the transaction count (if greater than 0, the user made a transaction today)
+        return (bool) $stmt->fetchColumn();
     }
 
     //Rule: Get the max allowed transactions per day from settings

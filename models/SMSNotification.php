@@ -20,6 +20,15 @@ class SMSNotification
         return $this->semaphore->sendSMS($phoneNumber, $message);
     }
 
+    public function sendWalkInTransactionNotification($phoneNumber, $transactionCode, $scheduledTime)
+    {
+        $message = "You have successfully booked a walk-in transaction! \n\n"
+            . "Transaction Code: $transactionCode\n"
+            . "Transaction Time: $scheduledTime\n"
+            . "Please observe the queue and wait for your turn. Thank you for utilizing the Barangay services.";
+        return $this->semaphore->sendSMS($phoneNumber, $message);
+    }
+
     public function sendNextTransactionNotification($phoneNumber, $transactionCode, $scheduledTime)
     {
         $message = "You are next in queue. \n\n"

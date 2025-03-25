@@ -9,7 +9,7 @@ class Queue
         $this->conn = $db;
     }
 
-    public function addQueue($user_id, $transaction_code, $scheduled_date = null)
+    public function addQueue($user_id, $transaction_type, $transaction_code, $scheduled_date = null)
     {
         // Set the scheduled date to the current date and time if not provided
         if (!$scheduled_date) {
@@ -17,8 +17,8 @@ class Queue
         }
 
         // SQL query to insert the record into the table
-        $query = "INSERT INTO " . $this->table_name . " (transaction_code, user_id, status, schedule_date, created_at) 
-              VALUES (:transaction_code, :user_id, 'open', :scheduled_date, NOW())";
+        $query = "INSERT INTO " . $this->table_name . " (transaction_code, user_id, type, status, scheduled_date, created_at) 
+              VALUES (:transaction_code, :user_id, :type, 'open', :scheduled_date, NOW())";
 
         // Prepare the statement
         $stmt = $this->conn->prepare($query);
@@ -26,6 +26,7 @@ class Queue
         // Bind parameters
         $stmt->bindParam(":transaction_code", $transaction_code);
         $stmt->bindParam(":user_id", $user_id);
+        $stmt->bindParam(":type", $transaction_type);
         $stmt->bindParam(":scheduled_date", $scheduled_date);
 
         // Execute the statement and check for success

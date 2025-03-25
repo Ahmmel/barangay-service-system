@@ -643,7 +643,7 @@
           <div class="form-row">
             <div class="form-group col-md-12">
               <label for="addStatus"><i class="fas fa-clock"></i> Status</label>
-              <input type="text" class="form-control" id="addStatus" name="status" value="Pending" disabled />
+              <input type="text" class="form-control" id="addStatus" name="status" value="Open" disabled />
             </div>
           </div>
 

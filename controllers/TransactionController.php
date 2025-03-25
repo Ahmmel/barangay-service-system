@@ -34,7 +34,8 @@ class TransactionController
         // Collect parameters from POST data
         $userId = isset($_POST['userId']) ? $_POST['userId'] : null;
         $serviceIds = isset($_POST['serviceIds']) ? $_POST['serviceIds'] : [];
-        $scheduledTime = isset($_POST['scheduledTime']) ? $_POST['scheduledTime'] : null;
+        $scheduledTime = isset($_POST['scheduledTime']) ? $_POST['scheduledTime'] : date('Y-m-d H:i:s');
+        $transactionType = isset($_POST['transactionType']) ? $_POST['transactionType'] : 1; // 1 for walk-in transaction
 
         // Ensure serviceIds is an array
         if (!is_array($serviceIds)) {
@@ -48,27 +49,37 @@ class TransactionController
         }
 
         try {
+
+            // Validate transaction
+            $validator = $this->TransactionModel->validateTransaction($userId, $serviceIds, $scheduledTime);
+
+            if (!$validator['success']) {
+                echo json_encode($validator);
+                return;
+            }
+
             // Generate a unique transaction code
             $transactionCode = "Q-" . date("Ymd") . "-" . strtoupper(substr(uniqid(), -5));
-
             // Add the queue entry
-            $queueId = $this->QueueModel->addQueue($userId, $transactionCode, $scheduledTime);
+            $queueId = $this->QueueModel->addQueue($userId, $transactionType, $transactionCode, $scheduledTime);
 
             if (!$queueId) {
                 throw new Exception('Failed to create a queue entry');
             }
 
             // Create the transaction with services
-            $result = $this->TransactionModel->createTransactionWithServices($userId, $serviceIds, $transactionCode, $queueId, $scheduledTime);
+            $result = $this->TransactionModel->createTransactionWithServices($userId, $serviceIds, $transactionType, $transactionCode, $queueId, $scheduledTime);
 
             if (!$result['success']) {
                 throw new Exception($result['message'] ?? 'Failed to create transaction with services');
             }
 
             // Send SMS confirmation if phone number is available
-            $userPhone = $this->TransactionModel->getUserPhoneNumber($userId);
+            $userPhone = $this->TransactionModel->getUserMobileNumber($userId);
             if ($userPhone) {
-                $this->SMS->sendTransactionConfirmation($userPhone, $result['transaction_code'], $scheduledTime);
+                $test = $this->SMS->sendWalkInTransactionNotification($userPhone, $result['transaction_code'], $scheduledTime);
+                var_dump($test);
+                die();
             }
 
             // Return the result

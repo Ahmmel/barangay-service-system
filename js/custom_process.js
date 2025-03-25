@@ -1247,12 +1247,9 @@ $(document).ready(function () {
               <td>${data.transaction.date_closed || ""}</td>
               <td>${data.transaction.status}</td>
               <td>
-                <button class="btn btn-info btn-sm" onclick="openEditTransactionModal(${
+                <button class="btn btn-info btn-sm" onclick="openUpdateTransactionModal(${
                   data.transaction.transaction_id
-                })">Update</button>
-                <button class="btn btn-danger btn-sm" onclick="openDeleteTransactionModal(${
-                  data.transaction.transaction_id
-                })">Set to Cancelled</button>
+                })">Update Status</button>
               </td>
             </tr>
           `;

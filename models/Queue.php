@@ -48,11 +48,11 @@ class Queue
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public function nextQueue($queue_id)
+    public function nextQueue($queue_id, $staff_id)
     {
-        $query = "UPDATE " . $this->table_name . " SET status = 'completed' WHERE queue_id = :queue_id";
+        $query = "UPDATE " . $this->table_name . " SET status = 'Assigned', updated_by_staff_id = :staff_id WHERE queue_id = :queue_id";
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":queue_id", $queue_id);
+        $stmt->bindParam(":queue_id", $queue_id, ":staff_id", $staff_id);
         return $stmt->execute();
     }
 }

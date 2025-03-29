@@ -1145,7 +1145,7 @@ $(document).ready(function () {
       if (button.text() === "Verify") {
         // AJAX call to check if the user exists
         $.ajax({
-          url: "../controllers/UserController.php?action=checkUserExist",
+          url: "../controllers/UserController.php?action=getUserDetails",
           method: "POST",
           data: { userId: userId },
           success: function (response) {

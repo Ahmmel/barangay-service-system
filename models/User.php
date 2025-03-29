@@ -219,13 +219,39 @@ class User
         return false;
     }
 
-    // Check if user exists
-    public function checkUserExist($userId)
+    //check user if already exists
+    public function checkUserExist($email, $username)
+    {
+        $query = "SELECT * FROM " . $this->table_name . " WHERE email = :email OR username = :username";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':email', $email);
+        $stmt->bindParam(':username', $username);
+        $stmt->execute();
+
+        return $stmt->rowCount() > 0;
+    }
+
+    // Get user details by ID
+    public function getUserDetailsById($userId)
     {
         $query = "SELECT * FROM user_details WHERE id = :userId LIMIT 1";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":userId", $userId, PDO::PARAM_INT);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function registerUser($email, $username, $password)
+    {
+        $query = "INSERT INTO " . $this->table_name . " (email, username, password) VALUES (:email, :username, :password)";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':email', $email);
+        $stmt->bindParam(':username', $username);
+        $stmt->bindParam(':password', $password);
+
+        if ($stmt->execute()) {
+            return true;
+        }
+        return false;
     }
 }

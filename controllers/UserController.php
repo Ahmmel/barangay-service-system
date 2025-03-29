@@ -267,11 +267,11 @@ class UserController
     }
 
     // Check if a user exists
-    public function checkUserExist()
+    public function getUserDetailsById()
     {
         if (isset($_POST['userId'])) {
             $userId = $_POST['userId'];
-            $user = $this->userModel->checkUserExist($userId);
+            $user = $this->userModel->getUserDetailsById($userId);
             if ($user) {
                 echo json_encode(["success" => true, "user" => $user[0]]);
             } else {
@@ -285,6 +285,49 @@ class UserController
                 'success' => false,
                 'message' => 'Invalid User.'
             ]);
+        }
+    }
+
+    // Handle User Registration
+    public function registerUser()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $email = htmlspecialchars($_POST['email']);
+            $userName = htmlspecialchars($_POST['userName']);
+            $password = htmlspecialchars($_POST['password']);
+            $confirmPassword = htmlspecialchars($_POST['confirmPassword']);
+
+            // Check if the email and username are provided
+            if (empty($email) || empty($userName) || empty($password) || empty($confirmPassword)) {
+                echo json_encode(["error" => "All fields are required."]);
+                return;
+            }
+
+            // Check user if exists
+            $checkUserExist = $this->userModel->checkUserExist($email, $userName);
+            if ($checkUserExist) {
+                echo json_encode(["error" => "User already exists."]);
+                return;
+            }
+
+            // Handle password validation
+            if ($password !== $confirmPassword) {
+                echo json_encode(["error" => "Passwords do not match."]);
+                return;
+            }
+
+            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+
+            // Call the createUser method from the model to add the new user
+            $result = $this->userModel->registerUser(
+                $userName,
+                $email,
+                $hashedPassword
+            );
+
+
+            // Return the result as JSON
+            echo json_encode(["success" => $result]);
         }
     }
 }
@@ -318,8 +361,12 @@ switch ($action) {
     case 'getUserPrequisite':
         $controller->getUserPrequisite();
         break;
-    case 'checkUserExist':
-        $controller->checkUserExist();
+    case 'getUserDetails':
+        $controller->getUserDetailsById();
+        break;
+
+    case 'register':
+        $controller->registerUser();
         break;
     default:
         echo json_encode(["error" => "Invalid request"]);

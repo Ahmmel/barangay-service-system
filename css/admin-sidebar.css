@@ -49,7 +49,8 @@
   }
 
   .toggle-sidebar-divider {
-    margin: 0 1rem 31.5rem !important;
+    margin: 0 1rem 28.5rem !important;
+    transition: margin 0.3s ease;
   }
 
   .bg-gradient-primary {

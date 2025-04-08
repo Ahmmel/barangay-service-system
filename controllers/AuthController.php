@@ -37,7 +37,6 @@ function authenticateUser($email, $password, $db, $remember)
     // Check if user is an Admin
     $adminModel = new Admin($db);
     $admin = $adminModel->login($email, $password);
-
     if ($admin) {
         // Admin login successful
         $_SESSION['user_id'] = $admin['id'];
@@ -51,7 +50,6 @@ function authenticateUser($email, $password, $db, $remember)
     // Check if user is a regular user or staff
     $userModel = new User($db);
     $user = $userModel->login($email, $password);
-
     if ($user) {
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['user_role'] = ($user['role_id'] != 2) ? 'staff' : 'user';

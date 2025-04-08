@@ -741,3 +741,36 @@
     </div>
   </div>
 </div>
+
+<!-- Modal for Transaction Details -->
+<div class="modal fade" id="updateTransactionStatusModal" tabindex="-1" role="dialog" aria-labelledby="updateTransactionStatusModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document"> <!-- Modal with larger size -->
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title" id="updateTransactionStatusModalLabel"><i class="fas fa-credit-card"></i> Transaction Details</h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- Transaction Form -->
+        <form id="transactionForm" method="POST">
+          <input type="hidden" id="transactionId" name="transactionId" /> <!-- Hidden field for transaction ID -->
+
+          <div class="form-row">
+            <!-- Remarks -->
+            <div class="form-group col-md-12">
+              <label for="transactionRemarks"><i class="fas fa-comment-dots"></i> Remarks</label>
+              <textarea class="form-control" id="transactionRemarks" name="remarks" rows="4" placeholder="Enter remarks for the transaction" required autocomplete="off"></textarea>
+            </div>
+          </div>
+
+          <!-- Confirmation Button -->
+          <button type="button" class="btn btn-success mt-3 btn-block" id="confirmTransaction">
+            <i class="fas fa-check"></i> Confirm Transaction
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

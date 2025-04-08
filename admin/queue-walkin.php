@@ -436,7 +436,7 @@ $services = $service->getServices();
                                     Confirmed
                                 </button>
                                 <!-- No Show button -->
-                                <button class="btn btn-secondary" id="walkinNoShow">
+                                <button class="btn btn-secondary" id="walkinNoShow" disabled="true">
                                     No Show
                                 </button>
                                 <!-- Done & Next button hidden initially -->
@@ -571,21 +571,36 @@ include_once '../views/templates/admin_footer.php';
 
             // Event listener for "Confirmed" button
             $walkinConfirmedBtn.on("click", function() {
+                // Disable the button to prevent multiple clicks
+                $(this).prop("disabled", true);
+
                 // Change "Confirmed" to "Cancelled" and show "Done & Next" button
-                $walkinConfirmedBtn.text("Cancelled");
+                $walkinConfirmedBtn.text("Set To Pending");
                 $walkinNoShowBtn.hide(); // Hide "No Show" button
                 $walkinDoneNextBtn.show(); // Show "Done & Next" button
+
+                // Re-enable the button after the change (optionally after a delay)
+                setTimeout(() => {
+                    $walkinConfirmedBtn.prop("disabled", false);
+                }, 500); // Adjust delay time as necessary
             });
 
             // Event listener for "No Show" button
             $walkinNoShowBtn.on("click", function() {
+                // Disable the button to prevent multiple clicks
+                $(this).prop("disabled", true);
+
                 // Hide both "Confirmed" and "No Show" buttons when "No Show" is clicked
                 $walkinConfirmedBtn.hide();
                 $walkinNoShowBtn.hide();
                 $walkinDoneNextBtn.show(); // Show "Done & Next" button
+
+                // Re-enable the button after the change (optionally after a delay)
+                setTimeout(() => {
+                    $walkinNoShowBtn.prop("disabled", false);
+                }, 500); // Adjust delay time as necessary
             });
-        } else {
-            console.error("Required buttons not found in the DOM");
         }
+
     });
 </script>

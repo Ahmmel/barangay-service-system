@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta name="description" content="QPILA Services Overview" />
+    <meta name="author" content="QPILA Dev" />
+    <title>QPILA Services</title>
+    <link rel="icon" type="image/x-icon" href="assets/img/favicon.ico" />
+
+    <!-- Google Fonts: Poppins -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Font Awesome -->
+    <script
+      src="https://use.fontawesome.com/releases/v6.3.0/js/all.js"
+      crossorigin="anonymous"
+    ></script>
+
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- Custom Styles -->
+    <link href="css/styles.css" rel="stylesheet" />
+
+    <style>
+      body {
+        font-family: "Poppins", "Segoe UI", Roboto, "Helvetica Neue", Arial,
+          sans-serif;
+        background-color: #f8f9fa;
+      }
+
+      .navbar-brand img {
+        width: 100px;
+      }
+
+      .badge-verified {
+        background-color: #198754;
+      }
+
+      .badge-not-verified {
+        background-color: #dc3545;
+      }
+
+      .img-profile {
+        transition: transform 0.3s ease;
+      }
+
+      .img-profile:hover {
+        transform: scale(1.05);
+      }
+
+      .verification-status {
+        font-size: 0.9rem;
+        font-weight: 500;
+        margin-top: 10px;
+        text-align: center;
+        padding: 6px 12px;
+        border-radius: 20px;
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+        display: inline-block;
+        animation: fadeIn 0.8s ease-in-out;
+      }
+
+      .verification-status i {
+        margin-right: 5px;
+        color: #28a745;
+      }
+
+      /* Nav Links */
+      .navbar-nav {
+        width: 100%;
+        padding-left: 0;
+        text-align: left;
+        padding-top: 1rem;
+      }
+
+      .nav-link {
+        color: #f1f0ef !important;
+        font-weight: 300;
+        padding: 12px 20px;
+        transition: all 0.3s ease;
+      }
+
+      .nav-link:hover,
+      .nav-link.active {
+        background-color: #e7a086;
+        color: #251f21 !important;
+        transform: translateX(5px);
+        border-radius: 6px;
+        font-weight: 800 !important;
+      }
+
+      /* Animations */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-5px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Responsive Adjustments */
+      @media (max-width: 991.98px) {
+        .navbar-nav {
+          justify-content: flex-end;
+        }
+
+        .nav-link {
+          padding: 10px;
+        }
+
+        .verification-status {
+          font-size: 0.75rem;
+          padding: 4px 10px;
+          margin-top: 4px;
+        }
+      }
+
+      /* Service wizard */
+      .wizard-container {
+        max-width: 700px;
+        margin: auto;
+        background: #ffffff;
+        padding: 2rem;
+        border-radius: 1rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        font-family: "Segoe UI", sans-serif;
+      }
+
+      .progressbar {
+        counter-reset: step;
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+        position: relative;
+      }
+
+      .progressbar::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 10%;
+        right: 10%;
+        height: 4px;
+        background-color: #e0e0e0;
+        z-index: 0;
+      }
+
+      .progress-step {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #e0e0e0;
+        color: #666;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1;
+        position: relative;
+        transition: all 0.3s ease;
+        font-weight: bold;
+      }
+
+      .progress-step.active,
+      .progress-step.completed {
+        background-color: #0d6efd;
+        color: #fff;
+      }
+
+      .step {
+        display: none;
+        animation: fadeIn 0.3s ease-in-out;
+      }
+
+      .step.active {
+        display: block;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      .form-check {
+        margin-bottom: 0.75rem;
+      }
+
+      .btn-group {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 1.5rem;
+      }
+
+      .btn {
+        min-width: 120px;
+      }
+
+      ul#confirmation-list {
+        list-style: disc;
+        padding-left: 1.5rem;
+      }
+
+      #confirm-datetime {
+        font-weight: 600;
+      }
+
+      /* Organizational Chart */
+      .org-chart-wrapper {
+        background: #ffefe973;
+        color: #fff;
+        padding: 40px 20px;
+        margin-top: 50px;
+        border-radius: 15px;
+        text-align: center;
+      }
+
+      .org-chart-wrapper h2 {
+        color: #bd5d38;
+        margin-bottom: 40px;
+        font-size: 2.5rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-weight: bold;
+      }
+
+      /* Reuse previous styles here and scope to .org-chart-wrapper */
+      .org-chart-wrapper .org-chart {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 40px;
+        position: relative;
+      }
+
+      .org-chart-wrapper .level {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        position: relative;
+        gap: 20px;
+        width: 100%;
+        max-width: clamp(300px, 90vw, 1200px);
+        margin: 0 auto;
+      }
+
+      .org-chart-wrapper .level::after {
+        content: "";
+        position: absolute;
+        top: -20px;
+        left: 10%;
+        right: 10%;
+        height: 2px;
+        background-color: #111111c2;
+        z-index: 1;
+      }
+
+      .org-chart-wrapper .level:first-child::after {
+        display: none;
+      }
+
+      .org-chart-wrapper .member {
+        background: #f1f0ef;
+        color: #333;
+        padding: 20px;
+        border-radius: 12px;
+        width: 170px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease,
+          background-color 0.3s ease;
+        position: relative;
+        text-align: center;
+        flex-shrink: 0;
+        cursor: pointer;
+      }
+
+      .org-chart-wrapper .member:hover {
+        transform: translateY(-8px);
+        background-color: #f1ebe2;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+      }
+
+      .org-chart-wrapper .member img {
+        width: 90px;
+        height: 90px;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 3px solid #bc9a8e;
+        margin-bottom: 12px;
+      }
+
+      .org-chart-wrapper .title {
+        font-weight: bold;
+        color: #bc9a8e;
+        margin-bottom: 5px;
+        text-transform: uppercase;
+        font-size: 1rem;
+      }
+
+      .org-chart-wrapper .name {
+        font-size: 1.1rem;
+        color: #333;
+      }
+
+      .org-chart-wrapper .member::before {
+        content: "";
+        position: absolute;
+        top: -20px;
+        left: 50%;
+        width: 2px;
+        height: 20px;
+        background-color: #111111c2;
+        transform: translateX(-50%);
+        z-index: 0;
+      }
+
+      .org-chart-wrapper .level:first-child .member::before {
+        display: none;
+      }
+
+      .org-chart-wrapper .tooltip {
+        position: absolute;
+        top: -30px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #333;
+        color: #fff;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 0.9rem;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s;
+        z-index: 100;
+      }
+
+      .org-chart-wrapper .member:hover .tooltip {
+        opacity: 1;
+      }
+
+      @media (max-width: 768px) {
+        .org-chart-wrapper h2 {
+          font-size: 2rem;
+        }
+
+        .org-chart-wrapper .level {
+          flex-direction: column;
+          gap: 40px;
+        }
+
+        .org-chart-wrapper .level::after,
+        .org-chart-wrapper .member::before {
+          display: none;
+        }
+
+        .org-chart-wrapper .member {
+          width: 90%;
+          max-width: 295px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .org-chart-wrapper h2 {
+          font-size: 1.5rem;
+        }
+
+        .org-chart-wrapper .member {
+          width: 100%;
+          max-width: 295px;
+        }
+      }
+    </style>
+  </head>
+  <body
+    id="page-top"
+    data-bs-spy="scroll"
+    data-bs-target="#sideNav"
+    data-bs-offset="100"
+    tabindex="0"
+  >
+    <!-- Navigation -->
+    <nav
+      class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top"
+      id="sideNav"
+    >
+      <a class="navbar-brand js-scroll-trigger" href="#page-top">
+        <span class="d-block d-lg-none">John Doe</span>
+        <span class="d-none d-lg-block"
+          ><img
+            class="img-fluid img-profile rounded-circle mx-auto mb-2"
+            src="assets/img/profile.jpg"
+            alt="Profile Picture"
+        /></span>
+      </a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarResponsive"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarResponsive">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link js-scroll-trigger" href="#home">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link js-scroll-trigger" href="#services">Services</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link js-scroll-trigger" href="#transactions"
+              >Transactions</a
+            >
+          </li>
+          <li class="nav-item">
+            <a class="nav-link js-scroll-trigger" href="#officials"
+              >Officials</a
+            >
+          </li>
+          <li class="nav-item">
+            <a class="nav-link js-scroll-trigger" href="#logout">Logout</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Page Content -->
+    <div class="container-fluid p-0">
+      <!-- Home -->
+      <section class="profile-section py-5" id="home">
+        <div class="container">
+          <div class="row align-items-start mb-5">
+            <!-- Profile Image and Name -->
+            <div class="col-md-4 text-center text-md-start mb-4 mb-md-0">
+              <img
+                src="assets/img/profile.jpg"
+                alt="John A. Doe Jr. Profile Picture"
+                class="rounded-circle img-fluid mb-3"
+                style="max-width: 150px"
+              />
+              <h2 class="mb-1">
+                John A. <span class="text-primary">Doe</span> Jr.
+              </h2>
+              <button class="btn btn-outline-primary mb-2">
+                <i class="fas fa-id-badge me-2"></i>Request Verification
+              </button>
+              <button class="btn btn-outline-secondary ms-2 mb-2">
+                <i class="fas fa-key me-2"></i>Change Password
+              </button>
+            </div>
+
+            <!-- User Details -->
+            <div class="col-md-8">
+              <h4 class="mb-4">My Information</h4>
+              <div class="row">
+                <div class="col-sm-6 mb-3">
+                  <i class="fas fa-user me-2"></i
+                  ><strong>Username:</strong> johndoe90
+                </div>
+                <div class="col-sm-6 mb-3">
+                  <i class="fas fa-envelope me-2"></i
+                  ><strong>Email:</strong> john@example.com
+                </div>
+                <div class="col-sm-6 mb-3">
+                  <i class="fas fa-venus-mars me-2"></i
+                  ><strong>Gender:</strong> Male
+                </div>
+                <div class="col-sm-6 mb-3">
+                  <i class="fas fa-calendar me-2"></i
+                  ><strong>Birthdate:</strong> January 15, 1990
+                </div>
+                <div class="col-sm-6 mb-3">
+                  <i class="fas fa-map-marker-alt me-2"></i
+                  ><strong>Address:</strong> 3542 Berry Street, Cheyenne Wells,
+                  CO 80810
+                </div>
+                <div class="col-sm-6 mb-3">
+                  <i class="fas fa-ring me-2"></i
+                  ><strong>Marital Status:</strong> Single
+                </div>
+                <div class="col-sm-6 mb-3">
+                  <i class="fas fa-phone me-2"></i
+                  ><strong>Mobile Number:</strong> (317) 585-8468
+                </div>
+                <!-- <div class="col-sm-6 mb-3">
+                  <i class="fas fa-user-check me-2"></i
+                  ><strong>Verification Status:</strong>
+                  <span class="badge badge-verified">Verified</span>
+                </div> -->
+                <div class="col-sm-6 mb-3">
+                  <i class="fas fa-user-times me-2"></i>
+                  <strong>Verification Status:</strong>
+                  <span class="badge badge-not-verified">Not Verified</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Services -->
+      <section class="profile-section py-5" id="services">
+        <div class="profile-section-content">
+          <h2 class="mb-4 text-center">
+            <i class="fas fa-concierge-bell me-2"></i>Request a Barangay Service
+          </h2>
+
+          <div class="wizard-container">
+            <!-- Progress Bar -->
+            <div class="progressbar mb-4">
+              <div class="progress-step active" id="bar-step-1">1</div>
+              <div class="progress-step" id="bar-step-2">2</div>
+              <div class="progress-step" id="bar-step-3">3</div>
+            </div>
+
+            <!-- Step 1 -->
+            <div class="step active" id="step-1">
+              <h5>Select Services (Max 3)</h5>
+              <form id="service-form">
+                <div class="form-check">
+                  <input
+                    type="checkbox"
+                    class="form-check-input"
+                    id="service1"
+                    name="services"
+                    value="Barangay Clearance"
+                  />
+                  <label class="form-check-label" for="service1"
+                    >Barangay Clearance</label
+                  >
+                </div>
+                <div class="form-check">
+                  <input
+                    type="checkbox"
+                    class="form-check-input"
+                    id="service2"
+                    name="services"
+                    value="Indigency Certificate"
+                  />
+                  <label class="form-check-label" for="service2"
+                    >Indigency Certificate</label
+                  >
+                </div>
+                <div class="form-check">
+                  <input
+                    type="checkbox"
+                    class="form-check-input"
+                    id="service3"
+                    name="services"
+                    value="Business Permit"
+                  />
+                  <label class="form-check-label" for="service3"
+                    >Business Permit</label
+                  >
+                </div>
+                <div class="form-check">
+                  <input
+                    type="checkbox"
+                    class="form-check-input"
+                    id="service4"
+                    name="services"
+                    value="Residency Certificate"
+                  />
+                  <label class="form-check-label" for="service4"
+                    >Residency Certificate</label
+                  >
+                </div>
+              </form>
+              <div class="btn-group mt-4 justify-content-end">
+                <button class="btn btn-primary" onclick="nextStep(1)">
+                  Next
+                </button>
+              </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="step" id="step-2">
+              <h5>Select Date and Time</h5>
+              <input type="date" class="form-control my-2" id="service-date" />
+              <input type="time" class="form-control my-2" id="service-time" />
+              <div class="btn-group">
+                <button class="btn btn-secondary" onclick="showStep(1)">
+                  Back
+                </button>
+                <button class="btn btn-primary" onclick="nextStep(2)">
+                  Next
+                </button>
+              </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="step" id="step-3">
+              <h5>Confirm Your Request</h5>
+              <p>Selected Services:</p>
+              <ul id="confirmation-list"></ul>
+              <p>
+                <strong>Date & Time:</strong>
+                <span id="confirm-datetime"></span>
+              </p>
+              <div class="btn-group">
+                <button class="btn btn-secondary" onclick="showStep(2)">
+                  Back
+                </button>
+                <button class="btn btn-success">
+                  <i class="fas fa-paper-plane me-1"></i>Confirm
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Transactions -->
+      <section class="profile-section py-5" id="transactions">
+        <div class="profile-section-content">
+          <h2 class="mb-5">Recent Transactions</h2>
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Transaction ID</th>
+                  <th>Service</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>TXN00123</td>
+                  <td>Barangay Clearance</td>
+                  <td><span class="badge bg-success">Completed</span></td>
+                  <td>2025-04-18</td>
+                </tr>
+                <tr>
+                  <td>TXN00124</td>
+                  <td>Business Permit</td>
+                  <td>
+                    <span class="badge bg-warning text-dark">Pending</span>
+                  </td>
+                  <td>2025-04-19</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Government Officials -->
+      <section class="profile-section py-5" id="officials">
+        <div class="profile-section-content">
+          <!-- Organizational Chart -->
+          <div class="org-chart-wrapper">
+            <h2>Government Officials Organizational Chart</h2>
+            <div class="org-chart">
+              <!-- Level 1 -->
+              <div class="level">
+                <div class="member">
+                  <img src="assets/img/profile.jpg" alt="Juan Dela Cruz" />
+                  <div class="title">Barangay Captain</div>
+                  <div class="name">Juan Dela Cruz</div>
+                  <div class="tooltip">
+                    Juan Dela Cruz, Barangay Captain since 2018
+                  </div>
+                </div>
+              </div>
+
+              <!-- Level 2 -->
+              <div class="level">
+                <div class="member">
+                  <img src="assets/img/profile.jpg" alt="Maria Santos" />
+                  <div class="title">Barangay Secretary</div>
+                  <div class="name">Maria Santos</div>
+                  <div class="tooltip">Maria Santos, Barangay Secretary</div>
+                </div>
+                <div class="member">
+                  <img src="assets/img/profile.jpg" alt="Pedro Reyes" />
+                  <div class="title">Barangay Treasurer</div>
+                  <div class="name">Pedro Reyes</div>
+                  <div class="tooltip">Pedro Reyes, Barangay Treasurer</div>
+                </div>
+              </div>
+
+              <!-- Level 3 -->
+              <div class="level">
+                <div class="member">
+                  <img src="assets/img/profile.jpg" alt="Ana Cruz" />
+                  <div class="title">Kagawad</div>
+                  <div class="name">Ana Cruz</div>
+                  <div class="tooltip">Ana Cruz, Kagawad (Health)</div>
+                </div>
+                <div class="member">
+                  <img src="assets/img/profile.jpg" alt="Luis Garcia" />
+                  <div class="title">Kagawad</div>
+                  <div class="name">Luis Garcia</div>
+                  <div class="tooltip">
+                    Luis Garcia, Kagawad (Public Safety)
+                  </div>
+                </div>
+                <div class="member">
+                  <img src="assets/img/profile.jpg" alt="Ella Navarro" />
+                  <div class="title">Kagawad</div>
+                  <div class="name">Ella Navarro</div>
+                  <div class="tooltip">
+                    Ella Navarro, Kagawad (Social Welfare)
+                  </div>
+                </div>
+                <div class="member">
+                  <img src="assets/img/profile.jpg" alt="Joseph Lim" />
+                  <div class="title">Kagawad</div>
+                  <div class="name">Joseph Lim</div>
+                  <div class="tooltip">Joseph Lim, Kagawad (Environment)</div>
+                </div>
+                <div class="member">
+                  <img src="assets/img/profile.jpg" alt="May Mendoza" />
+                  <div class="title">Kagawad</div>
+                  <div class="name">May Mendoza</div>
+                  <div class="tooltip">May Mendoza, Kagawad (Education)</div>
+                </div>
+                <div class="member">
+                  <img src="assets/img/profile.jpg" alt="Carlo Dizon" />
+                  <div class="title">Kagawad</div>
+                  <div class="name">Carlo Dizon</div>
+                  <div class="tooltip">
+                    Carlo Dizon, Kagawad (Infrastructure)
+                  </div>
+                </div>
+                <div class="member">
+                  <img src="assets/img/profile.jpg" alt="Nica Ramos" />
+                  <div class="title">Kagawad</div>
+                  <div class="name">Nica Ramos</div>
+                  <div class="tooltip">Nica Ramos, Kagawad (Finance)</div>
+                </div>
+                <div class="member">
+                  <img src="assets/img/profile.jpg" alt="Mark De Leon" />
+                  <div class="title">SK Chairperson</div>
+                  <div class="name">Mark De Leon</div>
+                  <div class="tooltip">Mark De Leon, SK Chairperson</div>
+                </div>
+              </div>
+
+              <!-- Level 4 -->
+              <div class="level">
+                <div class="member">
+                  <img src="assets/img/profile.jpg" alt="Ricardo Ramos" />
+                  <div class="title">Tanod Head</div>
+                  <div class="name">Ricardo Ramos</div>
+                  <div class="tooltip">Ricardo Ramos, Tanod Head</div>
+                </div>
+                <div class="member">
+                  <img src="assets/img/profile.jpg" alt="Leo Santos" />
+                  <div class="title">Tanod</div>
+                  <div class="name">Leo Santos</div>
+                  <div class="tooltip">Leo Santos, Tanod</div>
+                </div>
+                <div class="member">
+                  <img src="assets/img/profile.jpg" alt="Lorna Bautista" />
+                  <div class="title">Health Worker</div>
+                  <div class="name">Lorna Bautista</div>
+                  <div class="tooltip">Lorna Bautista, Health Worker</div>
+                </div>
+                <div class="member">
+                  <img src="assets/img/profile.jpg" alt="Ella Tan" />
+                  <div class="title">Day Care Worker</div>
+                  <div class="name">Ella Tan</div>
+                  <div class="tooltip">Ella Tan, Day Care Worker</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+      $(document).ready(function () {
+        $(".member").hover(
+          function () {
+            $(this).find(".tooltip").fadeIn(200);
+          },
+          function () {
+            $(this).find(".tooltip").fadeOut(200);
+          }
+        );
+      });
+    </script>
+
+    <script>
+      function showStep(step) {
+        document
+          .querySelectorAll(".step")
+          .forEach((el) => el.classList.remove("active"));
+        document.getElementById(`step-${step}`).classList.add("active");
+
+        for (let i = 1; i <= 3; i++) {
+          const barStep = document.getElementById(`bar-step-${i}`);
+          barStep.classList.remove("active", "completed");
+          if (i < step) barStep.classList.add("completed");
+          if (i === step) barStep.classList.add("active");
+        }
+      }
+
+      function nextStep(currentStep) {
+        if (currentStep === 1) {
+          const checked = document.querySelectorAll(
+            "input[name='services']:checked"
+          );
+          if (checked.length === 0 || checked.length > 3) {
+            alert("Please select 1 to 3 services.");
+            return;
+          }
+        }
+
+        if (currentStep === 2) {
+          const date = document.getElementById("service-date").value;
+          const time = document.getElementById("service-time").value;
+          if (!date || !time) {
+            alert("Please select both date and time.");
+            return;
+          }
+
+          const services = [
+            ...document.querySelectorAll("input[name='services']:checked"),
+          ].map((cb) => cb.value);
+          document.getElementById("confirmation-list").innerHTML = services
+            .map((s) => `<li>${s}</li>`)
+            .join("");
+          document.getElementById(
+            "confirm-datetime"
+          ).textContent = `${date} at ${time}`;
+        }
+
+        showStep(currentStep + 1);
+      }
+
+      // Limit to 3 checkbox selections
+      document.querySelectorAll("input[name='services']").forEach((cb) => {
+        cb.addEventListener("change", () => {
+          const selected = document.querySelectorAll(
+            "input[name='services']:checked"
+          );
+          if (selected.length > 3) {
+            cb.checked = false;
+            alert("You can select a maximum of 3 services.");
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

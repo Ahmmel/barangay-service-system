@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Barangay Organizational Chart</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+      :root {
+        --bg-color: #251f21; /* Black */
+        --card-bg: #f1f0ef; /* White */
+        --text-dark: #333333; /* Dark Gray */
+        --text-accent: #bc9a8e; /* Brown */
+        --line-color: #fff; /* Light Gray */
+        --hover-bg: #f1ebe2; /* Light Brown Hover */
+        --hover-shadow: rgba(0, 0, 0, 0.15);
+        --max-width: max-width: clamp(300px, 90vw, 1200px);
+      }
+
+      body {
+        background: var(--bg-color);
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        color: var(--card-bg);
+        margin: 0;
+        padding: 40px 20px;
+        text-align: center;
+      }
+
+      h2 {
+        color: var(--text-accent);
+        margin-bottom: 40px;
+        font-size: 2.5rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-weight: bold;
+      }
+
+      .org-chart {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 40px;
+        position: relative;
+      }
+
+      .level {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        position: relative;
+        gap: 20px;
+        width: 100%;
+        max-width: var(--max-width);
+        margin: 0 auto;
+      }
+
+      .level::after {
+        content: "";
+        position: absolute;
+        top: -20px;
+        left: 10%;
+        right: 10%;
+        height: 2px;
+        background-color: var(--line-color);
+        z-index: 1; /* Lower priority for horizontal line */
+      }
+
+      .level:first-child::after {
+        display: none;
+      }
+
+      .member {
+        background: var(--card-bg);
+        color: var(--text-dark);
+        padding: 20px;
+        border-radius: 12px;
+        width: 170px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease,
+          background-color 0.3s ease;
+        position: relative;
+        text-align: center;
+        flex-shrink: 0;
+        cursor: pointer;
+      }
+
+      .member:hover {
+        transform: translateY(-8px);
+        background-color: var(--hover-bg);
+        box-shadow: 0 10px 20px var(--hover-shadow);
+      }
+
+      .member img {
+        width: 90px;
+        height: 90px;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 3px solid var(--text-accent);
+        margin-bottom: 12px;
+      }
+
+      .title {
+        font-weight: bold;
+        color: var(--text-accent);
+        margin-bottom: 5px;
+        text-transform: uppercase;
+        font-size: 1rem;
+      }
+
+      .name {
+        font-size: 1.1rem;
+        color: var(--text-dark);
+      }
+
+      .member::before {
+        content: "";
+        position: absolute;
+        top: -20px;
+        left: 50%;
+        width: 2px;
+        height: 20px;
+        background-color: var(--line-color);
+        transform: translateX(-50%);
+        z-index: 0; /* Lower priority for vertical lines */
+      }
+
+      .level:first-child .member::before {
+        display: none;
+      }
+
+      /* Vertical lines connecting levels */
+      .level:not(:first-child) .member::before {
+        display: block;
+      }
+
+      /* Tooltip Styling */
+      .tooltip {
+        position: absolute;
+        top: -30px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #333;
+        color: #fff;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 0.9rem;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s;
+        z-index: 100; /* Ensure tooltip appears on top */
+      }
+
+      .member:hover .tooltip {
+        opacity: 1;
+      }
+
+      /* Responsive */
+      @media (max-width: 1024px) {
+        .member {
+          max-width: 295px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        h2 {
+          font-size: 2rem;
+        }
+
+        .level {
+          flex-direction: column;
+          gap: 40px;
+        }
+
+        .level::after,
+        .member::before {
+          display: none;
+        }
+
+        .member {
+          width: 90%;
+          max-width: 295px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        h2 {
+          font-size: 1.5rem;
+        }
+
+        .member {
+          width: 100%;
+          max-width: 295px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Barangay Organizational Chart</h2>
+
+    <div class="org-chart">
+      <!-- Level 1 -->
+      <div class="level">
+        <div class="member">
+          <img src="assets/img/profile.jpg" alt="Juan Dela Cruz" />
+          <div class="title">Barangay Captain</div>
+          <div class="name">Juan Dela Cruz</div>
+          <div class="tooltip">Juan Dela Cruz, Barangay Captain since 2018</div>
+        </div>
+      </div>
+
+      <!-- Level 2 -->
+      <div class="level">
+        <div class="member">
+          <img src="assets/img/profile.jpg" alt="Maria Santos" />
+          <div class="title">Barangay Secretary</div>
+          <div class="name">Maria Santos</div>
+          <div class="tooltip">Maria Santos, Barangay Secretary</div>
+        </div>
+        <div class="member">
+          <img src="assets/img/profile.jpg" alt="Pedro Reyes" />
+          <div class="title">Barangay Treasurer</div>
+          <div class="name">Pedro Reyes</div>
+          <div class="tooltip">Pedro Reyes, Barangay Treasurer</div>
+        </div>
+      </div>
+
+      <!-- Level 3 -->
+      <div class="level">
+        <div class="member">
+          <img src="assets/img/profile.jpg" alt="Ana Cruz" />
+          <div class="title">Kagawad</div>
+          <div class="name">Ana Cruz</div>
+          <div class="tooltip">Ana Cruz, Kagawad (Health)</div>
+        </div>
+        <div class="member">
+          <img src="assets/img/profile.jpg" alt="Luis Garcia" />
+          <div class="title">Kagawad</div>
+          <div class="name">Luis Garcia</div>
+          <div class="tooltip">Luis Garcia, Kagawad (Public Safety)</div>
+        </div>
+        <div class="member">
+          <img src="assets/img/profile.jpg" alt="Ella Navarro" />
+          <div class="title">Kagawad</div>
+          <div class="name">Ella Navarro</div>
+          <div class="tooltip">Ella Navarro, Kagawad (Social Welfare)</div>
+        </div>
+        <div class="member">
+          <img src="assets/img/profile.jpg" alt="Joseph Lim" />
+          <div class="title">Kagawad</div>
+          <div class="name">Joseph Lim</div>
+          <div class="tooltip">Joseph Lim, Kagawad (Environment)</div>
+        </div>
+        <div class="member">
+          <img src="assets/img/profile.jpg" alt="May Mendoza" />
+          <div class="title">Kagawad</div>
+          <div class="name">May Mendoza</div>
+          <div class="tooltip">May Mendoza, Kagawad (Education)</div>
+        </div>
+        <div class="member">
+          <img src="assets/img/profile.jpg" alt="Carlo Dizon" />
+          <div class="title">Kagawad</div>
+          <div class="name">Carlo Dizon</div>
+          <div class="tooltip">Carlo Dizon, Kagawad (Infrastructure)</div>
+        </div>
+        <div class="member">
+          <img src="assets/img/profile.jpg" alt="Nica Ramos" />
+          <div class="title">Kagawad</div>
+          <div class="name">Nica Ramos</div>
+          <div class="tooltip">Nica Ramos, Kagawad (Finance)</div>
+        </div>
+        <div class="member">
+          <img src="assets/img/profile.jpg" alt="Mark De Leon" />
+          <div class="title">SK Chairperson</div>
+          <div class="name">Mark De Leon</div>
+          <div class="tooltip">Mark De Leon, SK Chairperson</div>
+        </div>
+      </div>
+
+      <!-- Level 4 -->
+      <div class="level">
+        <div class="member">
+          <img src="assets/img/profile.jpg" alt="Ricardo Ramos" />
+          <div class="title">Tanod Head</div>
+          <div class="name">Ricardo Ramos</div>
+          <div class="tooltip">Ricardo Ramos, Tanod Head</div>
+        </div>
+        <div class="member">
+          <img src="assets/img/profile.jpg" alt="Leo Santos" />
+          <div class="title">Tanod</div>
+          <div class="name">Leo Santos</div>
+          <div class="tooltip">Leo Santos, Tanod</div>
+        </div>
+        <div class="member">
+          <img src="assets/img/profile.jpg" alt="Lorna Bautista" />
+          <div class="title">Health Worker</div>
+          <div class="name">Lorna Bautista</div>
+          <div class="tooltip">Lorna Bautista, Health Worker</div>
+        </div>
+        <div class="member">
+          <img src="assets/img/profile.jpg" alt="Ella Tan" />
+          <div class="title">Day Care Worker</div>
+          <div class="name">Ella Tan</div>
+          <div class="tooltip">Ella Tan, Day Care Worker</div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      $(document).ready(function () {
+        $(".member").hover(
+          function () {
+            $(this).find(".tooltip").fadeIn(200);
+          },
+          function () {
+            $(this).find(".tooltip").fadeOut(200);
+          }
+        );
+      });
+    </script>
+  </body>
+</html>

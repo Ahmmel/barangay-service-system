@@ -293,12 +293,11 @@ class UserController
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $email = htmlspecialchars($_POST['email']);
-            $userName = htmlspecialchars($_POST['userName']);
+            $userName = htmlspecialchars($_POST['username']);
             $password = htmlspecialchars($_POST['password']);
-            $confirmPassword = htmlspecialchars($_POST['confirmPassword']);
 
             // Check if the email and username are provided
-            if (empty($email) || empty($userName) || empty($password) || empty($confirmPassword)) {
+            if (empty($email) || empty($userName) || empty($password)) {
                 echo json_encode(["error" => "All fields are required."]);
                 return;
             }
@@ -310,21 +309,14 @@ class UserController
                 return;
             }
 
-            // Handle password validation
-            if ($password !== $confirmPassword) {
-                echo json_encode(["error" => "Passwords do not match."]);
-                return;
-            }
-
             $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
             // Call the createUser method from the model to add the new user
             $result = $this->userModel->registerUser(
-                $userName,
                 $email,
+                $userName,
                 $hashedPassword
             );
-
 
             // Return the result as JSON
             echo json_encode(["success" => $result]);

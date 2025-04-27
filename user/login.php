@@ -63,7 +63,7 @@
                     <i class='bx bxs-lock-alt'></i>
                 </div>
                 <button type="submit" class="btn">Register</button>
-                <div id="registerError" style="color: red; font-size: 14px; margin-top: 10px;"></div>
+                <div id="responseMessage" style="color: red; font-size: 14px; margin-top: 10px;"></div>
             </form>
         </div>
 
@@ -87,6 +87,8 @@
         $(document).ready(function() {
             // Toggle between login and register forms
             $('.register-btn').click(function() {
+                // clear any previous error messages
+                $('#responseMessage').text('');
                 $('.container').addClass('active');
             });
 
@@ -134,12 +136,12 @@
                 var confirmPassword = $('#confirmPassword').val();
 
                 if (password !== confirmPassword) {
-                    $('#registerError').text('Passwords do not match');
+                    $('#responseMessage').text('Passwords do not match');
                     return;
                 }
 
                 $.ajax({
-                    url: '../controllers/UserController.php?action=registerUser',
+                    url: '../controllers/UserController.php?action=register',
                     type: 'POST',
                     data: {
                         username: username,
@@ -149,13 +151,25 @@
                     success: function(response) {
                         var data = JSON.parse(response);
                         if (data.success) {
-                            window.location.href = 'index.php'; // Redirect on success
+                            // Show a success message
+                            $('#responseMessage')
+                                .text('Registration successful! Redirecting to login...')
+                                .css({
+                                    'color': 'green',
+                                    'display': 'none'
+                                })
+                                .fadeIn(500); // fade in smoothly
+
+                            // Wait a moment, then click the login button
+                            setTimeout(function() {
+                                $('.login-btn').click();
+                            }, 1500); // 1.5 seconds delay for user to see the message
                         } else {
-                            $('#registerError').text(data.message || 'Registration failed. Try again.');
+                            $('#responseMessage').text(data.message || 'Registration failed. Try again.');
                         }
                     },
                     error: function() {
-                        $('#registerError').text('An error occurred, please try again later.');
+                        $('#responseMessage').text('An error occurred, please try again later.');
                     }
                 });
             });

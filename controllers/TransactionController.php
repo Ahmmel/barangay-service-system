@@ -52,14 +52,14 @@ class TransactionController
 
             // Validate transaction
             $validator = $this->TransactionModel->validateTransaction($userId, $serviceIds, $scheduledTime);
-
             if (!$validator['success']) {
                 echo json_encode($validator);
                 return;
             }
 
             // Generate a unique transaction code
-            $transactionCode = "Q-" . date("Ymd") . "-" . strtoupper(substr(uniqid(), -5));
+            $transactionCode = "TRX-" . date("ymd") . "-" . strtoupper(substr(uniqid(), -3));
+
             // Add the queue entry
             $queueId = $this->QueueModel->addQueue($userId, $transactionType, $transactionCode, $scheduledTime);
 
@@ -77,9 +77,7 @@ class TransactionController
             // Send SMS confirmation if phone number is available
             $userPhone = $this->TransactionModel->getUserMobileNumber($userId);
             if ($userPhone) {
-                $test = $this->SMS->sendWalkInTransactionNotification($userPhone, $result['transaction_code'], $scheduledTime);
-                var_dump($test);
-                die();
+                //$this->SMS->sendWalkInTransactionNotification($userPhone, $result['transaction_code'], $scheduledTime); TODO uncomment this line to send SMS
             }
 
             // Return the result
@@ -158,6 +156,25 @@ class TransactionController
             }
         }
     }
+
+    // Get Transaction by User ID
+    public function getTransactionsByUserId()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $userId = $_POST['userId'];
+            if (empty($userId)) {
+                echo json_encode(['success' => false, 'message' => 'User ID is required']);
+                return;
+            }
+
+            $transactions = $this->TransactionModel->getTransactionsByUserId($userId);
+            if ($transactions) {
+                echo json_encode(['success' => true, 'transactions' => $transactions]);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'No transactions found for this user']);
+            }
+        }
+    }
 }
 
 $database = new Database();
@@ -184,6 +201,9 @@ switch ($action) {
         break;
     case 'getTransactionById':
         $controller->getTransactionById();
+        break;
+    case 'getTransactionsByUserId':
+        $controller->getTransactionsByUserId();
         break;
     default:
         echo json_encode(['error' => 'Invalid request']);

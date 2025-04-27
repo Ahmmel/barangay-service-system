@@ -75,19 +75,20 @@ class Transaction
         }
     }
 
-    public function validateTransaction($maxTransactions, $userId, $scheduledTime)
+    public function validateTransaction($userId, $serviceIds, $scheduledTime)
     {
         $maxTransactions = $this->getMaxTransactionsPerDay();
-        if ($this->getTodaysTransactionCount() >= $maxTransactions) {
+        if ($this->countUserTransactionByIdAndDate($userId, $scheduledTime) >= $maxTransactions) {
             return ["success" => false, "message" => "The maximum number of transactions for today has been reached."];
-        }
-
-        if ($this->hasUserMadeTransactionToday($userId)) {
-            return ["success" => false, "message" => "You can only book one transaction per day."];
         }
 
         if (!$this->isWithinBookingHours($scheduledTime)) {
             return ["success" => false, "message" => "Bookings can only be made between 8:00 AM - 4:30 PM, Monday to Saturday."];
+        }
+
+        // check if the user has booked the same service within the scheduled time
+        if ($this->hasUserBookedSameService($userId, $scheduledTime, $serviceIds)) {
+            return ["success" => false, "message" => "You have already booked the same service for the selected schedule."];
         }
 
         if (!$this->isValidBookingTime($scheduledTime)) {
@@ -198,6 +199,44 @@ class Transaction
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
+    // Get transaction by user_id
+    public function getTransactionsByUserId($userId)
+    {
+        $query = "
+        SELECT 
+            t.id AS transaction_id,
+            t.transaction_code,
+            t.queue_id,
+            t.status,
+            t.created_at,
+            t.date_closed,
+            t.updated_at,
+            u.first_name,
+            u.middle_name,
+            u.last_name,
+            u.suffix,
+            GROUP_CONCAT(
+                CONCAT(
+                    '{\"id\":', ts.id, 
+                    ',\"name\":\"', s.service_name, 
+                    '\",\"status\":\"', ts.status, '\"}'
+                )
+                ORDER BY s.service_name ASC SEPARATOR ', '
+            ) AS services
+        FROM transactions t
+        JOIN users u ON t.user_id = u.id
+        LEFT JOIN transaction_services ts ON t.id = ts.transaction_id
+        LEFT JOIN services s ON ts.service_id = s.id
+        WHERE t.user_id = :userId
+        GROUP BY t.id
+        ORDER BY t.created_at DESC;
+    ";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([':userId' => $userId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     // Update the status of a transaction
     public function updateTransactionStatus($id, $status, $reason = null)
     {
@@ -305,17 +344,32 @@ class Transaction
             ($hour >= 8 && ($hour < 16 || ($hour == 16 && $minute <= 30)));
     }
 
-    //Rule: A user can only make one transaction per day
-    public function hasUserMadeTransactionToday($userId)
+    // Rule: Check if the user has booked the same service(s) on the scheduled date
+    public function hasUserBookedSameService($userId, $scheduledTime, array $serviceIds)
     {
-        // SQL query to count transactions for the user today
-        $query = "SELECT COUNT(*) FROM transactions WHERE user_id = :userId AND DATE(created_at) = CURDATE()";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":userId", $userId, PDO::PARAM_INT);
-        $stmt->execute();
+        // Extract date part only
+        $bookingDate = date('Y-m-d', strtotime($scheduledTime));
 
-        // Fetch the transaction count (if greater than 0, the user made a transaction today)
-        return (bool) $stmt->fetchColumn();
+        // Build a list of service IDs for the query
+        $placeholders = implode(',', array_fill(0, count($serviceIds), '?'));
+
+        $query = "
+        SELECT COUNT(*) 
+        FROM transactions t
+        JOIN transaction_services ts ON ts.transaction_id = t.id
+        WHERE DATE(t.created_at) = ?
+          AND t.user_id = ?
+          AND ts.service_id IN ($placeholders)
+    ";
+
+        $stmt = $this->conn->prepare($query);
+
+        // Bind the values dynamically
+        $params = array_merge([$bookingDate, $userId], $serviceIds);
+
+        $stmt->execute($params);
+
+        return (int) $stmt->fetchColumn() > 0; // return true if user already booked
     }
 
     //Rule: Get the max allowed transactions per day from settings
@@ -340,11 +394,38 @@ class Transaction
     }
 
     //Rule: Get the count of today's transactions
-    public function getTodaysTransactionCount()
+    public function getTodaysTransactionCount($bookingDateTime)
     {
-        $query = "SELECT COUNT(*) FROM transactions WHERE DATE(created_at) = CURDATE()";
+        // Extract only the DATE part from the provided datetime
+        $bookingDate = date('Y-m-d', strtotime($bookingDateTime));
+
+        // SQL query to count today's transactions
+        $query = "SELECT COUNT(*) FROM transactions WHERE DATE(created_at) = :bookingDate";
         $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":bookingDate", $bookingDate, PDO::PARAM_STR);
         $stmt->execute();
+        return (int) $stmt->fetchColumn();
+    }
+
+    // Rule: Count user's transactions by booking date only (ignore the time part)
+    public function countUserTransactionByIdAndDate($userId, $bookingDateTime)
+    {
+        // Extract only the DATE part from the provided datetime
+        $bookingDate = date('Y-m-d', strtotime($bookingDateTime));
+
+        $query = "
+             SELECT COUNT(*) 
+             FROM transactions 
+             WHERE DATE(created_at) = :bookingDate
+             AND user_id = :userId
+         ";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([
+            ':userId' => $userId,
+            ':bookingDate' => $bookingDate
+        ]);
+
         return (int) $stmt->fetchColumn();
     }
 }

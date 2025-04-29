@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 27, 2025 at 01:43 PM
+-- Generation Time: Apr 29, 2025 at 06:40 PM
 -- Server version: 10.4.32-MariaDB
--- PHP Version: 8.0.30
+-- PHP Version: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -77,6 +77,9 @@ CREATE TABLE `genders` (
 --
 
 INSERT INTO `genders` (`id`, `gender_name`, `created_at`, `modified_at`) VALUES
+(1, 'Male', '2025-02-17 16:00:00', '2025-02-17 16:00:00'),
+(2, 'Female', '2025-02-17 16:00:00', '2025-02-17 16:00:00'),
+(3, 'Other', '2025-02-17 16:00:00', '2025-02-17 16:00:00'),
 (1, 'Male', '2025-02-17 16:00:00', '2025-02-17 16:00:00'),
 (2, 'Female', '2025-02-17 16:00:00', '2025-02-17 16:00:00'),
 (3, 'Other', '2025-02-17 16:00:00', '2025-02-17 16:00:00');
@@ -252,6 +255,7 @@ CREATE TABLE `transactions` (
   `queue_id` int(11) NOT NULL,
   `type` tinyint(4) NOT NULL COMMENT '1: Walk-in; 2: Scheduled',
   `status` enum('Open','Pending','In Progress','Closed','Cancelled') NOT NULL DEFAULT 'Pending',
+  `rating` tinyint(1) DEFAULT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `handled_by_staff_id` int(11) DEFAULT NULL,
@@ -262,24 +266,24 @@ CREATE TABLE `transactions` (
 -- Dumping data for table `transactions`
 --
 
-INSERT INTO `transactions` (`id`, `transaction_code`, `user_id`, `queue_id`, `type`, `status`, `created_at`, `updated_at`, `handled_by_staff_id`, `date_closed`) VALUES
-(3, 'TRX-20250305-A1B2B', 1, 3, 2, 'Closed', '2025-03-09 00:05:56', '2025-03-25 22:33:30', 101, '2025-03-25 01:11:12'),
-(6, 'Q-20250325-EAD68', 1, 11, 1, 'Open', '2025-03-25 16:46:08', '2025-03-25 23:46:08', NULL, NULL),
-(7, 'Q-20250325-45E28', 1, 12, 1, 'Open', '2025-03-25 16:52:06', '2025-03-25 23:52:06', NULL, NULL),
-(8, 'Q-20250325-474E6', 1, 13, 1, 'Open', '2025-03-25 16:59:06', '2025-03-25 23:59:06', NULL, NULL),
-(9, 'Q-20250325-7216C', 1, 14, 1, 'Open', '2025-03-25 16:59:28', '2025-03-25 23:59:28', NULL, NULL),
-(10, 'Q-20250325-84533', 1, 15, 1, 'Open', '2025-03-25 17:05:31', '2025-03-26 00:05:31', NULL, NULL),
-(11, 'Q-20250427-53353', 10, 16, 2, 'Open', '2025-04-28 12:00:00', '2025-04-27 16:20:36', NULL, NULL),
-(12, 'Q-20250427-7DAC5', 10, 17, 2, 'Open', '2025-04-30 12:00:00', '2025-04-27 16:40:42', NULL, NULL),
-(13, 'Q-20250427-7A488', 10, 18, 2, 'Open', '2025-04-30 12:00:00', '2025-04-27 17:01:45', NULL, NULL),
-(14, 'Q-20250427-BA2AC', 10, 19, 2, 'Open', '2025-04-30 12:00:00', '2025-04-27 17:11:15', NULL, NULL),
-(15, 'Q-20250427-3D9F4', 10, 20, 2, 'Open', '2025-04-30 12:00:00', '2025-04-27 17:13:42', NULL, NULL),
-(16, 'Q-20250427-E88E2', 10, 21, 2, 'Open', '2025-04-28 12:00:00', '2025-04-27 17:15:31', NULL, NULL),
-(17, 'Q-20250427-03AB2', 10, 22, 2, 'Open', '2025-04-29 12:00:00', '2025-04-27 17:16:40', NULL, NULL),
-(18, 'Q-20250427-D223F', 10, 23, 2, 'Open', '2025-04-30 12:00:00', '2025-04-27 17:21:12', NULL, NULL),
-(19, 'Q-20250427-5F908', 10, 24, 2, 'Open', '2025-04-30 12:00:00', '2025-04-27 17:24:20', NULL, NULL),
-(20, 'Q-20250427-C651A', 10, 25, 2, 'Open', '2025-04-30 12:00:00', '2025-04-27 17:27:02', NULL, NULL),
-(21, 'Q-20250427-6B2BB', 10, 26, 2, 'Open', '2025-04-29 12:00:00', '2025-04-27 17:33:26', NULL, NULL);
+INSERT INTO `transactions` (`id`, `transaction_code`, `user_id`, `queue_id`, `type`, `status`, `rating`, `created_at`, `updated_at`, `handled_by_staff_id`, `date_closed`) VALUES
+(3, 'TRX-20250305-A1B2B', 1, 3, 2, 'Open', NULL, '2025-03-09 00:05:56', '2025-04-30 00:37:31', 101, '2025-03-25 01:11:12'),
+(6, 'Q-20250325-EAD68', 1, 11, 1, 'Open', NULL, '2025-03-25 16:46:08', '2025-03-25 23:46:08', NULL, NULL),
+(7, 'Q-20250325-45E28', 1, 12, 1, 'Open', NULL, '2025-03-25 16:52:06', '2025-03-25 23:52:06', NULL, NULL),
+(8, 'Q-20250325-474E6', 1, 13, 1, 'Open', NULL, '2025-03-25 16:59:06', '2025-03-25 23:59:06', NULL, NULL),
+(9, 'Q-20250325-7216C', 1, 14, 1, 'Open', NULL, '2025-03-25 16:59:28', '2025-03-25 23:59:28', NULL, NULL),
+(10, 'Q-20250325-84533', 1, 15, 1, 'Open', NULL, '2025-03-25 17:05:31', '2025-03-26 00:05:31', NULL, NULL),
+(11, 'Q-20250427-53353', 10, 16, 2, 'Open', NULL, '2025-04-28 12:00:00', '2025-04-27 16:20:36', NULL, NULL),
+(12, 'Q-20250427-7DAC5', 10, 17, 2, 'Closed', NULL, '2025-04-30 12:00:00', '2025-04-30 00:39:18', NULL, NULL),
+(13, 'Q-20250427-7A488', 10, 18, 2, 'Closed', NULL, '2025-04-30 12:00:00', '2025-04-30 00:39:32', NULL, NULL),
+(14, 'Q-20250427-BA2AC', 10, 19, 2, 'In Progress', NULL, '2025-04-30 12:00:00', '2025-04-30 00:39:35', NULL, NULL),
+(15, 'Q-20250427-3D9F4', 10, 20, 2, 'Open', NULL, '2025-04-30 12:00:00', '2025-04-27 17:13:42', NULL, NULL),
+(16, 'Q-20250427-E88E2', 10, 21, 2, 'Open', NULL, '2025-04-28 12:00:00', '2025-04-27 17:15:31', NULL, NULL),
+(17, 'Q-20250427-03AB2', 10, 22, 2, 'Open', NULL, '2025-04-29 12:00:00', '2025-04-27 17:16:40', NULL, NULL),
+(18, 'Q-20250427-D223F', 10, 23, 2, 'Open', NULL, '2025-04-30 12:00:00', '2025-04-27 17:21:12', NULL, NULL),
+(19, 'Q-20250427-5F908', 10, 24, 2, 'Open', NULL, '2025-04-30 12:00:00', '2025-04-27 17:24:20', NULL, NULL),
+(20, 'Q-20250427-C651A', 10, 25, 2, 'Open', NULL, '2025-04-30 12:00:00', '2025-04-27 17:27:02', NULL, NULL),
+(21, 'Q-20250427-6B2BB', 10, 26, 2, 'Open', NULL, '2025-04-29 12:00:00', '2025-04-27 17:33:26', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -368,7 +372,7 @@ INSERT INTO `users` (`id`, `username`, `email`, `password`, `gender_id`, `birthd
 (4, 'sophia_lopez', 'sophia@example.com', '$2y$10$abcdefg1234567890hashedpassword', 2, '1998-02-17', '', 1, NULL, 2, 'Sophia', NULL, 'Lopez', NULL, 4, '09211231234', '2025-02-19 17:07:09', '2025-02-17 14:53:05'),
 (5, 'testJohn', 'john@test.com', '$2y$10$j50lJr0HRfGjfSXN5V3q5uIQJI5l5gC7AkNaXkiR1pNVIgHLVoewa', 1, '1998-10-03', 'asdasdasdasd', 0, '../uploads/download.png', 2, 'John', 'Cena', 'Doe', '', 2, '', '2025-02-19 17:07:22', '2025-02-17 16:17:26'),
 (6, 'testaccount', 'testaccount@gmail.com', '$2y$10$KxspuhRxXMPCnWdJafqGLOhqmeUmaSv6hE2RVg/r52rO5wANUruwO', 1, '1999-02-03', 'sadsadasd', 1, '../uploads/mqdefault_6s.webp', 2, 'John', 'Cena', 'Doe', '', 3, '', '2025-02-20 17:20:19', '2025-02-17 16:18:44'),
-(10, 'luffy01', 'monkey.d@luffy.com', '$2y$10$FCC.VI1fPyRqJE6lJ2dx4.8h7ze/cocxgQew0ijztP.aFIyUowuKS', 1, '2025-02-20', 'sea', 1, '../uploads/one-piece-icons-by-me-v0-qweam8vkaxv91.jpg', 2, 'Luffy', 'Dreamer', 'Monkey', '', 1, '123123', '2025-02-20 16:10:26', '2025-02-20 16:10:26'),
+(10, 'luffy01', 'monkey.d@luffy.com', '$2y$10$j50lJr0HRfGjfSXN5V3q5uIQJI5l5gC7AkNaXkiR1pNVIgHLVoewa', 1, '2025-02-20', 'sea', 1, '../uploads/one-piece-icons-by-me-v0-qweam8vkaxv91.jpg', 2, 'Luffy', 'Dreamer', 'Monkey', '', 1, '123123', '2025-04-29 15:49:14', '2025-02-20 16:10:26'),
 (101, 'johndoe', 'john.doe@barangay.gov', '$2y$10$O9H5WPaZjDpW4p5oWYSv7.m8sfR/OCbUBkkdxkkKHZdmFBXzLnUNy', 1, '1990-05-15', '123 Main St, Barangay', 1, NULL, 3, 'John', 'A.', 'Doe', NULL, 1, '09171234567', '2025-03-16 08:43:40', '2025-03-16 08:40:46'),
 (102, 'janesmith', 'jane.smith@barangay.gov', '$2y$10$O9H5WPaZjDpW4p5oWYSv7.m8sfR/OCbUBkkdxkkKHZdmFBXzLnUNy', 2, '1988-08-25', '456 Elm St, Barangay', 1, NULL, 3, 'Jane', 'B.', 'Smith', NULL, 2, '09179876543', '2025-03-16 08:43:46', '2025-03-16 08:40:46'),
 (103, 'michaelreyes', 'michael.reyes@barangay.gov', '$2y$10$O9H5WPaZjDpW4p5oWYSv7.m8sfR/OCbUBkkdxkkKHZdmFBXzLnUNy', 1, '1995-02-10', '789 Oak St, Barangay', 1, NULL, 3, 'Michael', 'C.', 'Reyes', 'Jr.', 1, '09175678901', '2025-03-16 08:43:52', '2025-03-16 08:40:46');

@@ -11286,8 +11286,8 @@ ul#confirmation-list {
     }
 
     .org-chart-wrapper .member {
-        width: 90%;
-        max-width: 295px;
+        width: 100%;
+        max-width: 675px;
     }
 }
 

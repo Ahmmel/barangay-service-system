@@ -210,6 +210,7 @@ class Transaction
             t.status,
             t.created_at,
             t.date_closed,
+            t.rating,
             t.updated_at,
             u.first_name,
             u.middle_name,
@@ -311,6 +312,23 @@ class Transaction
         }
 
         return null;
+    }
+
+    //rateTransaction
+    public function rateTransaction($transactionCode, $rating)
+    {
+        // Start a transaction to ensure atomicity
+        $this->conn->beginTransaction();
+
+        // Update the transaction with the rating and review
+        $query = "UPDATE transactions SET rating = :rating WHERE transaction_code = :transactionCode";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([':rating' => $rating, ':transactionCode' => $transactionCode]);
+
+        // Commit the transaction
+        $this->conn->commit();
+
+        return true;
     }
 
     public function getUserMobileNumber($userId)

@@ -175,6 +175,24 @@ class TransactionController
             }
         }
     }
+
+    // Rate Transaction
+    public function rateTransaction()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $transactionCode = $_POST['transaction_code'];
+            $rating = $_POST['rating'];
+
+            if (empty($transactionCode) || empty($rating)) {
+                echo json_encode(['success' => false, 'message' => 'Transaction Code and rating are required']);
+                return;
+            }
+
+            // Rate the transaction
+            $result = $this->TransactionModel->rateTransaction($transactionCode, $rating);
+            echo json_encode(['success' => $result]);
+        }
+    }
 }
 
 $database = new Database();
@@ -204,6 +222,9 @@ switch ($action) {
         break;
     case 'getTransactionsByUserId':
         $controller->getTransactionsByUserId();
+        break;
+    case 'rateTransaction':
+        $controller->rateTransaction();
         break;
     default:
         echo json_encode(['error' => 'Invalid request']);

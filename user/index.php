@@ -372,8 +372,8 @@ $transactions = $transactionModel->getTransactionsByUserId($userId);
 
                                     <!-- Status -->
                                     <td>
-                                        <?php if ($transaction['status'] === 'Completed'): ?>
-                                            <span class="badge bg-success">Completed</span>
+                                        <?php if ($transaction['status'] === 'Closed'): ?>
+                                            <span class="badge bg-success">Closed</span>
                                         <?php elseif ($transaction['status'] === 'Pending'): ?>
                                             <span class="badge bg-warning text-dark">Pending</span>
                                         <?php else: ?>
@@ -388,10 +388,19 @@ $transactions = $transactionModel->getTransactionsByUserId($userId);
 
                                     <!-- Review Button -->
                                     <td>
-                                        <?php if ($transaction['status'] === 'Completed'): ?>
+                                        <?php if ($transaction['status'] === 'Closed' && !$transaction['rating']): ?>
                                             <button class="btn btn-outline-primary btn-sm" onclick="openReviewModal('<?= htmlspecialchars($transaction['transaction_code']) ?>')">
                                                 Leave a Review
                                             </button>
+                                        <?php elseif ($transaction['rating']): ?>
+                                            <?php
+                                            // Build the stars in PHP
+                                            $stars = '';
+                                            for ($i = 1; $i <= 5; $i++) {
+                                                $stars .= ($i <= $transaction['rating']) ? '⭐' : '☆';
+                                            }
+                                            ?>
+                                            <span style="font-size: 1.2rem;"><?= $stars ?></span>
                                         <?php else: ?>
                                             <button class="btn btn-outline-secondary btn-sm" disabled>
                                                 Not Available
@@ -578,6 +587,11 @@ $transactions = $transactionModel->getTransactionsByUserId($userId);
                 </div>
             </div>
         </section>
+        <section>
+            <div style="text-align: center; padding: 1rem; font-family: 'Poppins', 'Segoe UI', sans-serif; font-size: 0.9rem; color: #6c757d;">
+                Powered by: <strong style="color: #bd5932;">QPILA</strong> © <?= date('Y') ?>
+            </div>
+        </section>
     </div>
 
     <!-- Change Password Modal -->
@@ -666,10 +680,10 @@ $transactions = $transactionModel->getTransactionsByUserId($userId);
     <script>
         var userId = "<?php echo $userId; ?>";
         let selectedRating = 0;
-        let currentTransactionId = "";
+        let currentTransactionCode = "";
 
         function openReviewModal(transactionId) {
-            currentTransactionId = transactionId;
+            currentTransactionCode = transactionId;
             $("#transactionIdText").text(`Transaction: ${transactionId}`);
             $("#rating .rate").removeClass("selected");
             selectedRating = 0;
@@ -684,28 +698,71 @@ $transactions = $transactionModel->getTransactionsByUserId($userId);
 
         function submitRating() {
             if (selectedRating === 0) {
-                alert("Please select a rating before submitting!");
+                Swal.fire({
+                    toast: true,
+                    icon: 'warning',
+                    title: 'Please select a rating before submitting!',
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true
+                });
                 return;
             }
 
+            // Hide the modal immediately
             $("#reviewModal").modal("hide");
 
-            // Build the stars based on rating
-            let stars = "";
-            for (let i = 1; i <= 5; i++) {
-                if (i <= selectedRating) {
-                    stars += "⭐";
-                } else {
-                    stars += "☆";
-                }
-            }
+            // Send the rating to server via AJAX first
+            $.ajax({
+                url: '../controllers/TransactionController.php?action=rateTransaction', // Adjust to your real endpoint
+                method: 'POST',
+                data: {
+                    transaction_code: currentTransactionCode,
+                    rating: selectedRating
+                },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success) {
+                        // Build the stars based on rating
+                        let stars = "";
+                        for (let i = 1; i <= 5; i++) {
+                            stars += (i <= selectedRating) ? "⭐" : "☆";
+                        }
 
-            // Find the correct table row and update the Review column
-            $(`td:contains(${currentTransactionId})`).each(function() {
-                if ($(this).text() === currentTransactionId) {
-                    // Move to the Review button's cell
-                    const reviewCell = $(this).siblings().last();
-                    reviewCell.html(`<span style="font-size: 1.2rem;">${stars}</span>`);
+                        // Find the correct table row and update the Review column
+                        $(`td:contains(${currentTransactionCode})`).each(function() {
+                            if ($(this).text() === currentTransactionCode) {
+                                const reviewCell = $(this).siblings().last();
+                                reviewCell.html(`<span style="font-size: 1.2rem;">${stars}</span>`);
+                            }
+                        });
+
+                        // Show success toast
+                        Swal.fire({
+                            toast: true,
+                            icon: 'success',
+                            title: 'Thank you for your review!',
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 2500,
+                            timerProgressBar: true
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Failed!',
+                            text: response.message || 'Unable to submit rating. Please try again.'
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error(xhr.responseText);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Server Error!',
+                        text: 'Something went wrong. Please try again later.'
+                    });
                 }
             });
         }
@@ -948,7 +1005,7 @@ $transactions = $transactionModel->getTransactionsByUserId($userId);
                                 servicesHTML = `<span class="text-danger">Error loading services</span>`;
                             }
 
-                            const reviewButton = transaction.status === 'Completed' ?
+                            const reviewButton = transaction.status === 'Closed' ?
                                 `<button class="btn btn-outline-primary btn-sm" onclick="openReviewModal('${transaction.transaction_code}')">Leave a Review</button>` :
                                 `<button class="btn btn-outline-secondary btn-sm" disabled>Not Available</button>`;
 
@@ -959,7 +1016,7 @@ $transactions = $transactionModel->getTransactionsByUserId($userId);
                                 <td>
                                     <span class="badge
                                         ${
-                                        transaction.status === 'Completed'
+                                        transaction.status === 'Closed'
                                             ? 'bg-success'
                                             : transaction.status === 'Pending'
                                             ? 'bg-warning text-dark'

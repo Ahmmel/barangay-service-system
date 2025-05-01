@@ -129,6 +129,37 @@ class Transaction
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    //getAllStaffTransactions
+    public function getAllStaffTransactions($staffId)
+    {
+        $query = "
+        SELECT 
+            t.id AS transaction_id,
+            t.transaction_code,
+            t.queue_id,
+            t.status,
+            t.created_at,
+            t.date_closed ,
+            t.updated_at,
+            u.first_name,
+            u.middle_name,
+            u.last_name,
+            u.suffix,
+            u.mobile_number,
+            GROUP_CONCAT(s.service_name ORDER BY s.service_name ASC SEPARATOR ', ') AS services
+        FROM transactions t
+        JOIN users u ON t.user_id = u.id
+        LEFT JOIN transaction_services ts ON t.id = ts.transaction_id
+        LEFT JOIN services s ON ts.service_id = s.id
+        WHERE t.handled_by_staff_id = :staffId
+        GROUP BY t.id
+        ORDER BY t.created_at DESC";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([':staffId' => $staffId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     // Get transaction by transaction_code
     public function getTransactionByCode($transactionCode)
     {
@@ -239,7 +270,7 @@ class Transaction
     }
 
     // Update the status of a transaction
-    public function updateTransactionStatus($id, $status, $reason = null)
+    public function updateTransactionStatus($id, $status, $staffId, $reason = null)
     {
         // Start a transaction to ensure atomicity
         $this->conn->beginTransaction();
@@ -282,9 +313,17 @@ class Transaction
         // If no pending records exist, proceed to update the other table
         if ($pendingCount == 0) {
             // Example query to update the other table (replace with actual query)
-            $updateTransaction = "UPDATE " . $this->table_name . " SET status = 'Closed', updated_at = NOW(),  date_closed = NOW() WHERE id = :transaction_id";
+            $updateTransaction = "UPDATE " . $this->table_name . " SET status = 'Closed', updated_at = NOW(), handled_by_staff_id = :staffId,  date_closed = NOW() WHERE id = :transaction_id";
             $stmt = $this->conn->prepare($updateTransaction);
-            $stmt->execute([':transaction_id' => $transaction_id]);
+            $stmt->execute([
+                ':transaction_id' => $transaction_id,
+                ':staffId' => $staffId
+            ]);
+        } else {
+            // If there are still pending records, update the transaction status to "In Progress"
+            $updateTransaction = "UPDATE " . $this->table_name . " SET status = 'In Progress', updated_at = NOW(), handled_by_staff_id = :staffId WHERE id = :transaction_id";
+            $stmt = $this->conn->prepare($updateTransaction);
+            $stmt->execute([':transaction_id' => $transaction_id, ':staffId' => $staffId]);
         }
 
         // Commit the transaction
@@ -292,6 +331,65 @@ class Transaction
 
         // Return whether any row was affected in the last update
         return $stmt->rowCount() > 0;
+    }
+
+    public function setCancelStatusByTransactionCode($transactionCode, $staffId)
+    {
+        try {
+            // Begin transaction
+            $this->conn->beginTransaction();
+
+            // Step 1: Fetch transaction ID
+            $stmt = $this->conn->prepare("
+            SELECT id FROM {$this->table_name} 
+            WHERE transaction_code = :transactionCode 
+            LIMIT 1
+        ");
+            $stmt->execute([':transactionCode' => $transactionCode]);
+            $transaction = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$transaction) {
+                $this->conn->rollBack();
+                return false;
+            }
+
+            $transactionId = $transaction['id'];
+
+            // Step 2: Update transactions table
+            $stmt = $this->conn->prepare("
+            UPDATE {$this->table_name}
+            SET status = 'Cancelled',
+                updated_at = NOW(),
+                handled_by_staff_id = :staffId,
+                date_closed = NOW()
+            WHERE id = :id
+        ");
+            $updateSuccess = $stmt->execute([
+                ':id' => $transactionId,
+                ':staffId' => $staffId
+            ]);
+
+            if (!$updateSuccess || $stmt->rowCount() === 0) {
+                $this->conn->rollBack();
+                return false;
+            }
+
+            // Step 3: Update transaction_services table
+            $stmt = $this->conn->prepare("
+            UPDATE transaction_services
+            SET status = 'Cancelled',
+                reason = 'No Show',
+                completed_at = NOW()
+            WHERE transaction_id = :transactionId
+        ");
+            $stmt->execute([':transactionId' => $transactionId]);
+
+            $this->conn->commit();
+            return true;
+        } catch (Exception $e) {
+            $this->conn->rollBack();
+            return false;
+        }
     }
 
     public function setNextTransaction()

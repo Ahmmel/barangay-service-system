@@ -20,6 +20,9 @@
 <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
 
 <script>
+    var isAdmin = <?= json_encode($isAdmin) ?>;
+    var currentSessionId = <?= json_encode($currentSessionId) ?>;
+
     // Initialize DataTables
     $(document).ready(function() {
         $("#activityLogTable").DataTable({

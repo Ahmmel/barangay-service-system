@@ -1,5 +1,3 @@
-var isAdmin = "<?php echo $isAdmin; ?>";
-
 // Get references to the password and confirmPassword inputs
 const passwordField = document.querySelector(".password");
 const confirmPasswordField = document.querySelector(".confirmPassword");
@@ -472,7 +470,7 @@ $("#searchTransactionForm").submit(function (e) {
 });
 
 function shouldShowActions(status) {
-  const allowedStatuses = ["Open", "Pending", "Cancelled"];
+  const allowedStatuses = ["Open", "Pending"];
   return allowedStatuses.includes(status);
 }
 
@@ -599,57 +597,103 @@ function updateStatus(serviceId) {
 
 // Function to save the reason and update the service status to closed
 function processStatusChanged(serviceId, status) {
-  // Get the reason from the textarea
   const reason = $(`#reason_${serviceId}`).val();
 
-  // Check if a reason has been provided
   if (!reason) {
     showErrorException("Please provide a reason before saving.");
     return;
   }
 
-  // Log the reason for debugging
-  console.log("Reason for service ID " + serviceId + ": " + reason);
-
-  // Example: Updating the service status on the page
-  $(`#serviceList tr:eq(${serviceId}) td`).html(`
-    Service Closed. Reason: ${reason}
-  `);
-
-  // Send the data to the server using AJAX
   $.ajax({
     url: "../controllers/TransactionController.php?action=updateServiceStatus",
     type: "POST",
     data: {
       transaction_service_id: serviceId,
       status: status,
+      staff_id: currentSessionId,
       reason: reason,
     },
     success: function (response) {
-      var result = JSON.parse(response);
+      const result = JSON.parse(response);
 
       if (result.success) {
+        // ✅ Update only the status badge
+        const $statusCell = $(`#service_${serviceId} td`).eq(1);
+        let badgeHtml = "";
+
+        if (status === "Closed") {
+          badgeHtml = `<span class="badge badge-success"><i class="fas fa-check-circle"></i> Closed</span>`;
+        } else if (status === "Cancelled") {
+          badgeHtml = `<span class="badge badge-danger"><i class="fas fa-times-circle"></i> Cancelled</span>`;
+        }
+
+        $statusCell.html(badgeHtml);
+
+        // ✅ Hide the action button and cleanup
+        cancelReason(serviceId);
+        $(`#service_${serviceId} td`).eq(2).hide(); // Hide the action button
+
+        // ✅ Toast success
         Swal.fire({
-          title: "Success!",
-          text: "Service status updated successfully.",
+          toast: true,
+          position: "top-end",
           icon: "success",
-          confirmButtonText: "OK",
-          confirmButtonColor: "#28a745", // Green color for success
-        }).then((result) => {
-          if (result.isConfirmed) {
-            location.reload();
-          }
+          title: `Service marked as ${status}`,
+          showConfirmButton: false,
+          timer: 2000,
+          timerProgressBar: true,
         });
+
+        // ✅ Check if all services are completed
+        const allDone = $('#serviceList tr[id^="service_"]')
+          .toArray()
+          .every((row) => {
+            const statusText = $(row).find("td").eq(1).text().trim();
+            return (
+              statusText.includes("Closed") || statusText.includes("Cancelled")
+            );
+          });
+
+        if (allDone) {
+          if (typeof isTransactionPage !== "undefined" && isTransactionPage) {
+            Swal.fire({
+              title: "All services completed",
+              text: "This transaction has been successfully completed.",
+              icon: "success",
+              confirmButtonText: "OK",
+              confirmButtonColor: "#28a745",
+              allowOutsideClick: false,
+              allowEscapeKey: false,
+            }).then(() => {
+              $("body").append(`
+                <div id="topBar" style="
+                  position: fixed;
+                  top: 0; left: 0; width: 0%;
+                  height: 4px;
+                  background-color: #28a745;
+                  z-index: 9999;
+                  transition: width 0.8s ease-in-out;
+                "></div>
+              `);
+
+              setTimeout(() => {
+                $("#topBar").css("width", "100%");
+                setTimeout(() => location.reload(), 700);
+              }, 100);
+            });
+          } else {
+            $("#updateTransactionModal").modal("hide");
+            moveNextScheduledToNowServing();
+          }
+        }
+      } else {
+        showErrorException(result.message || "Failed to update status.");
       }
     },
     error: function (xhr, status, error) {
       showErrorException(error);
     },
   });
-
-  // Hide the reason textbox and show the other action buttons again
-  $(`#reasonRow_${serviceId}`).hide();
-  $(`#serviceList tr:eq(${serviceId}) td button`).show();
 }
 
 // Function to cancel the reason entry and show the action buttons again
@@ -672,13 +716,6 @@ function formatDate(dateString) {
   return date.toLocaleDateString("en-US", options);
 }
 
-// Function to check if actions should be visible based on the transaction status
-function shouldShowActions(status) {
-  // Define the statuses that allow actions
-  const allowedStatuses = ["Open", "Pending"];
-  return allowedStatuses.includes(status);
-}
-
 function getStatusHtml(status) {
   // Return different HTML based on the status
   switch (status) {
@@ -693,6 +730,77 @@ function getStatusHtml(status) {
     default:
       return '<span class="badge badge-secondary"><i class="fas fa-question-circle"></i> Unknown</span>';
   }
+}
+
+function handleNoShow(transactionCode) {
+  Swal.fire({
+    title: "Mark as No Show?",
+    text: "This action cannot be undone once set.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Yes, mark as No Show",
+    cancelButtonText: "Cancel",
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#6c757d",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      $.ajax({
+        url: "../controllers/QueueController.php?action=markNoShow",
+        method: "POST",
+        data: {
+          transaction_code: transactionCode,
+          staff_id: currentSessionId,
+        },
+        success: function (response) {
+          const res = JSON.parse(response);
+          if (res.success) {
+            Swal.fire(
+              "Marked as No Show",
+              "The transaction was cancelled.",
+              "success"
+            ).then(() => {
+              moveNextScheduledToNowServing(); // Move next in line
+            });
+          } else {
+            Swal.fire(
+              "Error",
+              res.message || "Failed to update status.",
+              "error"
+            );
+          }
+        },
+        error: function () {
+          Swal.fire("Error", "Could not connect to the server.", "error");
+        },
+      });
+    }
+  });
+}
+
+function moveNextScheduledToNowServing() {
+  const $nextItem = $("#scheduledQueueList .queue-item").first();
+
+  if ($nextItem.length === 0) {
+    $("#scheduledCurrentNumber").text("—");
+    $("#scheduledStartTransaction, #scheduledNoShow").prop("disabled", true);
+    Swal.fire("Done", "No more scheduled transactions.", "info");
+    return;
+  }
+
+  const transactionCode = $nextItem.find(".transaction-code").text().trim();
+  const queueId = $nextItem.attr("id").replace("scheduled-", "");
+  const transactionId = $nextItem.data("transaction-id");
+
+  $nextItem.fadeOut(300, function () {
+    $(this).remove();
+
+    // Update Now Serving panel
+    $("#scheduledCurrentNumber").text(transactionCode);
+    $("#scheduledStartTransaction").data("queue-id", queueId);
+    $("#scheduledNoShow")
+      .data("queue-id", queueId)
+      .data("transaction-id", transactionId);
+  });
 }
 
 $(document).ready(function () {
@@ -1276,5 +1384,10 @@ $(document).ready(function () {
         $("#transactionCode").val("");
       },
     });
+  });
+
+  $("#scheduledNoShow").on("click", function () {
+    const transactionCode = $("#scheduledNoShow").data("transaction-code");
+    handleNoShow(transactionCode);
   });
 });

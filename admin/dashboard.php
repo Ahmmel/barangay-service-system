@@ -17,6 +17,7 @@ if (!isset($_SESSION['user_role']) || !in_array($_SESSION['user_role'], ["admin"
 // Create database connection
 $database = new Database();
 $db = $database->getConnection();
+$isAdmin = $_SESSION['user_role'] == 'admin' ? true : false;
 
 // Initialize User object
 $user = new User($db);
@@ -96,21 +97,37 @@ $totalAnnualTransactions = $totalCounts['totalAnnualTransactions'];
         </a>
     </li>
 
-    <!-- Nav Item - Services -->
-    <li class="nav-item">
-        <a class="nav-link" href="services.php">
-            <i class="fas fa-fw fa-suitcase"></i>
-            <span>Services</span>
-        </a>
-    </li>
+    <?php if ($isAdmin) : ?>
+        <!-- Nav Item - Services -->
+        <li class="nav-item">
+            <a class="nav-link" href="services.php">
+                <i class="fas fa-fw fa-suitcase"></i>
+                <span>Services</span>
+            </a>
+        </li>
 
-    <!-- Nav Item - Requirement -->
-    <li class="nav-item">
-        <a class="nav-link" href="requirements.php">
-            <i class="fas fa-fw fa-suitcase"></i>
-            <span>Service Requirements</span>
-        </a>
-    </li>
+        <!-- Nav Item - Requirement -->
+        <li class="nav-item">
+            <a class="nav-link" href="requirements.php">
+                <i class="fas fa-fw fa-suitcase"></i>
+                <span>Service Requirements</span>
+            </a>
+        </li>
+    <?php else : ?>
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#queueManagement" aria-expanded="false" aria-controls="queueManagement">
+                <i class="fas fa-fw fa-tasks"></i>
+                <span>Manage Queue</span>
+            </a>
+            <div id="queueManagement" class="collapse" aria-labelledby="headingUtilities">
+                <div class="bg-white py-2 collapse-inner rounded">
+                    <h6 class="collapse-header">Queue Types:</h6>
+                    <a class="collapse-item active" href="queue-sched.php">Scheduled Queue</a>
+                    <a class="collapse-item" href="queue-walkin.php">Walk-in Queue</a>
+                </div>
+            </div>
+        </li>
+    <?php endif; ?>
 
     <!-- Transaction -->
     <li class="nav-item">
@@ -279,7 +296,7 @@ $totalAnnualTransactions = $totalCounts['totalAnnualTransactions'];
             if ($_SESSION['user_role'] == 'admin') {
                 include('../views/templates/admin_dashboard.php');  // Admin dashboard
             } elseif ($_SESSION['user_role'] == 'staff') {
-                include('../views/templates//templates/taff_dashboard.php');  // Staff dashboard
+                include('../views/templates/staff_dashboard.php');  // Staff dashboard
             }
             ?>
             <!-- Content Row -->

@@ -15,11 +15,13 @@ if (!isset($_SESSION['user_role']) || !in_array($_SESSION['user_role'], ["admin"
     exit();
 }
 
-$isAdmin = $_SESSION['user_role'] !== 'admin' ? true : false;
+$isAdmin = $_SESSION['user_role'] == 'admin' ? true : false;
+$currentSessionId = $_SESSION['user_id'];
+
 $database = new Database();
 $db = $database->getConnection();
 $transaction = new Transaction($db);
-$transactions = $transaction->getAllTransactions();
+$transactions = $isAdmin ? $transaction->getAllTransactions() : $transaction->getAllStaffTransactions($_SESSION['user_id']);
 ?>
 
 <!-- Sidebar -->
@@ -58,6 +60,38 @@ $transactions = $transaction->getAllTransactions();
         </a>
     </li>
 
+    <?php if ($isAdmin) : ?>
+        <!-- Nav Item - Services -->
+        <li class="nav-item">
+            <a class="nav-link" href="services.php">
+                <i class="fas fa-fw fa-suitcase"></i>
+                <span>Services</span>
+            </a>
+        </li>
+
+        <!-- Nav Item - Requirement -->
+        <li class="nav-item">
+            <a class="nav-link" href="requirements.php">
+                <i class="fas fa-fw fa-suitcase"></i>
+                <span>Service Requirements</span>
+            </a>
+        </li>
+    <?php else : ?>
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#queueManagement" aria-expanded="false" aria-controls="queueManagement">
+                <i class="fas fa-fw fa-tasks"></i>
+                <span>Manage Queue</span>
+            </a>
+            <div id="queueManagement" class="collapse" aria-labelledby="headingUtilities">
+                <div class="bg-white py-2 collapse-inner rounded">
+                    <h6 class="collapse-header">Queue Types:</h6>
+                    <a class="collapse-item active" href="queue-sched.php">Scheduled Queue</a>
+                    <a class="collapse-item" href="queue-walkin.php">Walk-in Queue</a>
+                </div>
+            </div>
+        </li>
+    <?php endif; ?>
+
     <!-- Nav Item - Transactions -->
     <li class="nav-item active">
         <a class="nav-link" href="transactions.php">
@@ -80,7 +114,8 @@ $transactions = $transaction->getAllTransactions();
     <!-- Main Content -->
     <div id="content">
         <!-- Topbar -->
-        <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+        <nav
+            class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
             <!-- Sidebar Toggle (Topbar) -->
             <button
                 id="sidebarToggleTop"
@@ -90,6 +125,20 @@ $transactions = $transaction->getAllTransactions();
 
             <!-- Topbar Navbar -->
             <ul class="navbar-nav ml-auto">
+                <!-- Nav Item - Search Dropdown (Visible Only XS) -->
+                <li class="nav-item dropdown no-arrow d-sm-none">
+                    <a
+                        class="nav-link dropdown-toggle"
+                        href="#"
+                        id="searchDropdown"
+                        role="button"
+                        data-toggle="dropdown"
+                        aria-haspopup="true"
+                        aria-expanded="false">
+                        <i class="fas fa-search fa-fw"></i>
+                    </a>
+                </li>
+
                 <!-- Nav Item - Alerts -->
                 <li class="nav-item dropdown no-arrow mx-1">
                     <a
@@ -101,14 +150,52 @@ $transactions = $transaction->getAllTransactions();
                         aria-haspopup="true"
                         aria-expanded="false">
                         <i class="fas fa-bell fa-fw"></i>
+                        <!-- Counter - Alerts -->
                         <span class="badge badge-danger badge-counter">3+</span>
                     </a>
                     <!-- Dropdown - Alerts -->
                     <div
                         class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
                         aria-labelledby="alertsDropdown">
-                        <!-- Add alert content here -->
+                        <h6 class="dropdown-header">Staff Alerts Center</h6>
+                        <a class="dropdown-item d-flex align-items-center" href="#">
+                            <div class="mr-3">
+                                <div class="icon-circle bg-primary">
+                                    <i class="fas fa-calendar-check text-white"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="small text-gray-500">February 15, 2025</div>
+                                <span class="font-weight-bold">New appointment scheduled for <strong>John Doe</strong> tomorrow at 9:00 AM.</span>
+                            </div>
+                        </a>
+                        <a class="dropdown-item d-flex align-items-center" href="#">
+                            <div class="mr-3">
+                                <div class="icon-circle bg-success">
+                                    <i class="fas fa-user-check text-white"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="small text-gray-500">February 15, 2025</div>
+                                <span class="font-weight-bold">Queue number <strong>#23</strong> is now up for <strong>Maria Santos</strong>.</span>
+                            </div>
+                        </a>
+                        <a class="dropdown-item d-flex align-items-center" href="#">
+                            <div class="mr-3">
+                                <div class="icon-circle bg-warning">
+                                    <i class="fas fa-exclamation-triangle text-white"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="small text-gray-500">February 15, 2025</div>
+                                <span class="font-weight-bold">Appointment Alert:</span> <strong>John Doe</strong> has missed their scheduled time.
+                            </div>
+                        </a>
+                        <a
+                            class="dropdown-item text-center small text-gray-500"
+                            href="#">Show All Alerts</a>
                     </div>
+
                 </li>
 
                 <div class="topbar-divider d-none d-sm-block"></div>
@@ -132,7 +219,28 @@ $transactions = $transaction->getAllTransactions();
                     <div
                         class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
                         aria-labelledby="userDropdown">
-                        <!-- Add user actions here -->
+                        <a class="dropdown-item" href="#">
+                            <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
+                            Profile
+                        </a>
+                        <a class="dropdown-item" href="#">
+                            <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
+                            Settings
+                        </a>
+                        <a class="dropdown-item" href="#">
+                            <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
+                            Activity Log
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a
+                            class="dropdown-item"
+                            href="#"
+                            data-toggle="modal"
+                            data-target="#logoutModal">
+                            <i
+                                class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                            Logout
+                        </a>
                     </div>
                 </li>
             </ul>
@@ -173,21 +281,27 @@ $transactions = $transaction->getAllTransactions();
                     if ($transactions) {
                         foreach ($transactions as $transaction) {
                             $fullname = trim($transaction['first_name'] . ' ' . $transaction['last_name'] . ' ' . ($transaction['middle_name'] ?? '') . ' ' . ($transaction['suffix'] ?? ''));
+                            $services = explode(',', $transaction['services']);
+                            $servicesList = '<ul class="bullet-list">';
+                            foreach ($services as $service) {
+                                $servicesList .= '<li>' . htmlspecialchars(trim($service)) . '</li>';
+                            }
+                            $servicesList .= '</ul>';
                             echo "<tr id='transactionData_{$transaction['transaction_id']}'>
                                     <td>{$transaction['transaction_code']}</td>
                                     <td>{$fullname}</td>
-                                    <td>{$transaction['services']}</td>
+                                    <td>$servicesList</td>
                                     <td>{$transaction['created_at']}</td>
                                     <td>{$transaction['updated_at']}</td>
                                     <td>{$transaction['date_closed']}</td>
                                     <td>{$transaction['status']}</td>
                                     <td>
-                                        <button class='btn btn-info btn-sm' style='display: " . ($transaction['status'] != 'Closed' ? 'block' : 'none') . ";' onclick='openUpdateTransactionModal({$transaction['transaction_id']})'>Update Status</button>
+                                        <button class='btn btn-info btn-sm' style='display: " . (!in_array($transaction['status'], ['Closed', 'Cancelled']) ? 'block' : 'none') . ";' onclick='openUpdateTransactionModal({$transaction['transaction_id']})'>Update Status</button>
                                     </td>
                                 </tr>";
                         }
                     } else {
-                        echo "<tr><td colspan='5' class='text-center'>No transactions found</td></tr>";
+                        echo "<tr><td colspan='8' class='text-center'>No transactions found</td></tr>";
                     }
                     ?>
                 </tbody>
@@ -208,6 +322,10 @@ $transactions = $transaction->getAllTransactions();
     <!-- End of Footer -->
 </div>
 <!-- End of Content Wrapper -->
+
+<script>
+    const isTransactionPage = true;
+</script>
 
 <?php
 // Include footer template

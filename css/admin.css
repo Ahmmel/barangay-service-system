@@ -83,4 +83,17 @@
     border-radius: 50%;
     justify-content: center;
   }
+
+  #transactionTable td.bullet-list ul {
+    margin: 0;
+    padding-left: 1.2rem;
+    list-style-type: disc;
+    color: #333;
+    font-size: 0.95rem;
+}
+
+#transactionTable td.bullet-list li {
+    margin-bottom: 4px;
+}
+
 }

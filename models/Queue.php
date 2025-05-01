@@ -42,7 +42,7 @@ class Queue
 
     public function getCurrentQueue()
     {
-        $query = "SELECT * FROM " . $this->table_name . " WHERE status = 'pending' ORDER BY created_at ASC LIMIT 1";
+        $query = "SELECT * FROM " . $this->table_name . " WHERE status = 'Pending' ORDER BY created_at ASC LIMIT 1";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         return $stmt->fetch(PDO::FETCH_ASSOC);
@@ -50,9 +50,49 @@ class Queue
 
     public function nextQueue($queue_id, $staff_id)
     {
-        $query = "UPDATE " . $this->table_name . " SET status = 'Assigned', updated_by_staff_id = :staff_id WHERE queue_id = :queue_id";
+        $query = "UPDATE " . $this->table_name . " 
+              SET status = 'Assigned', updated_by_staff_id = :staff_id 
+              WHERE id = :queue_id";
+
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":queue_id", $queue_id, ":staff_id", $staff_id);
+        $stmt->bindParam(":queue_id", $queue_id);
+        $stmt->bindParam(":staff_id", $staff_id);
+        return $stmt->execute();
+    }
+
+    // Get today queue by type
+    public function getTodayPendingQueues($type)
+    {
+        $query = "
+        SELECT 
+            q.id,
+            q.transaction_code,
+            u.first_name,
+            CONCAT(u.first_name, ' ', LEFT(u.last_name, 1), '.') AS display_name,
+            q.type,
+            q.status,
+            q.scheduled_date,
+            q.created_at
+        FROM " . $this->table_name . " q
+        INNER JOIN users u ON q.user_id = u.id
+        WHERE DATE(q.created_at) = CURDATE()
+          AND q.type = :type
+          AND q.status = 'Pending'
+        ORDER BY q.scheduled_date ASC
+    ";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":type", $type);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function markNoShow($transactionCode, $staffId)
+    {
+        $query = "UPDATE " . $this->table_name . " SET status = 'Assigned', updated_by_staff_id = :staffId WHERE transaction_code = :transactionCode";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":transactionCode", $transactionCode);
+        $stmt->bindParam(":staffId", $staffId);
         return $stmt->execute();
     }
 }

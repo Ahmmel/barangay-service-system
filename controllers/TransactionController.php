@@ -102,9 +102,10 @@ class TransactionController
             $transactionServiceId = $_POST['transaction_service_id'];
             $status = $_POST['status'];
             $reason = $_POST['reason'] ?? null;
+            $staffId = $_POST['staff_id'] ?? null;
 
-            if (empty($transactionServiceId) || empty($status)) {
-                echo json_encode(['success' => false, 'message' => 'Transaction ID and status are required']);
+            if (empty($transactionServiceId) || empty($status) || empty($staffId)) {
+                echo json_encode(['success' => false, 'message' => 'Transaction ID, status, and staff ID are required']);
                 return;
             }
 
@@ -114,8 +115,9 @@ class TransactionController
             }
 
             // Update the transaction status
-            $result = $this->TransactionModel->updateTransactionStatus($transactionServiceId, $status, $reason);
+            $result = $this->TransactionModel->updateTransactionStatus($transactionServiceId, $status, $staffId, $reason);
             echo json_encode(['success' => $result]);
+            return;
         }
     }
 

@@ -3,6 +3,7 @@
 include_once '../views/templates/admin_header.php';
 include_once '../config/database.php';
 include_once '../models/Service.php';
+include_once '../models/Queue.php';
 
 // start the session
 session_start();
@@ -16,10 +17,27 @@ if (!isset($_SESSION['user_role']) || !in_array($_SESSION['user_role'], ["admin"
 }
 
 $isAdmin = $_SESSION['user_role'] !== 'admin' ? true : false;
+$currentSessionId = $_SESSION['user_id'];
+
 $database = new Database();
 $db = $database->getConnection();
 $service = new Service($db);
 $services = $service->getServices();
+
+$queueModel = new Queue($db);
+$scheduledQueue = $queueModel->getTodayPendingQueues(2); // 2 = Scheduled
+$currentlyServing = null;
+
+if (!empty($scheduledQueue)) {
+    $currentlyServing = array_shift($scheduledQueue);
+    $currentTransactionCode = htmlspecialchars($currentlyServing['transaction_code']);
+    $currentQueueId = (int)$currentlyServing['id'];
+    $currentTransactionId = (int)($currentlyServing['id'] ?? 0);
+} else {
+    $currentTransactionCode = '—';
+    $currentQueueId = 0;
+    $currentTransactionId = 0;
+}
 ?>
 <style>
     /* Primary Colors */
@@ -28,13 +46,6 @@ $services = $service->getServices();
         --primary-white: #f1f0ef;
         --primary-brown: #bc9a8e;
     }
-
-    /* body {
-        font-family: Arial, sans-serif;
-        color: var(--primary-black);
-        margin-left: 20px;
-        margin-right: 20px;
-    } */
 
     .queue-item {
         font-size: 16px;
@@ -400,212 +411,21 @@ $services = $service->getServices();
                     <h4>Scheduled Queue</h4>
                     <div class="row">
                         <!-- Scheduled Queue List -->
-                        <div
-                            class="col-lg-8 col-md-8 queue-item-container"
-                            id="scheduledQueueList">
-                            <div class="queue-item" id="scheduled-2">
-                                <span class="transaction-code">TRX-02</span>
-                                <span class="name">SMITH A.</span>
-                                <i
-                                    class="fas fa-check-circle"
-                                    style="color: var(--primary-brown)"></i>
-                            </div>
-                            <div class="queue-item" id="scheduled-3">
-                                <span class="transaction-code">TRX-03</span>
-                                <span class="name">JOHNSON B.</span>
-                                <i
-                                    class="fas fa-check-circle"
-                                    style="color: var(--primary-brown)"></i>
-                            </div>
-                            <div class="queue-item" id="scheduled-4">
-                                <span class="transaction-code">TRX-04</span>
-                                <span class="name">WILLIAMS C.</span>
-                                <i
-                                    class="fas fa-check-circle"
-                                    style="color: var(--primary-brown)"></i>
-                            </div>
-                            <div class="queue-item" id="scheduled-5">
-                                <span class="transaction-code">TRX-05</span>
-                                <span class="name">BROWN D.</span>
-                                <i
-                                    class="fas fa-check-circle"
-                                    style="color: var(--primary-brown)"></i>
-                            </div>
-                            <div class="queue-item" id="scheduled-6">
-                                <span class="transaction-code">TRX-06</span>
-                                <span class="name">JONES E.</span>
-                                <i
-                                    class="fas fa-check-circle"
-                                    style="color: var(--primary-brown)"></i>
-                            </div>
-                            <div class="queue-item" id="scheduled-7">
-                                <span class="transaction-code">TRX-07</span>
-                                <span class="name">MILLER F.</span>
-                                <i
-                                    class="fas fa-check-circle"
-                                    style="color: var(--primary-brown)"></i>
-                            </div>
-                            <div class="queue-item" id="scheduled-8">
-                                <span class="transaction-code">TRX-08</span>
-                                <span class="name">DAVIS G.</span>
-                                <i
-                                    class="fas fa-check-circle"
-                                    style="color: var(--primary-brown)"></i>
-                            </div>
-                            <div class="queue-item" id="scheduled-9">
-                                <span class="transaction-code">TRX-09</span>
-                                <span class="name">MARTINEZ H.</span>
-                                <i
-                                    class="fas fa-check-circle"
-                                    style="color: var(--primary-brown)"></i>
-                            </div>
-                            <div class="queue-item" id="scheduled-10">
-                                <span class="transaction-code">TRX-10</span>
-                                <span class="name">HERNANDEZ I.</span>
-                                <i
-                                    class="fas fa-check-circle"
-                                    style="color: var(--primary-brown)"></i>
-                            </div>
-                            <div class="queue-item" id="scheduled-11">
-                                <span class="transaction-code">TRX-11</span>
-                                <span class="name">GARCIA J.</span>
-                                <i
-                                    class="fas fa-check-circle"
-                                    style="color: var(--primary-brown)"></i>
-                            </div>
-                            <div class="queue-item" id="scheduled-12">
-                                <span class="transaction-code">TRX-12</span>
-                                <span class="name">RODRIGUEZ K.</span>
-                                <i
-                                    class="fas fa-check-circle"
-                                    style="color: var(--primary-brown)"></i>
-                            </div>
-                            <div class="queue-item" id="scheduled-13">
-                                <span class="transaction-code">TRX-13</span>
-                                <span class="name">LEE L.</span>
-                                <i
-                                    class="fas fa-check-circle"
-                                    style="color: var(--primary-brown)"></i>
-                            </div>
-                            <div class="queue-item" id="scheduled-14">
-                                <span class="transaction-code">TRX-14</span>
-                                <span class="name">WALKER M.</span>
-                                <i
-                                    class="fas fa-check-circle"
-                                    style="color: var(--primary-brown)"></i>
-                            </div>
-                            <div class="queue-item" id="scheduled-15">
-                                <span class="transaction-code">TRX-15</span>
-                                <span class="name">ALLEN N.</span>
-                                <i
-                                    class="fas fa-check-circle"
-                                    style="color: var(--primary-brown)"></i>
-                            </div>
-                            <div class="queue-item" id="scheduled-16">
-                                <span class="transaction-code">TRX-16</span>
-                                <span class="name">YOUNG O.</span>
-                                <i
-                                    class="fas fa-check-circle"
-                                    style="color: var(--primary-brown)"></i>
-                            </div>
-                            <div class="queue-item" id="scheduled-17">
-                                <span class="transaction-code">TRX-17</span>
-                                <span class="name">KING P.</span>
-                                <i
-                                    class="fas fa-check-circle"
-                                    style="color: var(--primary-brown)"></i>
-                            </div>
-                            <div class="queue-item" id="scheduled-18">
-                                <span class="transaction-code">TRX-18</span>
-                                <span class="name">SCOTT Q.</span>
-                                <i
-                                    class="fas fa-check-circle"
-                                    style="color: var(--primary-brown)"></i>
-                            </div>
-                            <div class="queue-item" id="scheduled-19">
-                                <span class="transaction-code">TRX-19</span>
-                                <span class="name">TAYLOR R.</span>
-                                <i
-                                    class="fas fa-check-circle"
-                                    style="color: var(--primary-brown)"></i>
-                            </div>
-                            <div class="queue-item" id="scheduled-20">
-                                <span class="transaction-code">TRX-20</span>
-                                <span class="name">MOORE S.</span>
-                                <i
-                                    class="fas fa-check-circle"
-                                    style="color: var(--primary-brown)"></i>
-                            </div>
-                            <div class="queue-item" id="scheduled-21">
-                                <span class="transaction-code">TRX-21</span>
-                                <span class="name">MARTIN T.</span>
-                                <i
-                                    class="fas fa-check-circle"
-                                    style="color: var(--primary-brown)"></i>
-                            </div>
-                            <div class="queue-item" id="scheduled-22">
-                                <span class="transaction-code">TRX-22</span>
-                                <span class="name">LEE U.</span>
-                                <i
-                                    class="fas fa-check-circle"
-                                    style="color: var(--primary-brown)"></i>
-                            </div>
-                            <div class="queue-item" id="scheduled-23">
-                                <span class="transaction-code">TRX-23</span>
-                                <span class="name">PEREZ V.</span>
-                                <i
-                                    class="fas fa-check-circle"
-                                    style="color: var(--primary-brown)"></i>
-                            </div>
-                            <div class="queue-item" id="scheduled-24">
-                                <span class="transaction-code">TRX-24</span>
-                                <span class="name">EVANS W.</span>
-                                <i
-                                    class="fas fa-check-circle"
-                                    style="color: var(--primary-brown)"></i>
-                            </div>
-                            <div class="queue-item" id="scheduled-25">
-                                <span class="transaction-code">TRX-25</span>
-                                <span class="name">CLARK X.</span>
-                                <i
-                                    class="fas fa-check-circle"
-                                    style="color: var(--primary-brown)"></i>
-                            </div>
-                            <div class="queue-item" id="scheduled-26">
-                                <span class="transaction-code">TRX-26</span>
-                                <span class="name">LEWIS Y.</span>
-                                <i
-                                    class="fas fa-check-circle"
-                                    style="color: var(--primary-brown)"></i>
-                            </div>
-                            <div class="queue-item" id="scheduled-27">
-                                <span class="transaction-code">TRX-27</span>
-                                <span class="name">HALL Z.</span>
-                                <i
-                                    class="fas fa-check-circle"
-                                    style="color: var(--primary-brown)"></i>
-                            </div>
-                            <div class="queue-item" id="scheduled-28">
-                                <span class="transaction-code">TRX-28</span>
-                                <span class="name">ALLEN AA.</span>
-                                <i
-                                    class="fas fa-check-circle"
-                                    style="color: var(--primary-brown)"></i>
-                            </div>
-                            <div class="queue-item" id="scheduled-29">
-                                <span class="transaction-code">TRX-29</span>
-                                <span class="name">NELSON AB.</span>
-                                <i
-                                    class="fas fa-check-circle"
-                                    style="color: var(--primary-brown)"></i>
-                            </div>
-                            <div class="queue-item" id="scheduled-30">
-                                <span class="transaction-code">TRX-30</span>
-                                <span class="name">CARTER AC.</span>
-                                <i
-                                    class="fas fa-check-circle"
-                                    style="color: var(--primary-brown)"></i>
-                            </div>
+                        <div class="col-lg-8 col-md-8 queue-item-container" id="scheduledQueueList">
+                            <?php if (!empty($scheduledQueue)): ?>
+                                <?php foreach ($scheduledQueue as $item): ?>
+                                    <div
+                                        class="queue-item mb-2"
+                                        id="scheduled-<?= htmlspecialchars($item['id']) ?>"
+                                        data-transaction-id="<?= htmlspecialchars($item['transaction_id'] ?? '') ?>">
+                                        <span class="transaction-code"><?= htmlspecialchars($item['transaction_code']) ?></span>
+                                        <span class="name"><?= htmlspecialchars($item['display_name']) ?></span>
+                                        <i class="fas fa-check-circle" style="color: var(--primary-brown)"></i>
+                                    </div>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <div class="text-muted">No scheduled queues today.</div>
+                            <?php endif; ?>
                         </div>
 
                         <!-- Current Serving for Scheduled Queue -->
@@ -613,15 +433,23 @@ $services = $service->getServices();
                             <div class="current-serving" id="currentServingScheduled">
                                 <h4>Now Serving Scheduled</h4>
                                 <div class="current-number" id="scheduledCurrentNumber">
-                                    TRX-01
+                                    <?= $currentTransactionCode ?>
                                 </div>
                                 <div class="timer" id="scheduledTimer">00:00:00</div>
-                                <button class="btn btn-secondary" id="scheduledNoShow">
-                                    No Show
-                                </button>
-                                <button class="btn btn-primary" id="scheduledDoneNext">
-                                    Done & Next
-                                </button>
+                                <div class="d-grid gap-2">
+                                    <button
+                                        class="btn btn-primary"
+                                        id="scheduledStartTransaction"
+                                        onclick="openUpdateTransactionModal(<?= $currentTransactionId ?>)">
+                                        <i class="fas fa-clipboard-check me-1"></i> Start Transaction
+                                    </button>
+                                    <button
+                                        class="btn btn-secondary"
+                                        id="scheduledNoShow"
+                                        data-transaction-code="<?= $currentTransactionCode ?>">
+                                        <i class="fas fa-user-times me-1"></i> Mark as No Show
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>

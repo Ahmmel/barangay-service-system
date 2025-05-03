@@ -2,7 +2,7 @@
 // Include necessary files
 include_once '../views/templates/admin_header.php';
 include_once '../config/database.php';
-include_once '../models/Service.php';
+include_once '../models/Queue.php';
 
 // start the session
 session_start();
@@ -16,10 +16,28 @@ if (!isset($_SESSION['user_role']) || !in_array($_SESSION['user_role'], ["admin"
 }
 
 $isAdmin = $_SESSION['user_role'] !== 'admin' ? true : false;
+$currentSessionId = $_SESSION['user_id'];
+
 $database = new Database();
 $db = $database->getConnection();
-$service = new Service($db);
-$services = $service->getServices();
+
+
+$queueModel = new Queue($db);
+$walkinQueue = $queueModel->getTodayPendingQueues(1); // 1 = Walkin
+$currentlyServing = null;
+
+$isSchedQueueDisabled  = '';
+if (!empty($walkinQueue)) {
+    $currentlyServing = array_shift($walkinQueue);
+    $currentTransactionCode = htmlspecialchars($currentlyServing['transaction_code']);
+    $currentQueueId = (int)$currentlyServing['id'];
+    $currentTransactionId = (int)($currentlyServing['id'] ?? 0);
+} else {
+    $currentTransactionCode = '—';
+    $currentQueueId = 0;
+    $currentTransactionId = 0;
+    $isSchedQueueDisabled = 'disabled';
+}
 ?>
 <style>
     /* Primary Colors */
@@ -75,7 +93,7 @@ $services = $service->getServices();
     }
 
     .current-number {
-        font-size: 70px;
+        font-size: 45px;
         /* Increased size for large number */
         font-weight: bold;
         color: var(--primary-brown);
@@ -392,60 +410,48 @@ $services = $service->getServices();
                     <h4>Walk-in Queue</h4>
                     <div class="row">
                         <!-- Walk-in Queue List -->
-                        <div
-                            class="col-lg-8 col-md-8 queue-item-container"
-                            id="walkinQueueList">
-                            <div class="queue-item" id="walkin-1">
-                                <span class="transaction-code">TRX-06</span>
-                                <span class="name">MARTIN E.</span>
-                                <i
-                                    class="fas fa-check-circle"
-                                    style="color: var(--primary-brown)"></i>
-                            </div>
-                            <div class="queue-item" id="walkin-2">
-                                <span class="transaction-code">TRX-07</span>
-                                <span class="name">LEE C.</span>
-                                <i
-                                    class="fas fa-check-circle"
-                                    style="color: var(--primary-brown)"></i>
-                            </div>
-                            <div class="queue-item" id="walkin-3">
-                                <span class="transaction-code">TRX-08</span>
-                                <span class="name">HARRIS D.</span>
-                                <i
-                                    class="fas fa-check-circle"
-                                    style="color: var(--primary-brown)"></i>
-                            </div>
-                            <div class="queue-item" id="walkin-4">
-                                <span class="transaction-code">TRX-09</span>
-                                <span class="name">HARRY D.</span>
-                                <i
-                                    class="fas fa-check-circle"
-                                    style="color: var(--primary-brown)"></i>
-                            </div>
+                        <div class="col-lg-8 col-md-8 queue-item-container" id="walkinQueueList">
+                            <?php if (!empty($walkinQueue)): ?>
+                                <?php foreach ($walkinQueue as $item): ?>
+                                    <div
+                                        class="queue-item mb-2"
+                                        id="walkin-<?= htmlspecialchars($item['id']) ?>"
+                                        data-transaction-id="<?= htmlspecialchars($item['transaction_id'] ?? '') ?>">
+                                        <span class="transaction-code"><?= htmlspecialchars($item['transaction_code']) ?></span>
+                                        <span class="name"><?= htmlspecialchars($item['display_name']) ?></span>
+                                        <i class="fas fa-check-circle" style="color: var(--primary-brown)"></i>
+                                    </div>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <div class="text-muted">No scheduled queues today.</div>
+                            <?php endif; ?>
                         </div>
-
                         <!-- Current Serving for Walk-in Queue -->
                         <div class="col-lg-4 col-md-4">
                             <div class="current-serving" id="currentServingWalkin">
                                 <h4>Now Serving Walk-in</h4>
-                                <div class="current-number" id="walkinCurrentNumber">TRX-06</div>
+                                <div class="current-number" id="walkinCurrentNumber">
+                                    <?= $currentTransactionCode ?>
+                                </div>
                                 <div class="timer" id="walkinTimer">00:00:00</div>
-                                <!-- Confirmed button -->
-                                <button class="btn btn-secondary" id="walkinConfirmed">
-                                    Confirmed
+                                <button
+                                    class="btn btn-primary"
+                                    id="walkinStartTransaction"
+                                    onclick="openUpdateTransactionModal(<?= $currentTransactionId ?>)"
+                                    <?= $isSchedQueueDisabled ?>>
+                                    <i class="fas fa-clipboard-check me-1"></i> Start Transaction
                                 </button>
-                                <!-- No Show button -->
-                                <button class="btn btn-secondary" id="walkinNoShow" disabled="true">
-                                    No Show
-                                </button>
-                                <!-- Done & Next button hidden initially -->
-                                <button class="btn btn-primary" id="walkinDoneNext" style="display: none;">
-                                    Done & Next
+
+                                <button
+                                    class="btn btn-secondary no-show-btn"
+                                    id="walkinNoShow"
+                                    data-type="walkin"
+                                    data-transaction-code="<?= $currentTransactionCode ?>"
+                                    <?= $isSchedQueueDisabled ?>>
+                                    <i class="fas fa-user-times me-1"></i> Mark as No Show
                                 </button>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>
@@ -467,54 +473,6 @@ $services = $service->getServices();
 <!-- End of Content Wrapper -->
 
 <script>
-    // Function to update the clock
-    function updateClock() {
-        const clockElement = document.getElementById("clock");
-        const now = new Date();
-
-        let hours = now.getHours();
-        let minutes = now.getMinutes();
-        let seconds = now.getSeconds();
-        let day = now.getDate();
-        let month = now.getMonth() + 1; // Months are zero-based in JavaScript, so add 1
-        let year = now.getFullYear();
-
-        // Determine AM or PM
-        let amPm = hours >= 12 ? "PM" : "AM";
-
-        // Convert to 12-hour format
-        hours = hours % 12;
-        hours = hours ? hours : 12; // Handle midnight case
-
-        // Add leading zero to minutes and seconds if necessary
-        function pad(number) {
-            return number < 10 ? "0" + number : number;
-        }
-
-        clockElement.textContent =
-            pad(hours) +
-            ":" +
-            pad(minutes) +
-            ":" +
-            pad(seconds) +
-            " " +
-            amPm +
-            " | " +
-            pad(month) +
-            "/" +
-            pad(day) +
-            "/" +
-            year;
-    }
-
-    // Padding function for single digit numbers
-    function pad(num) {
-        return num < 10 ? "0" + num : num;
-    }
-
-    // Update the clock every second
-    setInterval(updateClock, 1000);
-
     // Function to update timers for scheduled and walk-in
     function updateTimer(id) {
         let timerElement = document.getElementById(id);
@@ -534,73 +492,3 @@ $services = $service->getServices();
 // Include footer template
 include_once '../views/templates/admin_footer.php';
 ?>
-<script>
-    $(document).ready(function() {
-
-        // Store the original margin
-        var originalMargin = '0 1rem 28.5rem';
-
-        // Apply the updated margin when the collapse is toggled open
-        $('a[data-toggle="collapse"]').on('click', function(event) {
-            preventdefault();
-            var element = $('.toggle-sidebar-divider')[0]; // Get the actual DOM element
-        });
-
-        // Listen for when the collapse is shown (open)
-        $('#queueManagement').on('shown.bs.collapse', function() {
-            var element = $('.toggle-sidebar-divider')[0]; // Get the actual DOM element
-            // When the collapse is open, apply the modified margin
-            element.style.setProperty('margin', '0 1rem 26.5rem', 'important');
-        });
-
-        // Listen for when the collapse is hidden (closed)
-        $('#queueManagement').on('hidden.bs.collapse', function() {
-            var element = $('.toggle-sidebar-divider')[0]; // Get the actual DOM element
-            // When the collapse is closed, restore the original margin
-            element.style.setProperty('margin', originalMargin, 'important');
-        });
-
-
-        // Cache the elements for reuse
-        const $walkinConfirmedBtn = $("#walkinConfirmed");
-        const $walkinNoShowBtn = $("#walkinNoShow");
-        const $walkinDoneNextBtn = $("#walkinDoneNext");
-
-        // Ensure the buttons exist before adding event listeners
-        if ($walkinConfirmedBtn.length && $walkinNoShowBtn.length && $walkinDoneNextBtn.length) {
-
-            // Event listener for "Confirmed" button
-            $walkinConfirmedBtn.on("click", function() {
-                // Disable the button to prevent multiple clicks
-                $(this).prop("disabled", true);
-
-                // Change "Confirmed" to "Cancelled" and show "Done & Next" button
-                $walkinConfirmedBtn.text("Set To Pending");
-                $walkinNoShowBtn.hide(); // Hide "No Show" button
-                $walkinDoneNextBtn.show(); // Show "Done & Next" button
-
-                // Re-enable the button after the change (optionally after a delay)
-                setTimeout(() => {
-                    $walkinConfirmedBtn.prop("disabled", false);
-                }, 500); // Adjust delay time as necessary
-            });
-
-            // Event listener for "No Show" button
-            $walkinNoShowBtn.on("click", function() {
-                // Disable the button to prevent multiple clicks
-                $(this).prop("disabled", true);
-
-                // Hide both "Confirmed" and "No Show" buttons when "No Show" is clicked
-                $walkinConfirmedBtn.hide();
-                $walkinNoShowBtn.hide();
-                $walkinDoneNextBtn.show(); // Show "Done & Next" button
-
-                // Re-enable the button after the change (optionally after a delay)
-                setTimeout(() => {
-                    $walkinNoShowBtn.prop("disabled", false);
-                }, 500); // Adjust delay time as necessary
-            });
-        }
-
-    });
-</script>

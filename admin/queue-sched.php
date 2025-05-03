@@ -2,7 +2,6 @@
 // Include necessary files
 include_once '../views/templates/admin_header.php';
 include_once '../config/database.php';
-include_once '../models/Service.php';
 include_once '../models/Queue.php';
 
 // start the session
@@ -21,13 +20,11 @@ $currentSessionId = $_SESSION['user_id'];
 
 $database = new Database();
 $db = $database->getConnection();
-$service = new Service($db);
-$services = $service->getServices();
 
 $queueModel = new Queue($db);
 $scheduledQueue = $queueModel->getTodayPendingQueues(2); // 2 = Scheduled
 $currentlyServing = null;
-
+$isSchedQueueDisabled  = '';
 if (!empty($scheduledQueue)) {
     $currentlyServing = array_shift($scheduledQueue);
     $currentTransactionCode = htmlspecialchars($currentlyServing['transaction_code']);
@@ -37,6 +34,7 @@ if (!empty($scheduledQueue)) {
     $currentTransactionCode = '—';
     $currentQueueId = 0;
     $currentTransactionId = 0;
+    $isSchedQueueDisabled = 'disabled';
 }
 ?>
 <style>
@@ -405,7 +403,6 @@ if (!empty($scheduledQueue)) {
         <div class="container-fluid">
             <div class="container-fluid m-2">
                 <div class="clock" id="clock">00:00:00</div>
-
                 <!-- Scheduled Queue Section -->
                 <div class="mb-4">
                     <h4>Scheduled Queue</h4>
@@ -436,20 +433,22 @@ if (!empty($scheduledQueue)) {
                                     <?= $currentTransactionCode ?>
                                 </div>
                                 <div class="timer" id="scheduledTimer">00:00:00</div>
-                                <div class="d-grid gap-2">
-                                    <button
-                                        class="btn btn-primary"
-                                        id="scheduledStartTransaction"
-                                        onclick="openUpdateTransactionModal(<?= $currentTransactionId ?>)">
-                                        <i class="fas fa-clipboard-check me-1"></i> Start Transaction
-                                    </button>
-                                    <button
-                                        class="btn btn-secondary"
-                                        id="scheduledNoShow"
-                                        data-transaction-code="<?= $currentTransactionCode ?>">
-                                        <i class="fas fa-user-times me-1"></i> Mark as No Show
-                                    </button>
-                                </div>
+                                <button
+                                    class="btn btn-primary"
+                                    id="scheduledStartTransaction"
+                                    onclick="openUpdateTransactionModal(<?= $currentTransactionId ?>)"
+                                    <?= $isSchedQueueDisabled ?>>
+                                    <i class="fas fa-clipboard-check me-1"></i> Start Transaction
+                                </button>
+
+                                <button
+                                    class="btn btn-secondary no-show-btn"
+                                    id="scheduledNoShow"
+                                    data-type="scheduled"
+                                    data-transaction-code="<?= $currentTransactionCode ?>"
+                                    <?= $isSchedQueueDisabled ?>>
+                                    <i class="fas fa-user-times me-1"></i> Mark as No Show
+                                </button>
                             </div>
                         </div>
                     </div>

@@ -64,22 +64,23 @@ class Queue
     public function getTodayPendingQueues($type)
     {
         $query = "
-        SELECT 
-            q.id,
-            q.transaction_code,
-            u.first_name,
-            CONCAT(u.first_name, ' ', LEFT(u.last_name, 1), '.') AS display_name,
-            q.type,
-            q.status,
-            q.scheduled_date,
-            q.created_at
-        FROM " . $this->table_name . " q
-        INNER JOIN users u ON q.user_id = u.id
-        WHERE DATE(q.created_at) = CURDATE()
-          AND q.type = :type
-          AND q.status = 'Pending'
-        ORDER BY q.scheduled_date ASC
-    ";
+            SELECT 
+                    q.id,
+                    q.transaction_code,
+                    u.first_name,
+                    CONCAT(u.first_name, ' ', LEFT(u.last_name, 1), '.') AS display_name,
+                    q.type,
+                    q.status,
+                    q.scheduled_date,
+                    q.created_at
+                FROM queue q
+                INNER JOIN users u ON q.user_id = u.id
+                WHERE q.type = :type
+                AND q.status = 'Pending'
+                AND q.scheduled_date >= CURDATE()
+                AND q.scheduled_date < CURDATE() + INTERVAL 1 DAY
+                ORDER BY q.scheduled_date ASC;
+        ";
 
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":type", $type);

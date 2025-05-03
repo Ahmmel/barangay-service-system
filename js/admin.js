@@ -78,4 +78,71 @@
       );
     e.preventDefault();
   });
+
+  // Store the original margin
+  var originalMargin = "0 1rem 28.5rem";
+
+  // Apply the updated margin when the collapse is toggled open
+  $('a[data-toggle="collapse"]').on("click", function (event) {
+    preventdefault();
+    var element = $(".toggle-sidebar-divider")[0]; // Get the actual DOM element
+  });
+
+  // Listen for when the collapse is shown (open)
+  $("#queueManagement").on("shown.bs.collapse", function () {
+    var element = $(".toggle-sidebar-divider")[0]; // Get the actual DOM element
+    // When the collapse is open, apply the modified margin
+    element.style.setProperty("margin", "0 1rem 26.5rem", "important");
+  });
+
+  // Listen for when the collapse is hidden (closed)
+  $("#queueManagement").on("hidden.bs.collapse", function () {
+    var element = $(".toggle-sidebar-divider")[0]; // Get the actual DOM element
+    // When the collapse is closed, restore the original margin
+    element.style.setProperty("margin", originalMargin, "important");
+  });
+
+  // Cache the elements for reuse
+  const $walkinConfirmedBtn = $("#walkinConfirmed");
+  const $walkinNoShowBtn = $("#walkinNoShow");
+  const $walkinDoneNextBtn = $("#walkinDoneNext");
+
+  // Ensure the buttons exist before adding event listeners
+  if (
+    $walkinConfirmedBtn.length &&
+    $walkinNoShowBtn.length &&
+    $walkinDoneNextBtn.length
+  ) {
+    // Event listener for "Confirmed" button
+    $walkinConfirmedBtn.on("click", function () {
+      // Disable the button to prevent multiple clicks
+      $(this).prop("disabled", true);
+
+      // Change "Confirmed" to "Cancelled" and show "Done & Next" button
+      $walkinConfirmedBtn.text("Set To Pending");
+      $walkinNoShowBtn.hide(); // Hide "No Show" button
+      $walkinDoneNextBtn.show(); // Show "Done & Next" button
+
+      // Re-enable the button after the change (optionally after a delay)
+      setTimeout(() => {
+        $walkinConfirmedBtn.prop("disabled", false);
+      }, 500); // Adjust delay time as necessary
+    });
+
+    // Event listener for "No Show" button
+    $walkinNoShowBtn.on("click", function () {
+      // Disable the button to prevent multiple clicks
+      $(this).prop("disabled", true);
+
+      // Hide both "Confirmed" and "No Show" buttons when "No Show" is clicked
+      $walkinConfirmedBtn.hide();
+      $walkinNoShowBtn.hide();
+      $walkinDoneNextBtn.show(); // Show "Done & Next" button
+
+      // Re-enable the button after the change (optionally after a delay)
+      setTimeout(() => {
+        $walkinNoShowBtn.prop("disabled", false);
+      }, 500); // Adjust delay time as necessary
+    });
+  }
 })(jQuery); // End of use strict

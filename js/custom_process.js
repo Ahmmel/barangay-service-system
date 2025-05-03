@@ -803,6 +803,79 @@ function moveNextScheduledToNowServing() {
   });
 }
 
+function moveNextWalkinToNowServing() {
+  const $nextItem = $("#walkinQueueList .queue-item").first();
+  if ($nextItem.length === 0) {
+    $("#walkinCurrentNumber").text("—");
+    $("#walkinStartTransaction, #walkinNoShow").prop("disabled", true);
+    Swal.fire("Done", "No more walk-in transactions.", "info");
+    return;
+  }
+
+  const transactionCode = $nextItem.find(".transaction-code").text().trim();
+  const queueId = $nextItem.attr("id").replace("walkin-", "");
+  const transactionId = $nextItem.data("transaction-id");
+
+  $nextItem.fadeOut(300, function () {
+    $(this).remove();
+
+    // Update Now Serving panel
+    $("#walkinCurrentNumber").text(transactionCode);
+    $("#walkinStartTransaction").data("queue-id", queueId);
+    $("#walkinNoShow")
+      .data("queue-id", queueId)
+      .data("transaction-id", transactionId);
+  });
+}
+
+// Function to update the clock
+function updateClock() {
+  const clockElement = document.getElementById("clock");
+  const now = new Date();
+
+  let hours = now.getHours();
+  let minutes = now.getMinutes();
+  let seconds = now.getSeconds();
+  let day = now.getDate();
+  let month = now.getMonth() + 1; // Months are zero-based in JavaScript, so add 1
+  let year = now.getFullYear();
+
+  // Determine AM or PM
+  let amPm = hours >= 12 ? "PM" : "AM";
+
+  // Convert to 12-hour format
+  hours = hours % 12;
+  hours = hours ? hours : 12; // Handle midnight case
+
+  // Add leading zero to minutes and seconds if necessary
+  function pad(number) {
+    return number < 10 ? "0" + number : number;
+  }
+
+  clockElement.textContent =
+    pad(hours) +
+    ":" +
+    pad(minutes) +
+    ":" +
+    pad(seconds) +
+    " " +
+    amPm +
+    " | " +
+    pad(month) +
+    "/" +
+    pad(day) +
+    "/" +
+    year;
+}
+
+// Padding function for single digit numbers
+function pad(num) {
+  return num < 10 ? "0" + num : num;
+}
+
+// Update the clock every second
+setInterval(updateClock, 1000);
+
 $(document).ready(function () {
   // Start Of Users
   $("#addUserForm").submit(function (e) {
@@ -1386,8 +1459,23 @@ $(document).ready(function () {
     });
   });
 
-  $("#scheduledNoShow").on("click", function () {
-    const transactionCode = $("#scheduledNoShow").data("transaction-code");
+  $(".no-show-btn").on("click", function () {
+    const transactionCode = $(this).data("transaction-code");
+    const type = $(this).data("type");
+    const isValid = /^Q-\d{8}-[A-Z0-9]{5}$/.test(transactionCode);
+
+    if (!isValid) {
+      Swal.fire({
+        title: "No Active Transaction",
+        text:
+          type === "scheduled"
+            ? "No scheduled transaction available."
+            : "No walk-in transaction available.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+      return;
+    }
     handleNoShow(transactionCode);
   });
 });

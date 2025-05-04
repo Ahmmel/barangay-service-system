@@ -58,7 +58,7 @@ class TransactionController
             }
 
             // Generate a unique transaction code
-            $transactionCode = "TRX-" . date("ymd") . "-" . strtoupper(substr(uniqid(), -3));
+            $transactionCode = 'Q-' . strtoupper(base_convert(time(), 10, 36)) . strtoupper(bin2hex(random_bytes(1)));
 
             // Add the queue entry
             $queueId = $this->QueueModel->addQueue($userId, $transactionType, $transactionCode, $scheduledTime);
@@ -77,7 +77,11 @@ class TransactionController
             // Send SMS confirmation if phone number is available
             $userPhone = $this->TransactionModel->getUserMobileNumber($userId);
             if ($userPhone) {
-                //$this->SMS->sendWalkInTransactionNotification($userPhone, $result['transaction_code'], $scheduledTime); TODO uncomment this line to send SMS
+                if ($transactionType == 1) {
+                    $this->SMS->sendWalkInTransactionNotification($userPhone, $result['transaction_code'], $scheduledTime);
+                } else {
+                    $this->SMS->sendTransactionConfirmation($userPhone, $result['transaction_code'], $scheduledTime);
+                }
             }
 
             // Return the result

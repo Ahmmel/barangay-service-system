@@ -1462,7 +1462,7 @@ $(document).ready(function () {
   $(".no-show-btn").on("click", function () {
     const transactionCode = $(this).data("transaction-code");
     const type = $(this).data("type");
-    const isValid = /^Q-\d{8}-[A-Z0-9]{5}$/.test(transactionCode);
+    const isValid = /^Q-[A-Z0-9]{6,10}$/.test(transactionCode);
 
     if (!isValid) {
       Swal.fire({

@@ -1,14 +1,17 @@
 <?php
-class Notification {
+class Notification
+{
     private $pdo;
     private $smsApiUrl = "https://your-sms-api.com/send"; // Replace with actual SMS API URL
     private $smsApiKey = "your-api-key"; // Replace with actual API Key
 
-    public function __construct($pdo) {
+    public function __construct($pdo)
+    {
         $this->pdo = $pdo;
     }
 
-    public function sendNotification($userId, $roleId, $type, $data) {
+    public function sendNotification($userId, $roleId, $type, $data)
+    {
         $messages = $this->getMessageTemplates($type, $data);
         if (!$messages) {
             return false;
@@ -34,7 +37,8 @@ class Notification {
         return true;
     }
 
-    private function getMessageTemplates($type, $data) {
+    private function getMessageTemplates($type, $data)
+    {
         $templates = [
             'user_booked' => [
                 'sms' => "Hello {$data['user_name']}, your appointment for {$data['service_name']} is set on {$data['date']} at {$data['time']}.",
@@ -65,7 +69,8 @@ class Notification {
         return $templates[$type] ?? null;
     }
 
-    private function sendSMS($mobile, $message) {
+    private function sendSMS($mobile, $message)
+    {
         if (empty($message)) return false;
 
         $postData = [
@@ -84,4 +89,3 @@ class Notification {
         return $response;
     }
 }
-?>

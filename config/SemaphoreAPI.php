@@ -14,8 +14,7 @@ class SemaphoreAPI
         $data = [
             'apikey' => $this->apiKey,
             'number' => $phoneNumber,
-            'message' => $message,
-            'sendername' => "BarangayQPila"
+            'message' => $message
         ];
 
         $ch = curl_init();
@@ -29,7 +28,7 @@ class SemaphoreAPI
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $response = curl_exec($ch);
         curl_close($ch);
-
+        var_dump($response); // Debugging line to check the response
         return $response;
     }
 }

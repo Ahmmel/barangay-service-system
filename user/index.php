@@ -22,7 +22,7 @@ $userModel = new User($db);
 $userDetails = $userModel->getUserDetailsById($userId);
 if (!$userDetails) {
     // Handle error: user not found
-    echo "User not found.";
+    header("Location: logout.php");
     exit();
 }
 $userDetails = $userDetails[0]; // Assuming you want the first result

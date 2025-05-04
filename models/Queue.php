@@ -39,7 +39,6 @@ class Queue
         }
     }
 
-
     public function getCurrentQueue()
     {
         $query = "SELECT * FROM " . $this->table_name . " WHERE status = 'Pending' ORDER BY created_at ASC LIMIT 1";
@@ -64,7 +63,7 @@ class Queue
     public function getTodayPendingQueues($type)
     {
         $query = "
-            SELECT 
+                SELECT 
                     q.id,
                     q.transaction_code,
                     u.first_name,
@@ -77,10 +76,12 @@ class Queue
                 INNER JOIN users u ON q.user_id = u.id
                 WHERE q.type = :type
                 AND q.status = 'Pending'
-                AND q.scheduled_date >= CURDATE()
-                AND q.scheduled_date < CURDATE() + INTERVAL 1 DAY
+                AND q.scheduled_date BETWEEN 
+                    DATE_FORMAT(CURDATE(), '%Y-%m-%d 08:00:00') 
+                    AND 
+                    DATE_FORMAT(CURDATE(), '%Y-%m-%d 16:30:00')
                 ORDER BY q.scheduled_date ASC;
-        ";
+            ";
 
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":type", $type);

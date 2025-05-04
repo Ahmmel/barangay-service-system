@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 29, 2025 at 06:40 PM
+-- Generation Time: May 04, 2025 at 06:48 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -145,27 +145,28 @@ CREATE TABLE `queue` (
 --
 
 INSERT INTO `queue` (`id`, `transaction_code`, `user_id`, `type`, `status`, `scheduled_date`, `created_at`, `updated_at`, `updated_by_staff_id`) VALUES
-(3, 'TRX-20250305-A1B2D', 1, 1, '', '2025-03-06 11:00:00', '2025-03-09 00:05:56', '2025-03-25 22:34:20', NULL),
-(7, 'Q-20250325-9BDA2', 1, 1, '', '2025-03-25 16:36:27', '2025-03-25 23:36:27', '2025-03-25 23:36:27', NULL),
-(8, 'Q-20250325-7E1C7', 1, 1, '', '2025-03-25 16:37:38', '2025-03-25 23:37:38', '2025-03-25 23:37:38', NULL),
-(9, 'Q-20250325-6FE9D', 1, 1, '', '2025-03-25 16:38:32', '2025-03-25 23:38:32', '2025-03-25 23:38:32', NULL),
-(10, 'Q-20250325-D6FC5', 1, 1, '', '2025-03-25 16:39:43', '2025-03-25 23:39:43', '2025-03-25 23:39:43', NULL),
-(11, 'Q-20250325-EAD68', 1, 1, '', '2025-03-25 16:46:08', '2025-03-25 23:46:08', '2025-03-25 23:46:08', NULL),
-(12, 'Q-20250325-45E28', 1, 1, '', '2025-03-25 16:52:06', '2025-03-25 23:52:06', '2025-03-25 23:52:06', NULL),
-(13, 'Q-20250325-474E6', 1, 1, '', '2025-03-25 16:59:06', '2025-03-25 23:59:06', '2025-03-25 23:59:06', NULL),
-(14, 'Q-20250325-7216C', 1, 1, '', '2025-03-25 16:59:28', '2025-03-25 23:59:28', '2025-03-25 23:59:28', NULL),
-(15, 'Q-20250325-84533', 1, 1, '', '2025-03-25 17:05:31', '2025-03-26 00:05:31', '2025-03-26 00:05:31', NULL),
-(16, 'Q-20250427-53353', 10, 2, '', '2025-04-28 12:00:00', '2025-04-27 16:20:36', '2025-04-27 16:20:36', NULL),
-(17, 'Q-20250427-7DAC5', 10, 2, '', '2025-04-30 12:00:00', '2025-04-27 16:40:42', '2025-04-27 16:40:42', NULL),
-(18, 'Q-20250427-7A488', 10, 2, '', '2025-04-30 12:00:00', '2025-04-27 17:01:45', '2025-04-27 17:01:45', NULL),
-(19, 'Q-20250427-BA2AC', 10, 2, '', '2025-04-30 12:00:00', '2025-04-27 17:11:15', '2025-04-27 17:11:15', NULL),
-(20, 'Q-20250427-3D9F4', 10, 2, '', '2025-04-30 12:00:00', '2025-04-27 17:13:42', '2025-04-27 17:13:42', NULL),
-(21, 'Q-20250427-E88E2', 10, 2, '', '2025-04-28 12:00:00', '2025-04-27 17:15:30', '2025-04-27 17:15:30', NULL),
-(22, 'Q-20250427-03AB2', 10, 2, '', '2025-04-29 12:00:00', '2025-04-27 17:16:40', '2025-04-27 17:16:40', NULL),
-(23, 'Q-20250427-D223F', 10, 2, '', '2025-04-30 12:00:00', '2025-04-27 17:21:12', '2025-04-27 17:21:12', NULL),
-(24, 'Q-20250427-5F908', 10, 2, '', '2025-04-30 12:00:00', '2025-04-27 17:24:20', '2025-04-27 17:24:20', NULL),
-(25, 'Q-20250427-C651A', 10, 2, '', '2025-04-30 12:00:00', '2025-04-27 17:27:02', '2025-04-27 17:27:02', NULL),
-(26, 'Q-20250427-6B2BB', 10, 2, '', '2025-04-29 12:00:00', '2025-04-27 17:33:26', '2025-04-27 17:33:26', NULL);
+(1, 'Q-SVQVLTAF', 4, 2, 'Pending', '2025-05-04 08:00:00', '2025-05-04 08:00:00', '2025-05-04 08:00:00', NULL),
+(2, 'Q-SVQVLTA5', 10, 2, 'Pending', '2025-05-04 08:30:00', '2025-05-04 08:30:00', '2025-05-04 08:30:00', NULL),
+(3, 'Q-SVQVLT72', 6, 2, 'Pending', '2025-05-04 09:00:00', '2025-05-04 09:00:00', '2025-05-04 09:00:00', NULL),
+(4, 'Q-SVQVLT6F', 5, 2, 'Pending', '2025-05-04 09:30:00', '2025-05-04 09:30:00', '2025-05-04 09:30:00', NULL),
+(5, 'Q-SVQVLT29', 5, 2, 'Pending', '2025-05-04 10:00:00', '2025-05-04 10:00:00', '2025-05-04 10:00:00', NULL),
+(6, 'Q-SVQVLT0C', 6, 2, 'Pending', '2025-05-04 10:30:00', '2025-05-04 10:30:00', '2025-05-04 10:30:00', NULL),
+(7, 'Q-SVQVLT8F', 3, 2, 'Pending', '2025-05-04 11:00:00', '2025-05-04 11:00:00', '2025-05-04 11:00:00', NULL),
+(8, 'Q-SVQVLTBA', 6, 2, 'Pending', '2025-05-04 11:30:00', '2025-05-04 11:30:00', '2025-05-04 11:30:00', NULL),
+(9, 'Q-SVQVLT2D', 3, 2, 'Pending', '2025-05-04 12:00:00', '2025-05-04 12:00:00', '2025-05-04 12:00:00', NULL),
+(10, 'Q-SVQVLT52', 3, 2, 'Pending', '2025-05-04 12:30:00', '2025-05-04 12:30:00', '2025-05-04 12:30:00', NULL),
+(11, 'Q-SVQVLTD1', 4, 1, 'Pending', '2025-05-04 08:00:00', '2025-05-04 08:00:00', '2025-05-04 08:00:00', NULL),
+(12, 'Q-SVQVLT8B', 1, 1, 'Pending', '2025-05-04 08:30:00', '2025-05-04 08:30:00', '2025-05-04 08:30:00', NULL),
+(13, 'Q-SVQVLTCB', 5, 1, 'Pending', '2025-05-04 09:00:00', '2025-05-04 09:00:00', '2025-05-04 09:00:00', NULL),
+(14, 'Q-SVQVLT35', 1, 1, 'Pending', '2025-05-04 09:30:00', '2025-05-04 09:30:00', '2025-05-04 09:30:00', NULL),
+(15, 'Q-SVQVLTB5', 1, 1, 'Pending', '2025-05-04 10:00:00', '2025-05-04 10:00:00', '2025-05-04 10:00:00', NULL),
+(16, 'Q-SVQVLT48', 1, 1, 'Pending', '2025-05-04 10:30:00', '2025-05-04 10:30:00', '2025-05-04 10:30:00', NULL),
+(17, 'Q-SVQVLT71', 5, 1, 'Pending', '2025-05-04 11:00:00', '2025-05-04 11:00:00', '2025-05-04 11:00:00', NULL),
+(18, 'Q-SVQVLT56', 1, 1, 'Pending', '2025-05-04 11:30:00', '2025-05-04 11:30:00', '2025-05-04 11:30:00', NULL),
+(19, 'Q-SVQVLT58', 6, 1, 'Pending', '2025-05-04 12:00:00', '2025-05-04 12:00:00', '2025-05-04 12:00:00', NULL),
+(20, 'Q-SVQVLT2B', 3, 1, 'Pending', '2025-05-04 12:30:00', '2025-05-04 12:30:00', '2025-05-04 12:30:00', NULL),
+(49, 'Q-SVQWBI5D', 10, 2, '', '2025-05-05 12:00:00', '2025-05-05 00:26:06', '2025-05-05 00:26:06', NULL),
+(50, 'Q-SVQWML16', 10, 2, '', '2025-05-06 12:00:00', '2025-05-05 00:32:45', '2025-05-05 00:32:45', NULL);
 
 -- --------------------------------------------------------
 
@@ -267,23 +268,28 @@ CREATE TABLE `transactions` (
 --
 
 INSERT INTO `transactions` (`id`, `transaction_code`, `user_id`, `queue_id`, `type`, `status`, `rating`, `created_at`, `updated_at`, `handled_by_staff_id`, `date_closed`) VALUES
-(3, 'TRX-20250305-A1B2B', 1, 3, 2, 'Open', NULL, '2025-03-09 00:05:56', '2025-04-30 00:37:31', 101, '2025-03-25 01:11:12'),
-(6, 'Q-20250325-EAD68', 1, 11, 1, 'Open', NULL, '2025-03-25 16:46:08', '2025-03-25 23:46:08', NULL, NULL),
-(7, 'Q-20250325-45E28', 1, 12, 1, 'Open', NULL, '2025-03-25 16:52:06', '2025-03-25 23:52:06', NULL, NULL),
-(8, 'Q-20250325-474E6', 1, 13, 1, 'Open', NULL, '2025-03-25 16:59:06', '2025-03-25 23:59:06', NULL, NULL),
-(9, 'Q-20250325-7216C', 1, 14, 1, 'Open', NULL, '2025-03-25 16:59:28', '2025-03-25 23:59:28', NULL, NULL),
-(10, 'Q-20250325-84533', 1, 15, 1, 'Open', NULL, '2025-03-25 17:05:31', '2025-03-26 00:05:31', NULL, NULL),
-(11, 'Q-20250427-53353', 10, 16, 2, 'Open', NULL, '2025-04-28 12:00:00', '2025-04-27 16:20:36', NULL, NULL),
-(12, 'Q-20250427-7DAC5', 10, 17, 2, 'Closed', NULL, '2025-04-30 12:00:00', '2025-04-30 00:39:18', NULL, NULL),
-(13, 'Q-20250427-7A488', 10, 18, 2, 'Closed', NULL, '2025-04-30 12:00:00', '2025-04-30 00:39:32', NULL, NULL),
-(14, 'Q-20250427-BA2AC', 10, 19, 2, 'In Progress', NULL, '2025-04-30 12:00:00', '2025-04-30 00:39:35', NULL, NULL),
-(15, 'Q-20250427-3D9F4', 10, 20, 2, 'Open', NULL, '2025-04-30 12:00:00', '2025-04-27 17:13:42', NULL, NULL),
-(16, 'Q-20250427-E88E2', 10, 21, 2, 'Open', NULL, '2025-04-28 12:00:00', '2025-04-27 17:15:31', NULL, NULL),
-(17, 'Q-20250427-03AB2', 10, 22, 2, 'Open', NULL, '2025-04-29 12:00:00', '2025-04-27 17:16:40', NULL, NULL),
-(18, 'Q-20250427-D223F', 10, 23, 2, 'Open', NULL, '2025-04-30 12:00:00', '2025-04-27 17:21:12', NULL, NULL),
-(19, 'Q-20250427-5F908', 10, 24, 2, 'Open', NULL, '2025-04-30 12:00:00', '2025-04-27 17:24:20', NULL, NULL),
-(20, 'Q-20250427-C651A', 10, 25, 2, 'Open', NULL, '2025-04-30 12:00:00', '2025-04-27 17:27:02', NULL, NULL),
-(21, 'Q-20250427-6B2BB', 10, 26, 2, 'Open', NULL, '2025-04-29 12:00:00', '2025-04-27 17:33:26', NULL, NULL);
+(1, 'Q-SVQVLTAF', 4, 1, 2, 'Pending', NULL, '2025-05-04 08:00:00', '2025-05-04 08:00:00', NULL, NULL),
+(2, 'Q-SVQVLTA5', 10, 2, 2, 'Pending', NULL, '2025-05-04 08:30:00', '2025-05-04 08:30:00', NULL, NULL),
+(3, 'Q-SVQVLT72', 6, 3, 2, 'Pending', NULL, '2025-05-04 09:00:00', '2025-05-04 09:00:00', NULL, NULL),
+(4, 'Q-SVQVLT6F', 5, 4, 2, 'Pending', NULL, '2025-05-04 09:30:00', '2025-05-04 09:30:00', NULL, NULL),
+(5, 'Q-SVQVLT29', 5, 5, 2, 'Pending', NULL, '2025-05-04 10:00:00', '2025-05-04 10:00:00', NULL, NULL),
+(6, 'Q-SVQVLT0C', 6, 6, 2, 'Pending', NULL, '2025-05-04 10:30:00', '2025-05-04 10:30:00', NULL, NULL),
+(7, 'Q-SVQVLT8F', 3, 7, 2, 'Pending', NULL, '2025-05-04 11:00:00', '2025-05-04 11:00:00', NULL, NULL),
+(8, 'Q-SVQVLTBA', 6, 8, 2, 'Pending', NULL, '2025-05-04 11:30:00', '2025-05-04 11:30:00', NULL, NULL),
+(9, 'Q-SVQVLT2D', 3, 9, 2, 'Pending', NULL, '2025-05-04 12:00:00', '2025-05-04 12:00:00', NULL, NULL),
+(10, 'Q-SVQVLT52', 3, 10, 2, 'Pending', NULL, '2025-05-04 12:30:00', '2025-05-04 12:30:00', NULL, NULL),
+(11, 'Q-SVQVLTD1', 4, 11, 1, 'Pending', NULL, '2025-05-04 08:00:00', '2025-05-04 08:00:00', NULL, NULL),
+(12, 'Q-SVQVLT8B', 1, 12, 1, 'Pending', NULL, '2025-05-04 08:30:00', '2025-05-04 08:30:00', NULL, NULL),
+(13, 'Q-SVQVLTCB', 5, 13, 1, 'Pending', NULL, '2025-05-04 09:00:00', '2025-05-04 09:00:00', NULL, NULL),
+(14, 'Q-SVQVLT35', 1, 14, 1, 'Pending', NULL, '2025-05-04 09:30:00', '2025-05-04 09:30:00', NULL, NULL),
+(15, 'Q-SVQVLTB5', 1, 15, 1, 'Pending', NULL, '2025-05-04 10:00:00', '2025-05-04 10:00:00', NULL, NULL),
+(16, 'Q-SVQVLT48', 1, 16, 1, 'Pending', NULL, '2025-05-04 10:30:00', '2025-05-04 10:30:00', NULL, NULL),
+(17, 'Q-SVQVLT71', 5, 17, 1, 'Pending', NULL, '2025-05-04 11:00:00', '2025-05-04 11:00:00', NULL, NULL),
+(18, 'Q-SVQVLT56', 1, 18, 1, 'Pending', NULL, '2025-05-04 11:30:00', '2025-05-04 11:30:00', NULL, NULL),
+(19, 'Q-SVQVLT58', 6, 19, 1, 'Pending', NULL, '2025-05-04 12:00:00', '2025-05-04 12:00:00', NULL, NULL),
+(20, 'Q-SVQVLT2B', 3, 20, 1, 'Pending', NULL, '2025-05-04 12:30:00', '2025-05-04 12:30:00', NULL, NULL),
+(49, 'Q-SVQWBI5D', 10, 49, 2, 'Open', NULL, '2025-05-05 12:00:00', '2025-05-05 00:26:06', NULL, NULL),
+(50, 'Q-SVQWML16', 10, 50, 2, 'Open', NULL, '2025-05-06 12:00:00', '2025-05-05 00:32:45', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -305,34 +311,68 @@ CREATE TABLE `transaction_services` (
 --
 
 INSERT INTO `transaction_services` (`id`, `transaction_id`, `service_id`, `reason`, `status`, `completed_at`) VALUES
-(7, 3, 1, 'Done!', 'Closed', '2025-03-25 01:06:24'),
-(8, 3, 3, 'cancelled by applicant', 'Cancelled', '2025-03-25 01:11:12'),
-(12, 6, 1, NULL, 'Pending', NULL),
-(13, 6, 3, NULL, 'Pending', NULL),
-(14, 7, 4, NULL, 'Pending', NULL),
-(15, 8, 1, NULL, 'Pending', NULL),
-(16, 8, 3, NULL, 'Pending', NULL),
-(17, 9, 1, NULL, 'Pending', NULL),
-(18, 9, 3, NULL, 'Pending', NULL),
-(19, 10, 3, NULL, 'Pending', NULL),
-(20, 11, 1, NULL, 'Pending', NULL),
-(21, 11, 2, NULL, 'Pending', NULL),
-(22, 12, 1, NULL, 'Pending', NULL),
-(23, 12, 3, NULL, 'Pending', NULL),
-(24, 13, 1, NULL, 'Pending', NULL),
-(25, 13, 2, NULL, 'Pending', NULL),
-(26, 14, 2, NULL, 'Pending', NULL),
-(27, 14, 3, NULL, 'Pending', NULL),
-(28, 14, 4, NULL, 'Pending', NULL),
-(29, 15, 1, NULL, 'Pending', NULL),
-(30, 15, 2, NULL, 'Pending', NULL),
-(31, 15, 3, NULL, 'Pending', NULL),
-(32, 16, 1, NULL, 'Pending', NULL),
-(33, 17, 2, NULL, 'Pending', NULL),
-(34, 18, 4, NULL, 'Pending', NULL),
-(35, 19, 2, NULL, 'Pending', NULL),
-(36, 20, 1, NULL, 'Pending', NULL),
-(37, 21, 2, NULL, 'Pending', NULL);
+(325, 1, 1, NULL, 'Pending', NULL),
+(326, 1, 2, NULL, 'Pending', NULL),
+(327, 1, 3, NULL, 'Pending', NULL),
+(328, 2, 1, NULL, 'Pending', NULL),
+(329, 2, 3, NULL, 'Pending', NULL),
+(330, 2, 2, NULL, 'Pending', NULL),
+(331, 3, 3, NULL, 'Pending', NULL),
+(332, 3, 1, NULL, 'Pending', NULL),
+(333, 3, 2, NULL, 'Pending', NULL),
+(334, 4, 2, NULL, 'Pending', NULL),
+(335, 4, 3, NULL, 'Pending', NULL),
+(336, 4, 1, NULL, 'Pending', NULL),
+(337, 5, 1, NULL, 'Pending', NULL),
+(338, 5, 2, NULL, 'Pending', NULL),
+(339, 5, 3, NULL, 'Pending', NULL),
+(340, 6, 2, NULL, 'Pending', NULL),
+(341, 6, 1, NULL, 'Pending', NULL),
+(342, 6, 3, NULL, 'Pending', NULL),
+(343, 7, 2, NULL, 'Pending', NULL),
+(344, 7, 3, NULL, 'Pending', NULL),
+(345, 7, 1, NULL, 'Pending', NULL),
+(346, 8, 2, NULL, 'Pending', NULL),
+(347, 8, 1, NULL, 'Pending', NULL),
+(348, 8, 3, NULL, 'Pending', NULL),
+(349, 9, 1, NULL, 'Pending', NULL),
+(350, 9, 3, NULL, 'Pending', NULL),
+(351, 9, 2, NULL, 'Pending', NULL),
+(352, 10, 2, NULL, 'Pending', NULL),
+(353, 10, 3, NULL, 'Pending', NULL),
+(354, 10, 1, NULL, 'Pending', NULL),
+(355, 11, 1, NULL, 'Pending', NULL),
+(356, 11, 2, NULL, 'Pending', NULL),
+(357, 11, 3, NULL, 'Pending', NULL),
+(358, 12, 2, NULL, 'Pending', NULL),
+(359, 12, 1, NULL, 'Pending', NULL),
+(360, 12, 3, NULL, 'Pending', NULL),
+(361, 13, 2, NULL, 'Pending', NULL),
+(362, 13, 3, NULL, 'Pending', NULL),
+(363, 13, 1, NULL, 'Pending', NULL),
+(364, 14, 3, NULL, 'Pending', NULL),
+(365, 14, 2, NULL, 'Pending', NULL),
+(366, 14, 1, NULL, 'Pending', NULL),
+(367, 15, 1, NULL, 'Pending', NULL),
+(368, 15, 3, NULL, 'Pending', NULL),
+(369, 15, 2, NULL, 'Pending', NULL),
+(370, 16, 3, NULL, 'Pending', NULL),
+(371, 16, 1, NULL, 'Pending', NULL),
+(372, 16, 2, NULL, 'Pending', NULL),
+(373, 17, 2, NULL, 'Pending', NULL),
+(374, 17, 3, NULL, 'Pending', NULL),
+(375, 17, 1, NULL, 'Pending', NULL),
+(376, 18, 2, NULL, 'Pending', NULL),
+(377, 18, 1, NULL, 'Pending', NULL),
+(378, 18, 3, NULL, 'Pending', NULL),
+(379, 19, 2, NULL, 'Pending', NULL),
+(380, 19, 3, NULL, 'Pending', NULL),
+(381, 19, 1, NULL, 'Pending', NULL),
+(382, 20, 3, NULL, 'Pending', NULL),
+(383, 20, 1, NULL, 'Pending', NULL),
+(384, 20, 2, NULL, 'Pending', NULL),
+(385, 49, 1, NULL, 'Pending', NULL),
+(386, 50, 2, NULL, 'Pending', NULL);
 
 -- --------------------------------------------------------
 
@@ -372,7 +412,7 @@ INSERT INTO `users` (`id`, `username`, `email`, `password`, `gender_id`, `birthd
 (4, 'sophia_lopez', 'sophia@example.com', '$2y$10$abcdefg1234567890hashedpassword', 2, '1998-02-17', '', 1, NULL, 2, 'Sophia', NULL, 'Lopez', NULL, 4, '09211231234', '2025-02-19 17:07:09', '2025-02-17 14:53:05'),
 (5, 'testJohn', 'john@test.com', '$2y$10$j50lJr0HRfGjfSXN5V3q5uIQJI5l5gC7AkNaXkiR1pNVIgHLVoewa', 1, '1998-10-03', 'asdasdasdasd', 0, '../uploads/download.png', 2, 'John', 'Cena', 'Doe', '', 2, '', '2025-02-19 17:07:22', '2025-02-17 16:17:26'),
 (6, 'testaccount', 'testaccount@gmail.com', '$2y$10$KxspuhRxXMPCnWdJafqGLOhqmeUmaSv6hE2RVg/r52rO5wANUruwO', 1, '1999-02-03', 'sadsadasd', 1, '../uploads/mqdefault_6s.webp', 2, 'John', 'Cena', 'Doe', '', 3, '', '2025-02-20 17:20:19', '2025-02-17 16:18:44'),
-(10, 'luffy01', 'monkey.d@luffy.com', '$2y$10$j50lJr0HRfGjfSXN5V3q5uIQJI5l5gC7AkNaXkiR1pNVIgHLVoewa', 1, '2025-02-20', 'sea', 1, '../uploads/one-piece-icons-by-me-v0-qweam8vkaxv91.jpg', 2, 'Luffy', 'Dreamer', 'Monkey', '', 1, '123123', '2025-04-29 15:49:14', '2025-02-20 16:10:26'),
+(10, 'luffy01', 'monkey.d@luffy.com', '$2y$10$j50lJr0HRfGjfSXN5V3q5uIQJI5l5gC7AkNaXkiR1pNVIgHLVoewa', 1, '2025-02-20', 'sea', 1, '../uploads/one-piece-icons-by-me-v0-qweam8vkaxv91.jpg', 2, 'Luffy', 'Dreamer', 'Monkey', '', 1, '09276542449', '2025-05-04 16:05:41', '2025-02-20 16:10:26'),
 (101, 'johndoe', 'john.doe@barangay.gov', '$2y$10$O9H5WPaZjDpW4p5oWYSv7.m8sfR/OCbUBkkdxkkKHZdmFBXzLnUNy', 1, '1990-05-15', '123 Main St, Barangay', 1, NULL, 3, 'John', 'A.', 'Doe', NULL, 1, '09171234567', '2025-03-16 08:43:40', '2025-03-16 08:40:46'),
 (102, 'janesmith', 'jane.smith@barangay.gov', '$2y$10$O9H5WPaZjDpW4p5oWYSv7.m8sfR/OCbUBkkdxkkKHZdmFBXzLnUNy', 2, '1988-08-25', '456 Elm St, Barangay', 1, NULL, 3, 'Jane', 'B.', 'Smith', NULL, 2, '09179876543', '2025-03-16 08:43:46', '2025-03-16 08:40:46'),
 (103, 'michaelreyes', 'michael.reyes@barangay.gov', '$2y$10$O9H5WPaZjDpW4p5oWYSv7.m8sfR/OCbUBkkdxkkKHZdmFBXzLnUNy', 1, '1995-02-10', '789 Oak St, Barangay', 1, NULL, 3, 'Michael', 'C.', 'Reyes', 'Jr.', 1, '09175678901', '2025-03-16 08:43:52', '2025-03-16 08:40:46');
@@ -467,9 +507,11 @@ ALTER TABLE `message_logs`
 --
 ALTER TABLE `queue`
   ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `transaction_code` (`transaction_code`),
   ADD KEY `idx_user_id` (`user_id`),
   ADD KEY `idx_status` (`status`),
-  ADD KEY `idx_scheduled_date` (`scheduled_date`);
+  ADD KEY `idx_scheduled_date` (`scheduled_date`),
+  ADD KEY `idx_queue_status_scheduled` (`status`,`scheduled_date`);
 
 --
 -- Indexes for table `requirements`
@@ -497,6 +539,7 @@ ALTER TABLE `settings`
 --
 ALTER TABLE `transactions`
   ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `transaction_code` (`transaction_code`),
   ADD KEY `idx_user_id` (`user_id`),
   ADD KEY `idx_queue_id` (`queue_id`),
   ADD KEY `idx_status` (`status`);
@@ -560,7 +603,7 @@ ALTER TABLE `message_logs`
 -- AUTO_INCREMENT for table `queue`
 --
 ALTER TABLE `queue`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=51;
 
 --
 -- AUTO_INCREMENT for table `requirements`
@@ -584,13 +627,13 @@ ALTER TABLE `settings`
 -- AUTO_INCREMENT for table `transactions`
 --
 ALTER TABLE `transactions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=51;
 
 --
 -- AUTO_INCREMENT for table `transaction_services`
 --
 ALTER TABLE `transaction_services`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=387;
 
 --
 -- AUTO_INCREMENT for table `users`

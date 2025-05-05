@@ -1,91 +1,51 @@
 <?php
 class Notification
 {
-    private $pdo;
-    private $smsApiUrl = "https://your-sms-api.com/send"; // Replace with actual SMS API URL
-    private $smsApiKey = "your-api-key"; // Replace with actual API Key
+    private $conn;
+    private $table_name = "notifications";
 
-    public function __construct($pdo)
+    public function __construct($db)
     {
-        $this->pdo = $pdo;
+        $this->conn = $db;
     }
 
-    public function sendNotification($userId, $roleId, $type, $data)
+    public function createNotification($userId, $roleId, $title, $message)
     {
-        $messages = $this->getMessageTemplates($type, $data);
-        if (!$messages) {
-            return false;
-        }
+        $query = "INSERT INTO " . $this->table_name . " 
+                  (user_id, role_id, title, message, is_read, created_at)
+                  VALUES (:user_id, :role_id, :title, :message, 0, NOW())";
 
-        // Insert into notifications table
-        $stmt = $this->pdo->prepare("
-            INSERT INTO notifications (user_id, role_id, type, message, created_at)
-            VALUES (:user_id, :role_id, :type, :message, NOW())
-        ");
-        $stmt->execute([
-            ':user_id' => $userId,
-            ':role_id' => $roleId,
-            ':type' => $type,
-            ':message' => $messages['notification']
-        ]);
+        $stmt = $this->conn->prepare($query);
 
-        // Send SMS if mobile number is provided
-        if (!empty($data['mobile'])) {
-            $this->sendSMS($data['mobile'], $messages['sms']);
-        }
+        $stmt->bindParam(":user_id", $userId);
+        $stmt->bindParam(":role_id", $roleId);
+        $stmt->bindParam(":title", $title);
+        $stmt->bindParam(":message", $message);
 
-        return true;
+        return $stmt->execute();
     }
 
-    private function getMessageTemplates($type, $data)
+    public function getUnreadNotifications($userId, $roleId)
     {
-        $templates = [
-            'user_booked' => [
-                'sms' => "Hello {$data['user_name']}, your appointment for {$data['service_name']} is set on {$data['date']} at {$data['time']}.",
-                'notification' => "Your service transaction for {$data['service_name']} is confirmed for {$data['date']} at {$data['time']}."
-            ],
-            'user_cancelled' => [
-                'sms' => "Hello {$data['user_name']}, your appointment for {$data['service_name']} on {$data['date']} has been cancelled.",
-                'notification' => "Your service transaction for {$data['service_name']} on {$data['date']} has been cancelled."
-            ],
-            'transaction_reminder' => [
-                'sms' => "Reminder: Your appointment for {$data['service_name']} is in 10 minutes.",
-                'notification' => "Reminder: Your scheduled service transaction for {$data['service_name']} is in 10 minutes."
-            ],
-            'missed_transaction' => [
-                'sms' => "Hello {$data['user_name']}, you missed your appointment for {$data['service_name']}. Please reschedule.",
-                'notification' => "You missed your service transaction for {$data['service_name']}. Please reschedule."
-            ],
-            'staff_new_booking' => [
-                'sms' => null, // No SMS for staff
-                'notification' => "New appointment: {$data['user_name']} scheduled {$data['service_name']} for {$data['date']} at {$data['time']}."
-            ],
-            'staff_pending_reminder' => [
-                'sms' => null, // No SMS for staff
-                'notification' => "Reminder: Pending service transactions require your attention."
-            ]
-        ];
+        $query = "SELECT * FROM " . $this->table_name . " 
+                  WHERE user_id = :user_id AND role_id = :role_id AND is_read = 0
+                  ORDER BY created_at DESC";
 
-        return $templates[$type] ?? null;
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":user_id", $userId);
+        $stmt->bindParam(":role_id", $roleId);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    private function sendSMS($mobile, $message)
+    public function markAsRead($notificationId)
     {
-        if (empty($message)) return false;
+        $query = "UPDATE " . $this->table_name . " SET is_read = 1 WHERE id = :id";
 
-        $postData = [
-            'api_key' => $this->smsApiKey,
-            'to' => $mobile,
-            'message' => $message
-        ];
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":id", $notificationId);
 
-        $ch = curl_init($this->smsApiUrl);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postData));
-        $response = curl_exec($ch);
-        curl_close($ch);
-
-        return $response;
+        return $stmt->execute();
     }
 }

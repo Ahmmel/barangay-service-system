@@ -1,0 +1,10 @@
+RewriteEngine On
+RewriteBase /barangay-service-system/
+
+# Exclude static files from being rewritten
+RewriteCond %{REQUEST_URI} \.(css|js|png|jpe?g|gif|svg|woff2?|ttf|eot|ico|webp)$ [NC]
+RewriteRule ^ - [L]
+
+# Redirect only if accessing the root of the app
+RewriteCond %{THE_REQUEST} ^[A-Z]{3,}\s/+(barangay-service-system/?)(\s|\?)
+RewriteRule ^$ user/login.php [R=302,L]

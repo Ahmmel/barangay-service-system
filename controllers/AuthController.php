@@ -41,6 +41,7 @@ function authenticateUser($email, $password, $db, $remember)
         // Admin login successful
         $_SESSION['user_id'] = $admin['id'];
         $_SESSION['user_role'] = 'admin';
+        $_SESSION['username'] = $admin['username'];
         if ($remember) {
             setAuthCookies($email, 'admin');
         }
@@ -53,6 +54,7 @@ function authenticateUser($email, $password, $db, $remember)
     if ($user) {
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['user_role'] = ($user['role_id'] != 2) ? 'staff' : 'user';
+        $_SESSION['username'] = $user['username'];
         if ($remember) {
             setAuthCookies($email, ($user['role_id'] != 2) ? 'staff' : 'user');
         }

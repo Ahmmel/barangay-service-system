@@ -85,12 +85,19 @@ function openAddUserModal() {
       var result = JSON.parse(response); // Parse the JSON response
       if (result.success) {
         // Populate the Role dropdown dynamically
-        let roleOptions =
-          '<option value="" disabled selected>Select role</option>';
-        result.roles.forEach(function (role) {
-          roleOptions += `<option value="${role.id}">${role.role_name}</option>`;
-        });
-
+        let roleOptions = "";
+        if (!isAdmin) {
+          // Only allow role ID 2 and make it selected/locked
+          roleOptions = `<option value="2" selected>User</option>`;
+          document
+            .getElementById("role-select")
+            .setAttribute("disabled", "disabled");
+        } else {
+          // Admins can see all role options
+          result.roles.forEach(function (role) {
+            roleOptions += `<option value="${role.id}">${role.role_name}</option>`;
+          });
+        }
         $("#role").html(roleOptions); // Inject the options into the Role dropdown
 
         // Populate the Gender dropdown dynamically
@@ -832,6 +839,7 @@ function moveNextWalkinToNowServing() {
 function updateClock() {
   const clockElement = document.getElementById("clock");
   const now = new Date();
+  if (!clockElement) return;
 
   let hours = now.getHours();
   let minutes = now.getMinutes();
@@ -876,7 +884,39 @@ function pad(num) {
 // Update the clock every second
 setInterval(updateClock, 1000);
 
+function initTablesAndSelects() {
+  const dataTableOptions = {
+    pageLength: 10,
+    lengthChange: false,
+    searching: true,
+    ordering: true,
+    info: true,
+    paging: true,
+  };
+
+  // Initialize DataTables if the element exists
+  [
+    "#activityLogTable",
+    "#userTable",
+    "#transactionTable",
+    "#requirementTable",
+    "#serviceTable",
+  ].forEach(function (id) {
+    if ($(id).length) {
+      $(id).DataTable(dataTableOptions);
+    }
+  });
+
+  $("#addServices").select2({
+    placeholder: "Select services",
+    allowClear: true,
+    width: "100%",
+    maximumSelectionLength: "3",
+  });
+}
+
 $(document).ready(function () {
+  initTablesAndSelects();
   // Start Of Users
   $("#addUserForm").submit(function (e) {
     e.preventDefault(); // Prevent default form submission

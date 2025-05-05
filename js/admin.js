@@ -82,12 +82,6 @@
   // Store the original margin
   var originalMargin = "0 1rem 28.5rem";
 
-  // Apply the updated margin when the collapse is toggled open
-  $('a[data-toggle="collapse"]').on("click", function (event) {
-    preventdefault();
-    var element = $(".toggle-sidebar-divider")[0]; // Get the actual DOM element
-  });
-
   // Listen for when the collapse is shown (open)
   $("#queueManagement").on("shown.bs.collapse", function () {
     var element = $(".toggle-sidebar-divider")[0]; // Get the actual DOM element

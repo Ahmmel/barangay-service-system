@@ -1,5 +1,32 @@
 <?php
+include_once '../config/database.php';
+include_once '../models/Notification.php';
+
+// start the session
+session_start();
+
 $_SESSION["page_title"] = "Dashboard";
+// Check if the user is logged in and has admin role
+if (!isset($_SESSION['user_role']) || !in_array($_SESSION['user_role'], ["admin", "staff"])) {
+    // Redirect to login page if not an admin
+    header("Location: ../admin/login.php");
+    exit();
+}
+
+// Create database connection
+$database = new Database();
+$db = $database->getConnection();
+
+$isAdmin = $_SESSION['user_role'] == 'admin' ? 1 : 0;
+$currentSessionId = $_SESSION['user_id'];
+$sessionUsername = $_SESSION['username'];
+
+// Get notifications
+$notification = new Notification($db);
+$notifications = $notification->getUnreadNotifications($_SESSION['user_id'], $_SESSION['user_role']);
+$notificationCount = count($notifications);
+
+$currentPage = basename($_SERVER['PHP_SELF']);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -14,6 +41,9 @@ $_SESSION["page_title"] = "Dashboard";
     <meta name="author" content="" />
 
     <title>Admin - <?php echo $_SESSION["page_title"]; ?></title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
+
     <link href="../css/bootstrap.css" rel="stylesheet">
     <link href="../css/admin-sidebar.css" rel="stylesheet">
     <link href="../vendor/font/font-awesome.css" rel="stylesheet">
@@ -26,12 +56,22 @@ $_SESSION["page_title"] = "Dashboard";
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.js"></script>
 
+    <!-- NProgress CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.css" />
+
+    <!-- NProgress JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.js"></script>
     <?php
     if ($_SESSION["page_title"] == "User") {
         echo '<link href="../css/common-pages.css" rel="stylesheet">';
     }
     ?>
-
+    <style>
+        #nprogress .bar {
+            background: #28a745 !important;
+            /* green like success */
+        }
+    </style>
 </head>
 
 <body id="page-top">

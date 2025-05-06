@@ -16,9 +16,13 @@ function setAuthCookies($email, $role)
 }
 
 // Helper function to handle AJAX responses
-function sendAjaxResponse($success, $message)
+function sendAjaxResponse($success, $message, $redirect = null)
 {
-    echo json_encode(array("success" => $success, "message" => $message));
+    echo json_encode([
+        "success" => $success,
+        "message" => $message,
+        "redirect" => $redirect
+    ]);
     exit();
 }
 
@@ -28,17 +32,15 @@ function validateInputs($email, $password)
     if (empty($email) || empty($password)) {
         return "Email/Username and password are required.";
     }
-    return null; // No errors
+    return null;
 }
 
 // Handle user authentication
 function authenticateUser($email, $password, $db, $remember)
 {
-    // Check if user is an Admin
     $adminModel = new Admin($db);
     $admin = $adminModel->login($email, $password);
     if ($admin) {
-        // Admin login successful
         $_SESSION['user_id'] = $admin['id'];
         $_SESSION['user_role'] = 'admin';
         $_SESSION['username'] = $admin['username'];
@@ -48,7 +50,6 @@ function authenticateUser($email, $password, $db, $remember)
         return ['role' => 'admin', 'redirect' => '../admin/dashboard.php'];
     }
 
-    // Check if user is a regular user or staff
     $userModel = new User($db);
     $user = $userModel->login($email, $password);
     if ($user) {
@@ -56,31 +57,28 @@ function authenticateUser($email, $password, $db, $remember)
         $_SESSION['user_role'] = ($user['role_id'] != 2) ? 'staff' : 'user';
         $_SESSION['username'] = $user['username'];
         if ($remember) {
-            setAuthCookies($email, ($user['role_id'] != 2) ? 'staff' : 'user');
+            setAuthCookies($email, $_SESSION['user_role']);
         }
 
-        // Return user role and redirection based on role
-        if ($_SESSION['user_role'] == 'staff') {
+        if ($_SESSION['user_role'] === 'staff') {
             return ['role' => 'staff', 'redirect' => '../admin/dashboard.php'];
         } else {
             return ['role' => 'user', 'redirect' => null];
         }
     }
 
-    return null; // No valid user found
+    return null;
 }
 
 // Main logic
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = isset($_POST['email']) ? filter_var(trim($_POST['email']), FILTER_SANITIZE_EMAIL) : '';
-    $password = isset($_POST['password']) ? trim($_POST['password']) : '';
-    $remember = isset($_POST['remember']) ? true : false;
+    $email = filter_var(trim($_POST['email'] ?? ''), FILTER_SANITIZE_EMAIL);
+    $password = trim($_POST['password'] ?? '');
+    $remember = isset($_POST['remember']);
 
-    // Validate inputs
     $error_message = validateInputs($email, $password);
     if ($error_message) {
-        // Handle error for AJAX request
-        if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest') {
+        if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
             sendAjaxResponse(false, $error_message);
         } else {
             $_SESSION['error'] = $error_message;
@@ -89,20 +87,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // Attempt authentication
     $authResult = authenticateUser($email, $password, $db, $remember);
     if ($authResult) {
-        if ($authResult['redirect']) {
+        if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+            sendAjaxResponse(true, "Login successful", $authResult['redirect']);
+        } else {
             header("Location: " . $authResult['redirect']);
             exit();
-        } else {
-            sendAjaxResponse(true, "Login successful");
         }
     }
 
-    // If no matching user or admin found
     $error_message = "Invalid email or password.";
-    if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest') {
+    if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
         sendAjaxResponse(false, $error_message);
     } else {
         $_SESSION['error'] = $error_message;

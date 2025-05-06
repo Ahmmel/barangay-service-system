@@ -17,8 +17,11 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 40px; /* Fixed width for the logo */
-    height: 40px; /* Fixed height for the logo */
+    width: 135px; /* Fixed width for the logo */
+  }
+
+  .sidebar .sidebar-brand {
+    height: auto !important;
   }
 
   /* Logo Image Styling */

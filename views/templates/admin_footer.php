@@ -45,6 +45,8 @@
                         if (pushState) {
                             history.pushState(null, '', url);
                             initTablesAndSelects();
+                            $('.nav-item').removeClass('active');
+                            const currentNavItem = $('.nav-item a[href="' + url + '"]').closest('.nav-item');
                             $('#queueManagement').removeClass('show');
                         }
                     }

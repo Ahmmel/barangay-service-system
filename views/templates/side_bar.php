@@ -3,9 +3,8 @@
     <!-- Brand -->
     <a class="sidebar-brand d-flex align-items-center justify-content-center p-3" href="dashboard.php" data-ajax="true">
         <div class="sidebar-brand-icon">
-            <img src="../images/brand_only_white.png" alt="QPila Logo" style="width: 35px" />
+            <img src="../images/qpila-logo.png" alt="QPila Logo" />
         </div>
-        <div class="sidebar-brand-text mx-2">QPila</div>
     </a>
 
     <hr class="sidebar-divider my-0" />

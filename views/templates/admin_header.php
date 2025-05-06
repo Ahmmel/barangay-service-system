@@ -41,6 +41,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
     <meta name="author" content="" />
 
     <title>Admin - <?php echo $_SESSION["page_title"]; ?></title>
+    <link rel="icon" href="../images/qpila-logo-favicon.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
 

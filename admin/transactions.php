@@ -1,4 +1,7 @@
 <?php
+// start the session
+session_start();
+
 // Include necessary files
 include_once '../views/templates/admin_header.php';
 include_once '../models/Transaction.php';
@@ -6,6 +9,8 @@ include_once '../models/Transaction.php';
 $_SESSION["page_title"] = "Transactions";
 $transaction = new Transaction($db);
 $transactions = $isAdmin ? $transaction->getAllTransactions() : $transaction->getAllStaffTransactions($_SESSION['user_id']);
+$isStaffAllowedToUpdate = !$isAdmin ? $transaction->isStaffAllowedToUpdate() : true;
+$disabledAttr = !$isStaffAllowedToUpdate ? 'disabled' : '';
 ?>
 
 <!-- Sidebar -->
@@ -23,14 +28,13 @@ $transactions = $isAdmin ? $transaction->getAllTransactions() : $transaction->ge
         <!-- Begin Page Content -->
         <div class="container-fluid">
             <!-- Button Group: Add and Search Transaction -->
-            <div class="d-flex mb-3">
-                <button type="button" class="btn btn-success mr-2" onclick="openAddTransactionModal()">
-                    <i class="fas fa-plus"></i> Add Transaction
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                <button type="button" class="btn btn-success" <?= $disabledAttr ?> onclick="openAddTransactionModal()">
+                    <i class="fas fa-plus me-1"></i> Add Transaction
                 </button>
 
-                <!-- Search Transaction Button -->
-                <button type="button" class="btn btn-primary" onclick="openSearchTransactionModal()">
-                    <i class="fas fa-search"></i> Search Transaction
+                <button type="button" class="btn btn-primary" <?= $disabledAttr ?> onclick="openSearchTransactionModal()">
+                    <i class="fas fa-search me-1"></i> Search Transaction
                 </button>
             </div>
 
@@ -77,7 +81,7 @@ $transactions = $isAdmin ? $transaction->getAllTransactions() : $transaction->ge
                                 <td><?= htmlspecialchars($transaction['date_closed']) ?></td>
                                 <td><?= htmlspecialchars($transaction['status']) ?></td>
                                 <td>
-                                    <?php if ($isActionVisible): ?>
+                                    <?php if ($isActionVisible  && $isStaffAllowedToUpdate): ?>
                                         <button class="btn btn-info btn-sm" onclick="openUpdateTransactionModal(<?= (int)$transaction['transaction_id'] ?>)">
                                             Update Status
                                         </button>

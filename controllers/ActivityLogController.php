@@ -4,12 +4,10 @@ require_once '../models/ActivityLog.php';
 
 class ActivityLogController
 {
-    private $conn;
     private $activityLogModel;
 
     public function __construct($db)
     {
-        $this->conn = $db;
         $this->activityLogModel = new ActivityLog($db);
     }
 

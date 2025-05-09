@@ -1,4 +1,5 @@
 <?php
+session_start();
 // Include necessary files
 include_once '../views/templates/admin_header.php';
 include_once '../config/database.php';

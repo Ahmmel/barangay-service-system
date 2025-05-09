@@ -530,21 +530,6 @@ body::before {
     /* Optional base dark tone */
 }
 
-.form-error {
-    display: none;
-    /* Hidden by default, show it with JS */
-    background-color: #ffe6e6;
-    color: #cc0000;
-    border: 1px solid #cc0000;
-    padding: 10px 15px;
-    border-radius: 8px;
-    margin-top: 10px;
-    font-size: 14px;
-    font-weight: 500;
-    animation: fadeSlideIn 0.5s ease forwards;
-    box-shadow: 0 2px 8px rgba(204, 0, 0, 0.1);
-}
-
 /* Animation Keyframes */
 @keyframes fadeSlideIn {
     from {

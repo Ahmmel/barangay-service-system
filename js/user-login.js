@@ -4,12 +4,9 @@ $(function () {
   const $loginForm = $("#loginForm");
   const $registerForm = $("#registerForm");
   const $forgotForm = $("#forgotForm");
-  const $loginError = $("#loginError");
-  const $responseMessage = $("#responseMessage");
   const $registerBtn = $(".register-btn");
   const $loginBtn = $(".login-btn");
   const $forgotBtn = $(".forgot-btn");
-  const $forgotMessage = $("#forgotMessage");
 
   // Set current year
   $year.text(new Date().getFullYear());
@@ -17,15 +14,11 @@ $(function () {
   // Toggle Forms
   $registerBtn.on("click", () => {
     $registerForm[0].reset();
-    clearForgotPasswordError();
-    clearLoginError();
     $container.removeClass("forgot-mode").addClass("active");
   });
 
   $loginBtn.on("click", () => {
     $loginForm[0].reset();
-    clearForgotPasswordError();
-    clearResponseMessage();
     $container.removeClass("active").removeClass("forgot-mode");
   });
 
@@ -33,11 +26,9 @@ $(function () {
   $forgotBtn.on("click", () => {
     $container.addClass("forgot-mode");
     $forgotForm[0].reset();
-    clearLoginError();
-    clearResponseMessage();
   });
 
-  // Login submission
+  // LOGIN
   $loginForm.on("submit", function (e) {
     e.preventDefault();
     const email = $("#loginUsername").val();
@@ -54,26 +45,41 @@ $(function () {
         try {
           data = JSON.parse(response);
         } catch {
-          return showLoginError("Invalid server response. Please try again.");
+          return showError("Invalid server response. Please try again.");
         }
-        data.success
-          ? (window.location.href = data.redirect || "index.php")
-          : showLoginError(data.message || "Login failed. Try again.");
+
+        if (data.success) {
+          Swal.fire({
+            icon: "success",
+            title: "Login Successful",
+            text: "Redirecting...",
+            showConfirmButton: false,
+            timer: 1200,
+          }).then(() => {
+            window.location.href = data.redirect || "index.php";
+          });
+        } else {
+          showError(data.message || "Login failed. Try again.");
+        }
       })
-      .fail(() => showLoginError("An error occurred, please try again later."));
+      .fail(() => showError("An error occurred, please try again later."));
   });
 
-  // Register submission
+  // REGISTER
   $registerForm.on("submit", function (e) {
     e.preventDefault();
-
     const username = $("#registerUsername").val();
     const email = $("#registerEmail").val();
     const password = $("#registerPassword").val();
     const confirmPassword = $("#confirmPassword").val();
 
     if (password !== confirmPassword) {
-      return setResponseMessage("Passwords do not match");
+      return Swal.fire({
+        icon: "warning",
+        title: "Password Mismatch",
+        text: "Passwords do not match.",
+        confirmButtonColor: "#ff6f3c",
+      });
     }
 
     $.post("../controllers/UserController.php?action=register", {
@@ -86,53 +92,85 @@ $(function () {
         try {
           data = JSON.parse(response);
         } catch {
-          return setResponseMessage(
-            "Invalid server response. Please try again."
-          );
+          return showError("Invalid server response. Please try again.");
         }
 
         if (data.success) {
-          $responseMessage
-            .css("color", "green")
-            .hide()
-            .text("Registration successful! Redirecting to login...")
-            .fadeIn(300);
-          setTimeout(() => $loginBtn.click(), 1500);
+          Swal.fire({
+            icon: "success",
+            title: "Registration Successful",
+            text: "Redirecting to login...",
+            timer: 1500,
+            showConfirmButton: false,
+          }).then(() => $loginBtn.click());
         } else {
-          setResponseMessage(data.message || "Registration failed. Try again.");
+          showError(data.message || "Registration failed. Try again.");
+        }
+      })
+      .fail(() => showError("An error occurred, please try again later."));
+  });
+
+  // FORGOT PASSWORD AJAX
+  $forgotForm.on("submit", function (e) {
+    e.preventDefault();
+    const email = $("#forgotEmail").val();
+
+    if (!email) {
+      return Swal.fire({
+        icon: "warning",
+        title: "Email Required",
+        text: "Please enter your registered email address.",
+        confirmButtonColor: "#ff6f3c",
+      });
+    }
+
+    $.post("../controllers/UserController.php?action=resetPassword", {
+      action: "forgot-password",
+      email: email,
+    })
+      .done((response) => {
+        let data;
+        try {
+          data = JSON.parse(response);
+        } catch {
+          return showForgotError("Invalid server response. Please try again.");
+        }
+
+        if (data.success) {
+          Swal.fire({
+            icon: "success",
+            title: "Password Reset Successful",
+            text: "A new password has been sent to your registered mobile number. Please check your SMS and use the new password to log in.",
+            confirmButtonColor: "#ff6f3c",
+          }).then(() => {
+            $(".login-btn").click(); // return to login
+          });
+        } else {
+          showForgotError(data.message || "No account found with that email.");
         }
       })
       .fail(() =>
-        setResponseMessage("An error occurred, please try again later.")
+        showForgotError("An error occurred, please try again later.")
       );
   });
 
-  // Utility Functions
-  const showLoginError = (msg) => {
-    $loginError.stop(true, true).fadeOut(150, function () {
-      $(this).text(msg).addClass("form-error").fadeIn(200);
+  // Helper for forgot error
+  const showForgotError = (msg) => {
+    Swal.fire({
+      icon: "error",
+      title: "Reset Failed",
+      text: msg,
+      confirmButtonColor: "#ff6f3c",
     });
   };
 
-  const clearLoginError = () => {
-    $loginError.stop(true, true).fadeOut(150, function () {
-      $(this).text("").hide();
-    });
-  };
-
-  const clearForgotPasswordError = () => {
-    $forgotMessage.stop(true, true).fadeOut(150, function () {
-      $(this).text("").hide();
-    });
-  };
-
-  const setResponseMessage = (msg, color = "red") => {
-    $responseMessage.show().css("color", color).text(msg);
-  };
-
-  const clearResponseMessage = () => {
-    $responseMessage.stop(true, true).fadeOut(150, function () {
-      $(this).text("").hide();
+  // SweetAlert Error Handler
+  const showError = (msg) => {
+    Swal.fire({
+      icon: "error",
+      title: "Oops!",
+      text: msg,
+      confirmButtonColor: "#ff6f3c",
     });
   };
 });

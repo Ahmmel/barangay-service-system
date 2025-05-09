@@ -1,13 +1,32 @@
 <?php
+require_once '../models/SystemSettings.php';
 class User
 {
     private $conn;
     private $table_name = "users";
+    private $systemSettings;
 
     public function __construct($db)
     {
         $this->conn = $db;
+        $this->systemSettings = SystemSettings::getInstance($this->conn);
     }
+
+    function isStaffAllowedToUpdate(): bool
+    {
+        // Get cutoff time from settings (default to 17:00 if not set)
+        $cutoff = $this->systemSettings->get('staff_update_cutoff_time', '17:00');
+        $staffStartTime = $this->systemSettings->get('staff_update_start_time', '07:00'); // Assuming the correct setting name is `staff_update_start_time`
+
+        // Get current time in 'Asia/Manila' timezone
+        $now = new DateTime('now', new DateTimeZone('Asia/Manila'));
+        $currentTime = $now->format('H:i');
+
+        // Staff can only update if current time is >= staff start time and < cutoff time
+        return $currentTime >= $staffStartTime && $currentTime < $cutoff;
+    }
+
+
 
     // Create a new user
     public function createUser($username, $email, $password, $gender, $birthdate, $address, $isVerified, $profilePicture, $roleId, $firstName, $middleName, $lastName, $suffix, $maritalStatus, $mobileNumber)
@@ -252,5 +271,49 @@ class User
             return true;
         }
         return false;
+    }
+
+    public function generateNewPassword($length = 8)
+    {
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $charactersLength = strlen($characters);
+        $randomString = '';
+        for ($i = 0; $i < $length; $i++) {
+            $randomString .= $characters[rand(0, $charactersLength - 1)];
+        }
+        return $randomString;
+    }
+
+    public function resetPassword($email, $newPassword)
+    {
+        $query = "UPDATE " . $this->table_name . " SET password = :password WHERE email = :email";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':email', $email);
+        $stmt->bindParam(':password', $newPassword);
+
+        if ($stmt->execute()) {
+            return true;
+        }
+        return false;
+    }
+
+    public function getUserMobileByEmail($email)
+    {
+        $query = "SELECT mobile_number FROM {$this->table_name} WHERE email = :email LIMIT 1";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':email', $email, PDO::PARAM_STR);
+        $stmt->execute();
+
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['mobile_number'] ?? null;
+    }
+
+    public function getUserByEmail($email)
+    {
+        $query = "SELECT * FROM " . $this->table_name . " WHERE email = :email";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':email', $email);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 }

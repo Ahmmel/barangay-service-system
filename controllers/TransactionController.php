@@ -3,23 +3,26 @@ require_once '../config/database.php';
 require_once '../models/Transaction.php';
 require_once '../models/Queue.php';
 require_once '../models/SMSNotification.php';
+require_once '../models/Notification.php';
 class TransactionController
 {
-    private $TransactionModel;
-    private $QueueModel;
-    private $SMS;
+    private $transaction;
+    private $queue;
+    private $sms;
+    private $notification;
 
     public function __construct($db)
     {
-        $this->TransactionModel = new Transaction($db);
-        $this->QueueModel = new Queue($db);
-        $this->SMS = new SMSNotification();
+        $this->transaction = new Transaction($db);
+        $this->queue = new Queue($db);
+        $this->sms = new SMSNotification($db);
+        $this->notification = new Notification($db);
     }
 
     // Get Transaction Prequisites
     public function getServices()
     {
-        $services = $this->TransactionModel->getServices();
+        $services = $this->transaction->getServices();
         echo json_encode($services);
     }
     // Handle Add Transaction with services
@@ -51,7 +54,7 @@ class TransactionController
         try {
 
             // Validate transaction
-            $validator = $this->TransactionModel->validateTransaction($userId, $serviceIds, $scheduledTime);
+            $validator = $this->transaction->validateTransaction($userId, $serviceIds, $scheduledTime);
             if (!$validator['success']) {
                 echo json_encode($validator);
                 return;
@@ -61,26 +64,26 @@ class TransactionController
             $transactionCode = 'Q-' . strtoupper(base_convert(time(), 10, 36)) . strtoupper(bin2hex(random_bytes(1)));
 
             // Add the queue entry
-            $queueId = $this->QueueModel->addQueue($userId, $transactionType, $transactionCode, $scheduledTime);
+            $queueId = $this->queue->addQueue($userId, $transactionType, $transactionCode, $scheduledTime);
 
             if (!$queueId) {
                 throw new Exception('Failed to create a queue entry');
             }
 
             // Create the transaction with services
-            $result = $this->TransactionModel->createTransactionWithServices($userId, $serviceIds, $transactionType, $transactionCode, $queueId, $scheduledTime);
+            $result = $this->transaction->createTransactionWithServices($userId, $serviceIds, $transactionType, $transactionCode, $queueId, $scheduledTime);
 
             if (!$result['success']) {
                 throw new Exception($result['message'] ?? 'Failed to create transaction with services');
             }
 
             // Send SMS confirmation if phone number is available
-            $userPhone = $this->TransactionModel->getUserMobileNumber($userId);
+            $userPhone = $this->transaction->getUserMobileNumber($userId);
             if ($userPhone) {
                 if ($transactionType == 1) {
-                    $this->SMS->sendWalkInTransactionNotification($userPhone, $result['transaction_code'], $scheduledTime);
+                    $this->sms->sendWalkInTransactionNotification($userPhone, $result['transaction_code'], $scheduledTime);
                 } else {
-                    $this->SMS->sendTransactionConfirmation($userPhone, $result['transaction_code'], $scheduledTime);
+                    $this->sms->sendTransactionConfirmation($userPhone, $result['transaction_code'], $scheduledTime);
                 }
             }
 
@@ -95,7 +98,7 @@ class TransactionController
     // Get all transactions
     public function getAllTransactions()
     {
-        $transactions = $this->TransactionModel->getAllTransactions();
+        $transactions = $this->transaction->getAllTransactions();
         echo json_encode($transactions);
     }
 
@@ -119,7 +122,7 @@ class TransactionController
             }
 
             // Update the transaction status
-            $result = $this->TransactionModel->updateTransactionStatus($transactionServiceId, $status, $staffId, $reason);
+            $result = $this->transaction->updateTransactionStatus($transactionServiceId, $status, $staffId, $reason);
             echo json_encode(['success' => $result]);
             return;
         }
@@ -135,7 +138,7 @@ class TransactionController
                 return;
             }
 
-            $transaction = $this->TransactionModel->getTransactionByCode($transactionCode);
+            $transaction = $this->transaction->getTransactionByCode($transactionCode);
             if ($transaction) {
                 echo json_encode(['success' => true, 'transaction' => $transaction]);
             } else {
@@ -154,7 +157,7 @@ class TransactionController
                 return;
             }
 
-            $transaction = $this->TransactionModel->getTransactionById($transactionId);
+            $transaction = $this->transaction->getTransactionById($transactionId);
             if ($transaction) {
                 echo json_encode(['success' => true, 'transaction' => $transaction]);
             } else {
@@ -173,7 +176,7 @@ class TransactionController
                 return;
             }
 
-            $transactions = $this->TransactionModel->getTransactionsByUserId($userId);
+            $transactions = $this->transaction->getTransactionsByUserId($userId);
             if ($transactions) {
                 echo json_encode(['success' => true, 'transactions' => $transactions]);
             } else {
@@ -195,7 +198,7 @@ class TransactionController
             }
 
             // Rate the transaction
-            $result = $this->TransactionModel->rateTransaction($transactionCode, $rating);
+            $result = $this->transaction->rateTransaction($transactionCode, $rating);
             echo json_encode(['success' => $result]);
         }
     }

@@ -79,11 +79,7 @@ CREATE TABLE `genders` (
 INSERT INTO `genders` (`id`, `gender_name`, `created_at`, `modified_at`) VALUES
 (1, 'Male', '2025-02-17 16:00:00', '2025-02-17 16:00:00'),
 (2, 'Female', '2025-02-17 16:00:00', '2025-02-17 16:00:00'),
-(3, 'Other', '2025-02-17 16:00:00', '2025-02-17 16:00:00'),
-(1, 'Male', '2025-02-17 16:00:00', '2025-02-17 16:00:00'),
-(2, 'Female', '2025-02-17 16:00:00', '2025-02-17 16:00:00'),
-(3, 'Other', '2025-02-17 16:00:00', '2025-02-17 16:00:00');
-
+(3, 'Other', '2025-02-17 16:00:00', '2025-02-17 16:00:00')
 -- --------------------------------------------------------
 
 --
@@ -229,7 +225,7 @@ INSERT INTO `services` (`id`, `service_name`, `description`, `created_at`, `modi
 -- Table structure for table `settings`
 --
 
-CREATE TABLE `settings` (
+CREATE TABLE `system_settings` (
   `id` int(11) NOT NULL,
   `name` varchar(255) NOT NULL,
   `value` text NOT NULL,
@@ -240,8 +236,9 @@ CREATE TABLE `settings` (
 -- Dumping data for table `settings`
 --
 
-INSERT INTO `settings` (`id`, `name`, `value`, `updated_at`) VALUES
-(1, 'max_transactions_per_day', '2', '2025-03-18 16:01:17');
+INSERT INTO `v` (`id`, `name`, `value`, `updated_at`) VALUES
+(1, 'max_transactions_per_day', '2', '2025-03-18 16:01:17'),
+(2, 'enable_sms_notifications', '1', '2025-03-18 16:01:17');
 
 -- --------------------------------------------------------
 

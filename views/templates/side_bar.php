@@ -66,6 +66,16 @@
         </a>
     </li>
 
+    <!-- System Settings -->
+    <?php if ($isAdmin): ?>
+        <li class="nav-item <?= ($currentPage === 'system-settings.php') ? 'active' : '' ?>">
+            <a class="nav-link" href="system-settings.php">
+                <i class="fas fa-fw fa-cogs"></i>
+                <span>System Settings</span>
+            </a>
+        </li>
+    <?php endif; ?>
+
     <hr class="sidebar-divider d-none d-md-block toggle-sidebar-divider" />
 
     <!-- Sidebar Toggler -->

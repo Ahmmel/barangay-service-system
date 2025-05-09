@@ -26,7 +26,7 @@
                     <img src="../images/qpila-logo.png" alt="QPILA Logo">
                 </div>
                 <div class="input-box">
-                    <input type="text" id="loginUsername" placeholder="Username / email" required>
+                    <input type="text" id="loginUsername" placeholder="Enter your email or username" required>
                     <i class='bx bx-user-circle'></i>
                 </div>
                 <div class="input-box">
@@ -40,7 +40,6 @@
                     <a href="#" class="forgot-link forgot-btn">Forgot password?</a>
                 </div>
                 <button type="submit" class="btn">Login</button>
-                <div id="loginError" class="form-error"></div>
                 <div class="footer">
                     Powered by QPila &copy; <span id="year"></span>
                 </div>
@@ -68,7 +67,6 @@
                     <i class='bx bx-lock-alt'></i>
                 </div>
                 <button type="submit" class="btn">Register</button>
-                <div id="responseMessage" class="form-error"></div>
             </form>
         </div>
 
@@ -76,13 +74,12 @@
         <div class="form-box forgot-password">
             <form id="forgotForm">
                 <h1>Forgot Password</h1>
-                <p>Please enter your email to reset your password.</p>
+                <p>Please enter your email or username to reset your password.</p>
                 <div class="input-box">
-                    <input type="email" id="forgotEmail" placeholder="Enter your email" required>
+                    <input type="email" id="forgotEmail" placeholder="Enter your email or username" required>
                     <i class='bx bx-envelope'></i>
                 </div>
                 <button type="submit" class="btn">Reset Password</button>
-                <div id="forgotMessage" class="form-error"></div>
             </form>
         </div>
 
@@ -101,6 +98,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="../js/user-login.js"></script>
 </body>
 

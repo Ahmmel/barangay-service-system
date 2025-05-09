@@ -36,17 +36,25 @@
 
             setTimeout(function() {
                 $.get(url, function(data) {
-                    // Create a temporary DOM to extract #content-wrapper from the response
                     const tempDiv = $("<div>").html(data);
-                    const newContent = tempDiv.find("#content-wrapper").html();
 
+                    // ✅ Extract and update <title>
+                    const newTitle = tempDiv.filter("title").text() || tempDiv.find("title").text();
+                    if (newTitle) document.title = newTitle;
+
+                    // ✅ Extract and inject content
+                    const newContent = tempDiv.find("#content-wrapper").html();
                     if (newContent) {
                         contentContainer.html(newContent);
+
                         if (pushState) {
                             history.pushState(null, '', url);
                             initTablesAndSelects();
+
                             $('.nav-item').removeClass('active');
                             const currentNavItem = $('.nav-item a[href="' + url + '"]').closest('.nav-item');
+                            currentNavItem.addClass('active');
+
                             $('#queueManagement').removeClass('show');
                         }
                     }
@@ -55,8 +63,9 @@
                     contentContainer.removeClass("fade-out").addClass("fade-in");
                     NProgress.done();
                 });
-            }, 200);
+            }, 100);
         }
+
 
         // Handle link clicks
         $('a[data-ajax="true"]').on("click", function(e) {

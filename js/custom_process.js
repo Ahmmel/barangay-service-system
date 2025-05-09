@@ -89,15 +89,21 @@ function openAddUserModal() {
         if (!isAdmin) {
           // Only allow role ID 2 and make it selected/locked
           roleOptions = `<option value="2" selected>User</option>`;
-          document
-            .getElementById("role-select")
-            .setAttribute("disabled", "disabled");
+
+          // Set role to disabled in UI
+          document.getElementById("role").setAttribute("disabled", "disabled");
+          // Insert hidden input with same name to preserve data
+          const hiddenInput = document.createElement("input");
+          hiddenInput.type = "hidden";
+          hiddenInput.name = "role"; // Must match select name
+          hiddenInput.value = "2";
+          document.getElementById("addUserForm").appendChild(hiddenInput);
         } else {
-          // Admins can see all role options
           result.roles.forEach(function (role) {
             roleOptions += `<option value="${role.id}">${role.role_name}</option>`;
           });
         }
+
         $("#role").html(roleOptions); // Inject the options into the Role dropdown
 
         // Populate the Gender dropdown dynamically
@@ -159,14 +165,17 @@ function openEditUserModal(userId) {
         let formattedDate = birthdate.toISOString().split("T")[0];
 
         // Populate the Role dropdown dynamically
-        let roleOptions =
-          '<option value="" disabled selected>Select role</option>';
-        result.roles.forEach(function (role) {
-          roleOptions += `<option d value="${role.id}" 
-          ${role.id == result.user.role_id ? "selected" : ""}
-          ${isAdmin == false ? "disabled" : ""}
-          >${role.role_name}</option>`;
-        });
+        let roleOptions = "";
+        if (!isAdmin) {
+          // Only allow role ID 2 and make it selected/locked
+          roleOptions = `<option value="2" selected>User</option>`;
+          document.getElementById("role").setAttribute("disabled", "disabled");
+        } else {
+          // Admins can see all role options
+          result.roles.forEach(function (role) {
+            roleOptions += `<option value="${role.id}">${role.role_name}</option>`;
+          });
+        }
         $("#editRole").html(roleOptions); // Inject the options into the Role dropdown
 
         // Populate the Gender dropdown dynamically
@@ -200,23 +209,16 @@ function openEditUserModal(userId) {
             .css("color", "green");
         }
 
-        var baseUrl = window.location.origin + "/QPila";
-        var imageUrl;
-
-        if (result.user.profile_picture) {
-          var imagePath = result.user.profile_picture.replace(/^(\.\.\/)/, "");
-
-          imageUrl = baseUrl + "/" + imagePath;
-        } else {
-          // Set default image based on gender if no profile picture exists
-          imageUrl =
-            result.user.gender_id == 2
+        // Check if profile picture is null and set a default based on gender_id
+        var profilePicture = result.user.profile_picture;
+        if (!profilePicture) {
+          profilePicture =
+            data.user.gender_id == 2
               ? "../images/default_male.png"
               : "../images/default_female.png";
         }
-
         // Set the image preview source and ensure it is visible
-        $("#editPreview").attr("src", imageUrl).show();
+        $("#editPreview").attr("src", profilePicture).show();
 
         // Open the modal
         $("#editUserModal").modal("show");
@@ -1517,5 +1519,36 @@ $(document).ready(function () {
       return;
     }
     handleNoShow(transactionCode);
+  });
+
+  $("#settingsForm").on("submit", function (e) {
+    e.preventDefault();
+    NProgress.start();
+
+    const formData = $(this).serialize();
+
+    $.post("../controllers/SystemSettingController.php?action=save", formData)
+      .done((response) => {
+        const data = JSON.parse(response);
+        Swal.fire({
+          icon: data.success ? "success" : "error",
+          title: data.success ? "Settings Updated" : "Update Failed",
+          text:
+            data.message ||
+            (data.success
+              ? "Your changes were saved successfully."
+              : "An error occurred."),
+          confirmButtonColor: "#007bff",
+        });
+      })
+      .fail(() => {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Failed to connect to the server.",
+          confirmButtonColor: "#dc3545",
+        });
+      })
+      .always(() => NProgress.done());
   });
 });

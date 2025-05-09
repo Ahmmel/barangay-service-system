@@ -85,7 +85,7 @@ form.addEventListener("submit", async function (e) {
         title: "Login Successful!",
         text: "Redirecting to dashboard...",
         showConfirmButton: false,
-        timer: 1500,
+        timer: 600,
       }).then(() => {
         if (result.redirect) {
           window.location.href = result.redirect;

@@ -4,12 +4,10 @@ require_once '../models/Requirement.php';
 
 class RequirementController
 {
-    private $conn;
     private $requirementModel;
 
     public function __construct($db)
     {
-        $this->conn = $db;
         $this->requirementModel = new Requirement($db);
     }
 

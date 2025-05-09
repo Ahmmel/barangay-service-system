@@ -8,13 +8,14 @@ class SemaphoreAPI
         $this->apiKey = "5dc0a197e4958f1d5d88ecf168135d96"; // Replace with your actual API key
     }
 
-    public function sendSMS($phoneNumber, $message)
+    public function sendSMS($phoneNumber, $message, $senderName = 'QPILAPH')
     {
         $url = "https://semaphore.co/api/v4/messages";
         $data = [
             'apikey' => $this->apiKey,
             'number' => $phoneNumber,
-            'message' => $message
+            'message' => $message,
+            'sendername' => $senderName, // Optional: Set your sender name
         ];
 
         $ch = curl_init();

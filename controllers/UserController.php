@@ -1,16 +1,18 @@
 <?php
 require_once '../config/database.php';
 require_once '../models/User.php';
-
+require_once '../models/SMSNotification.php';
+require_once '../models/SystemSettings.php';
 class UserController
 {
-    private $conn;
-    private $userModel;
+    private $user;
+    private $sms;
 
     public function __construct($db)
     {
-        $this->conn = $db;
-        $this->userModel = new User($db);
+        $this->user = new User($db);
+        $this->sms = new SMSNotification($db);
+        $this->systemSettings = SystemSettings::getInstance($db);
     }
 
     // Handle Add User Request
@@ -36,7 +38,7 @@ class UserController
 
             // Handle password validation
             if ($password !== $confirmPassword) {
-                echo json_encode(["error" => "Passwords do not match."]);
+                echo json_encode(["success" => false, "error" => "Passwords do not match."]);
                 return;
             }
 
@@ -57,7 +59,7 @@ class UserController
                 $profileImagePath = $targetDir . $newFileName;
 
                 if (!move_uploaded_file($_FILES["profileImage"]["tmp_name"], $profileImagePath)) {
-                    echo json_encode(["error" => "Error uploading profile image"]);
+                    echo json_encode(["success" => false, "error" => "Error uploading profile image"]);
                     return;
                 }
             }
@@ -67,7 +69,7 @@ class UserController
             $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
             // Call the createUser method from the model to add the new user
-            $result = $this->userModel->createUser(
+            $result = $this->user->createUser(
                 $userName,
                 $email,
                 $hashedPassword,
@@ -95,7 +97,7 @@ class UserController
     // Fetch all users
     public function getUsers()
     {
-        $users = $this->userModel->getUsers();
+        $users = $this->user->getUsers();
         echo json_encode($users);
     }
 
@@ -204,7 +206,7 @@ class UserController
 
                 // Move the uploaded file to the target directory
                 if (!move_uploaded_file($_FILES["profileImage"]["tmp_name"], $profileImagePath)) {
-                    echo json_encode(["error" => "Error uploading profile image"]);
+                    echo json_encode(["success" => false, "error" => "Error uploading profile image"]);
                     return;
                 }
             }
@@ -220,7 +222,7 @@ class UserController
             }
 
             // Call the updateUser method from the model
-            $result = $this->userModel->updateUser(
+            $result = $this->user->updateUser(
                 $id,
                 $userName,
                 $email,
@@ -239,11 +241,11 @@ class UserController
 
             // Only update password if it was changed
             if ($hashedPassword) {
-                $result = $this->userModel->updatePassword($id, $hashedPassword);
+                $result = $this->user->updatePassword($id, $hashedPassword);
             }
 
             if ($profileImagePath) {
-                $result = $this->userModel->updateProfile($id, $profileImagePath);
+                $result = $this->user->updateProfile($id, $profileImagePath);
             }
 
             // Return the result as JSON
@@ -256,7 +258,7 @@ class UserController
     public function deleteUser()
     {
         if (isset($_POST['user_id'])) {
-            $result = $this->userModel->deleteUser($_POST['user_id']);
+            $result = $this->user->deleteUser($_POST['user_id']);
             echo json_encode(["success" => $result]);
         } else {
             echo json_encode([
@@ -271,7 +273,7 @@ class UserController
     {
         if (isset($_POST['userId'])) {
             $userId = $_POST['userId'];
-            $user = $this->userModel->getUserDetailsById($userId);
+            $user = $this->user->getUserDetailsById($userId);
             if ($user) {
                 echo json_encode(["success" => true, "user" => $user[0]]);
             } else {
@@ -298,21 +300,21 @@ class UserController
 
             // Check if the email and username are provided
             if (empty($email) || empty($userName) || empty($password)) {
-                echo json_encode(["error" => "All fields are required."]);
+                echo json_encode(["success" => false, "error" => "All fields are required."]);
                 return;
             }
 
             // Check user if exists
-            $checkUserExist = $this->userModel->checkUserExist($email, $userName);
+            $checkUserExist = $this->user->checkUserExist($email, $userName);
             if ($checkUserExist) {
-                echo json_encode(["error" => "User already exists."]);
+                echo json_encode(["success" => false, "error" => "User already exists."]);
                 return;
             }
 
             $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
             // Call the createUser method from the model to add the new user
-            $result = $this->userModel->registerUser(
+            $result = $this->user->registerUser(
                 $email,
                 $userName,
                 $hashedPassword
@@ -320,6 +322,46 @@ class UserController
 
             // Return the result as JSON
             echo json_encode(["success" => $result]);
+        }
+    }
+
+    public function resetPassword()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $email = filter_var(trim($_POST['email']), FILTER_SANITIZE_EMAIL);
+
+            if (empty($email)) {
+                echo json_encode(["success" => false, "message" => "Email is required."]);
+                return;
+            }
+            // Check if the email exists in the database
+            $userMobile = $this->user->getUserMobileByEmail($email);
+            if (!$userMobile) {
+                echo json_encode(["success" => false, "message" => "No account found with that email address."]);
+                return;
+            }
+
+            // Generate a new secure password
+            $newPassword = $this->user->generateNewPassword();
+            $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
+
+            // Attempt to update the password in the database
+            $result = $this->user->resetPassword($email, $hashedPassword);
+
+            if ($result) {
+
+                $this->sms->sendPasswordResetSMS($userMobile, $newPassword);
+
+                echo json_encode([
+                    "success" => true,
+                    "message" => "Password reset successful.",
+                ]);
+            } else {
+                echo json_encode([
+                    "success" => false,
+                    "message" => "No account found with that email address."
+                ]);
+            }
         }
     }
 }
@@ -356,7 +398,9 @@ switch ($action) {
     case 'getUserDetails':
         $controller->getUserDetailsById();
         break;
-
+    case 'resetPassword':
+        $controller->resetPassword();
+        break;
     case 'register':
         $controller->registerUser();
         break;

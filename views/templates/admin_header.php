@@ -1,11 +1,10 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 include_once '../config/database.php';
 include_once '../models/Notification.php';
 
-// start the session
-session_start();
-
-$_SESSION["page_title"] = "Dashboard";
 // Check if the user is logged in and has admin role
 if (!isset($_SESSION['user_role']) || !in_array($_SESSION['user_role'], ["admin", "staff"])) {
     // Redirect to login page if not an admin
@@ -27,6 +26,36 @@ $notifications = $notification->getUnreadNotifications($_SESSION['user_id'], $_S
 $notificationCount = count($notifications);
 
 $currentPage = basename($_SERVER['PHP_SELF']);
+
+switch ($currentPage) {
+    case 'dashboard.php':
+        $_SESSION['page_title'] = 'Dashboard';
+        break;
+    case 'users.php':
+        $_SESSION['page_title'] = 'User Management';
+        break;
+    case 'services.php':
+        $_SESSION['page_title'] = 'Services';
+        break;
+    case 'requirements.php':
+        $_SESSION['page_title'] = 'Service Requirements';
+        break;
+    case 'transactions.php':
+        $_SESSION['page_title'] = 'Transactions';
+        break;
+    case 'queue-sched.php':
+        $_SESSION['page_title'] = 'Scheduled Queue';
+        break;
+    case 'queue-walkin.php':
+        $_SESSION['page_title'] = 'Walk-in Queue';
+        break;
+    case 'system-settings.php':
+        $_SESSION['page_title'] = 'System Settings';
+        break;
+    default:
+        $_SESSION['page_title'] = 'Admin';
+        break;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -40,7 +69,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
     <meta name="description" content="" />
     <meta name="author" content="" />
 
-    <title>Admin - <?php echo $_SESSION["page_title"]; ?></title>
+    <title>Admin - <?php echo $_SESSION["page_title"] ?? 'Dashboard'; ?></title>
     <link rel="icon" href="../images/qpila-logo-favicon.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">

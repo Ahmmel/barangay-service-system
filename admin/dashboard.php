@@ -1,96 +1,97 @@
 <?php
-// Include necessary files
+// start the session
+session_start();
+
+// Initialization
 include_once '../views/templates/admin_header.php';
 include_once '../models/User.php';
 include_once '../models/ActivityLog.php';
 
-// Initialize User object
+$_SESSION["page_title"] = "Dashboard";
+
 $user = new User($db);
-// Prepare the base query for total counts
+$activityLog = new ActivityLog($db);
+
+// Define default queries
 $queries = [
     'totalUsers' => "SELECT COUNT(*) FROM users",
     'totalServices' => "SELECT COUNT(*) FROM services",
     'totalTransactions' => "SELECT COUNT(*) FROM transactions",
     'totalMonthlyTransactions' => "SELECT COUNT(*) FROM transactions WHERE MONTH(created_at) = MONTH(CURRENT_DATE())",
-    'totalAnnualTransactions' => "SELECT COUNT(*) FROM transactions WHERE YEAR(created_at) = YEAR(CURRENT_DATE())"
+    'totalAnnualTransactions' => "SELECT COUNT(*) FROM transactions WHERE YEAR(created_at) = YEAR(CURRENT_DATE())",
+    'overAllRatings' => "SELECT AVG(rating) FROM transactions WHERE rating IS NOT NULL"
 ];
 
-// Execute the queries for general counts
+// Prepare count data
 $totalCounts = [];
-foreach ($queries as $key => $query) {
-    $stmt = $db->query($query);
+
+foreach ($queries as $key => $sql) {
+    $stmt = $db->query($sql);
     $totalCounts[$key] = $stmt->fetchColumn();
 }
 
-// If the user is staff, modify the transaction counts
-if ($_SESSION['user_role'] == 'staff') {
+// Override with staff-specific queries
+if ($_SESSION['user_role'] === 'staff') {
+    $staffId = $_SESSION['user_id'];
+
     $staffQueries = [
         'totalTransactions' => "SELECT COUNT(*) FROM transactions WHERE handled_by_staff_id = :staff_id",
         'totalMonthlyTransactions' => "SELECT COUNT(*) FROM transactions WHERE MONTH(created_at) = MONTH(CURRENT_DATE()) AND handled_by_staff_id = :staff_id",
         'totalAnnualTransactions' => "SELECT COUNT(*) FROM transactions WHERE YEAR(created_at) = YEAR(CURRENT_DATE()) AND handled_by_staff_id = :staff_id"
     ];
 
-    // Prepare and execute staff-specific queries
-    foreach ($staffQueries as $key => $query) {
-        $stmt = $db->prepare($query);
-        $stmt->bindParam(':staff_id', $_SESSION['user_id'], PDO::PARAM_INT);
+    foreach ($staffQueries as $key => $sql) {
+        $stmt = $db->prepare($sql);
+        $stmt->bindValue(':staff_id', $staffId, PDO::PARAM_INT);
         $stmt->execute();
         $totalCounts[$key] = $stmt->fetchColumn();
     }
 }
 
-$totalUsers = $totalCounts['totalUsers'];
-$totalServices = $totalCounts['totalServices'];
-$totalTransactions = $totalCounts['totalTransactions'];
-$totalMonthlyTransactions = $totalCounts['totalMonthlyTransactions'];
-$totalAnnualTransactions = $totalCounts['totalAnnualTransactions'];
+// Assign to readable vars
+extract($totalCounts);
 
-//get all activity logs
-$activityLog = new ActivityLog($db);
-$activityLogs = $activityLog->getRecentLogs();
+$overallRatingPerTransactions = $overAllRatings ? number_format($overAllRatings, 2) : 0;
 
-if (!$isAdmin) {
-    $activityLogs = $activityLog->getRecentLogsByStaffId($currentSessionId);
-}
+// Fetch logs
+$isAdmin = ($_SESSION['user_role'] === 'admin');
+$currentSessionId = $_SESSION['user_id'];
+
+$activityLogs = $isAdmin
+    ? $activityLog->getRecentLogs()
+    : $activityLog->getRecentLogsByStaffId($currentSessionId);
+
 ?>
+
 <!-- Sidebar -->
 <?php include('../views/templates/side_bar.php'); ?>
+
 <!-- Content Wrapper -->
 <div id="content-wrapper" class="d-flex flex-column">
-    <!-- Main Content -->
     <div id="content">
-        <!-- Topbar -->
-        <?php include('../views/templates/top_bar.php') ?>
-        <!-- Begin Page Content -->
+        <?php include('../views/templates/top_bar.php'); ?>
+
         <div class="container-fluid">
-            <!-- Page Heading -->
-
-            <!-- Content Row -->
+            <!-- Role-Specific Dashboard -->
             <?php
-            // Include the appropriate dashboard based on user role
-            if ($_SESSION['user_role'] == 'admin') {
-                include('../views/templates/admin_dashboard.php');  // Admin dashboard
-            } elseif ($_SESSION['user_role'] == 'staff') {
-                include('../views/templates/staff_dashboard.php');  // Staff dashboard
-            }
+            $dashboardFile = $_SESSION['user_role'] === 'admin'
+                ? 'admin_dashboard.php'
+                : 'staff_dashboard.php';
+            include("../views/templates/$dashboardFile");
             ?>
-            <!-- Content Row -->
 
-            <!-- Activity Logs Row -->
-            <div class="row">
+            <!-- Activity Logs -->
+            <div class="row mt-4">
                 <div class="card-body">
-                    <!-- Table for Activity Logs -->
-                    <table
-                        id="activityLogTable"
-                        class="table table-bordered table-striped" width="100%" cellspacing="0">
+                    <table id="activityLogTable" class="table table-bordered table-striped">
                         <thead class="thead-dark">
                             <tr>
-                                <th>Log ID</th> <!-- from a.id -->
-                                <th>User ID</th> <!-- from a.user_id -->
-                                <th>Full Name</th> <!-- from CONCAT(u.first_name, ' ', u.last_name) -->
-                                <th>Activity</th> <!-- from a.activity -->
-                                <th>Status</th> <!-- from a.status -->
-                                <th>Timestamp</th> <!-- from a.created_at -->
+                                <th>Log ID</th>
+                                <th>User ID</th>
+                                <th>Full Name</th>
+                                <th>Activity</th>
+                                <th>Status</th>
+                                <th>Timestamp</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -103,14 +104,14 @@ if (!$isAdmin) {
                                     <td><?= date('F j, Y h:i A', strtotime($log['created_at'])) ?></td>
                                     <td>
                                         <?php
-                                        $status = $log['status'];
+                                        $status = htmlspecialchars($log['status']);
                                         $badgeClass = match ($status) {
                                             'Pending' => 'badge-warning',
                                             'Failed' => 'badge-danger',
                                             default => 'badge-success'
                                         };
                                         ?>
-                                        <span class="badge <?= $badgeClass ?>"><?= htmlspecialchars($status) ?></span>
+                                        <span class="badge <?= $badgeClass ?>"><?= $status ?></span>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -118,18 +119,11 @@ if (!$isAdmin) {
                     </table>
                 </div>
             </div>
-            <!-- Activity Logs Row -->
         </div>
-        <!-- /.container-fluid -->
     </div>
-    <!-- End of Main Content -->
 
     <!-- Footer -->
     <?php include('../views/templates/footer.php'); ?>
-    <!-- End of Footer -->
 </div>
-<!-- End of Content Wrapper -->
-<?php
-// Include footer template
-include_once '../views/templates/admin_footer.php';
-?>
+
+<?php include_once '../views/templates/admin_footer.php'; ?>

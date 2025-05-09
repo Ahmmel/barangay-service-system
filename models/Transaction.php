@@ -1,16 +1,34 @@
 <?php
 require_once '../config/Database.php';
+require_once '../models/SystemSettings.php';
 
 class Transaction
 {
     private $conn;
     private $table_name = "transactions";  // Table name for transactions
+    private $systemSettings;
 
     public function __construct()
     {
         $database = new Database();
         $this->conn = $database->getConnection();
+        $this->systemSettings = SystemSettings::getInstance($this->conn);
     }
+
+    function isStaffAllowedToUpdate(): bool
+    {
+        // Get cutoff time from settings (default to 17:00 if not set)
+        $cutoff = $this->systemSettings->get('staff_update_cutoff_time', '17:00');
+        $staffStartTime = $this->systemSettings->get('staff_update_start_time', '07:00'); // Assuming the correct setting name is `staff_update_start_time`
+
+        // Get current time in 'Asia/Manila' timezone
+        $now = new DateTime('now', new DateTimeZone('Asia/Manila'));
+        $currentTime = $now->format('H:i');
+
+        // Staff can only update if current time is >= staff start time and < cutoff time
+        return $currentTime >= $staffStartTime && $currentTime < $cutoff;
+    }
+
 
     // Get all services and queues for transaction prerequisites
     public function getServices()
@@ -77,12 +95,12 @@ class Transaction
 
     public function validateTransaction($userId, $serviceIds, $scheduledTime)
     {
-        $maxTransactions = $this->getMaxTransactionsPerDay();
+        $maxTransactions = (int) $this->systemSettings->get('max_transactions_per_day', 1);
         if ($this->countUserTransactionByIdAndDate($userId, $scheduledTime) >= $maxTransactions) {
-            return ["success" => false, "message" => "The maximum number of transactions for today has been reached."];
+            return ["success" => false, "message" => "You have reached the maximum number of transactions allowed for today."];
         }
 
-        if (!$this->isWithinBookingHours($scheduledTime)) {
+        if (!$this->isValidBookingSchedule($scheduledTime)) {
             return ["success" => false, "message" => "Bookings can only be made between 8:00 AM - 4:30 PM, Monday to Saturday."];
         }
 
@@ -441,23 +459,36 @@ class Transaction
     // Rule: Transactions must be booked at least 30 minutes from now
     public function isValidBookingTime($scheduledTime)
     {
-        $currentTime = new DateTime();
-        $bookingTime = new DateTime($scheduledTime);
-        $difference = $currentTime->diff($bookingTime);
+        // Get minimum lead time from system settings (fallback to 30 if not set)
+        $minLeadTime = (int) $this->systemSettings->get('minimum_booking_lead_time_minutes', 30);
 
-        return ($difference->i >= 30 || $difference->h > 0 || $difference->d > 0);
+        // Parse scheduled time and current time
+        $scheduled = new DateTime($scheduledTime);
+        $now = new DateTime();
+
+        // Add lead time to current time
+        $minAllowedTime = $now->modify("+$minLeadTime minutes");
+
+        // Return true only if scheduled time is after the required lead time
+        return $scheduled >= $minAllowedTime;
     }
 
     //Rule: Booking should be between 8:00 AM - 4:30 PM (Monday - Saturday)
-    public function isWithinBookingHours($scheduledTime)
+    public function isValidBookingSchedule(string $scheduledTime): bool
     {
-        $bookingTime = new DateTime($scheduledTime);
-        $dayOfWeek = $bookingTime->format('N'); // 1 = Monday, 7 = Sunday
-        $hour = (int) $bookingTime->format('H');
-        $minute = (int) $bookingTime->format('i');
+        $start = $this->systemSettings->get('booking_time_start', '08:00');
+        $end = $this->systemSettings->get('booking_time_end', '16:30');
 
-        return ($dayOfWeek >= 1 && $dayOfWeek <= 6) && // Monday-Saturday
-            ($hour >= 8 && ($hour < 16 || ($hour == 16 && $minute <= 30)));
+        $scheduled = new DateTime($scheduledTime);
+
+        // 0 = Sunday, 6 = Saturday — valid if day is 1 (Mon) to 6 (Sat)
+        $dayOfWeek = (int) $scheduled->format('w');
+        if ($dayOfWeek === 0) {
+            return false; // Sunday — not allowed
+        }
+
+        $timeOnly = $scheduled->format('H:i');
+        return $timeOnly >= $start && $timeOnly <= $end;
     }
 
     // Rule: Check if the user has booked the same service(s) on the scheduled date
@@ -486,15 +517,6 @@ class Transaction
         $stmt->execute($params);
 
         return (int) $stmt->fetchColumn() > 0; // return true if user already booked
-    }
-
-    //Rule: Get the max allowed transactions per day from settings
-    public function getMaxTransactionsPerDay()
-    {
-        $query = "SELECT value FROM settings WHERE name = 'max_transactions_per_day'";
-        $stmt = $this->conn->prepare($query);
-        $stmt->execute();
-        return (int) $stmt->fetchColumn();
     }
 
     //Rule: If the user is late by more than 25 minutes, cancel the transaction

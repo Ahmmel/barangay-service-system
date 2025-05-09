@@ -4,12 +4,10 @@ require_once '../models/Notification.php';
 
 class NotificationController
 {
-    private $conn;
     private $notificationModel;
 
     public function __construct($db)
     {
-        $this->conn = $db;
         $this->notificationModel = new Notification($db);
     }
 

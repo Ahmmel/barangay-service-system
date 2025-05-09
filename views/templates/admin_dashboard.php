@@ -1,89 +1,68 @@
 <div class="row">
+
+    <!-- Overall Rating -->
     <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-primary shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div
-                            class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                            Service Transaction (Monthly)
-                        </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">
-                            <?php echo $totalMonthlyTransactions; ?>
-                        </div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-file-alt fa-2x text-gray-300"></i>
-                    </div>
+        <div class="card border-left-primary shadow-sm h-100">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-primary text-uppercase font-weight-bold mb-2">Overall Rating</h6>
+                    <h4 class="font-weight-bold text-dark mb-0">
+                        <?= $overallRatingPerTransactions; ?>
+                    </h4>
+                </div>
+                <div class="icon-circle bg-primary text-white">
+                    <i class="fas fa-star fa-lg"></i>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Annual Transactions -->
     <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-success shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div
-                            class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                            Service Transaction (Annual)
-                        </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">
-                            <?php echo $totalAnnualTransactions; ?>
-                        </div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-calendar fa-2x text-gray-300"></i>
-                    </div>
+        <div class="card border-left-success shadow-sm h-100">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-success text-uppercase font-weight-bold mb-2">Annual Transactions</h6>
+                    <h4 class="font-weight-bold text-dark mb-0">
+                        <?= $totalAnnualTransactions; ?>
+                    </h4>
+                </div>
+                <div class="icon-circle bg-success text-white">
+                    <i class="fas fa-calendar-alt fa-lg"></i>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Total Users -->
     <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-info shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div
-                            class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                            Total Users
-                        </div>
-                        <div class="row no-gutters align-items-center">
-                            <div class="col-auto">
-                                <div
-                                    class="h5 mb-0 mr-3 font-weight-bold text-gray-800">
-                                    <?php echo $totalUsers; ?>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-user fa-2x text-gray-300"></i>
-                    </div>
+        <div class="card border-left-info shadow-sm h-100">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-info text-uppercase font-weight-bold mb-2">Total Users</h6>
+                    <h4 class="font-weight-bold text-dark mb-0">
+                        <?= $totalUsers; ?>
+                    </h4>
+                </div>
+                <div class="icon-circle bg-info text-white">
+                    <i class="fas fa-users fa-lg"></i>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Total Services -->
     <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-warning shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div
-                            class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                            Total Services
-                        </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">
-                            <?php echo $totalServices; ?>
-                        </div>
-                    </div>
-                    <div class="col-auto">
-                        <i
-                            class="fas fa-clipboard-list fa-2x text-gray-300"></i>
-                    </div>
+        <div class="card border-left-warning shadow-sm h-100">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-warning text-uppercase font-weight-bold mb-2">Total Services</h6>
+                    <h4 class="font-weight-bold text-dark mb-0">
+                        <?= $totalServices; ?>
+                    </h4>
+                </div>
+                <div class="icon-circle bg-warning text-white">
+                    <i class="fas fa-concierge-bell fa-lg"></i>
                 </div>
             </div>
         </div>

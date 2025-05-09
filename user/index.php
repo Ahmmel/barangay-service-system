@@ -252,12 +252,17 @@ $transactions = $transactionModel->getTransactionsByUserId($userId);
                                 class="form-select"
                                 multiple="multiple"
                                 style="width: 100%">
-
-                                <?php foreach ($services as $service): ?>
-                                    <option value="<?= htmlspecialchars($service['id']) ?>">
-                                        <?= htmlspecialchars($service['service_name']) ?>
+                                <?php if ($isVerified) : ?>
+                                    <?php foreach ($services as $service): ?>
+                                        <option value="<?= htmlspecialchars($service['id']) ?>">
+                                            <?= htmlspecialchars($service['service_name']) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <option value="" disabled selected>
+                                        Please verify your account to access services.
                                     </option>
-                                <?php endforeach; ?>
+                                <?php endif; ?>
 
                             </select>
                         </form>

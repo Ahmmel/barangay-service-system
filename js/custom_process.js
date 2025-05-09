@@ -213,7 +213,7 @@ function openEditUserModal(userId) {
         var profilePicture = result.user.profile_picture;
         if (!profilePicture) {
           profilePicture =
-            data.user.gender_id == 2
+            result.user.gender_id == 2
               ? "../images/default_male.png"
               : "../images/default_female.png";
         }

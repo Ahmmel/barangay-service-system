@@ -63,8 +63,8 @@ $transactions = $transactionModel->getTransactionsByUserId($userId);
         content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <meta name="description" content="QPILA Services Overview" />
     <meta name="author" content="QPILA Dev" />
-    <title>QPILA Services</title>
-    <link rel="icon" type="image/x-icon" href="assets/img/favicon.ico" />
+    <title>QPILA: User Index</title>
+    <link rel="icon" href="../images/qpila-logo-favicon.png" type="image/x-icon">
 
     <!-- Google Fonts: Poppins -->
     <link
@@ -90,6 +90,9 @@ $transactions = $transactionModel->getTransactionsByUserId($userId);
     <link
         href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"
         rel="stylesheet" />
+
+    <!-- Custom Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
 
     <!-- Custom Styles -->
     <link href="../css/user-index.css" rel="stylesheet" />
@@ -173,9 +176,9 @@ $transactions = $transactionModel->getTransactionsByUserId($userId);
                         <?php endif; ?>
                         <!-- Change Password Button -->
                         <button
-                            class="btn btn-outline-secondary"
+                            class="btn btn-outline-secondary mb-2"
                             data-bs-toggle="modal"
-                            data-bs-target="#changePasswordModal">
+                            data-bs-target="#changePasswordModal" style="border-radius: 0.5rem;">
                             <i class="fas fa-key me-2"></i>Change Password
                         </button>
                     </div>
@@ -259,8 +262,8 @@ $transactions = $transactionModel->getTransactionsByUserId($userId);
                                         </option>
                                     <?php endforeach; ?>
                                 <?php else: ?>
-                                    <option value="" disabled selected>
-                                        Please verify your account to access services.
+                                    <option value="12" selected>
+                                        Account Verification
                                     </option>
                                 <?php endif; ?>
 
@@ -599,18 +602,18 @@ $transactions = $transactionModel->getTransactionsByUserId($userId);
         </section>
     </div>
 
-    <!-- Change Password Modal -->
+    <!-- CHANGE PASSWORD MODAL -->
     <div
         class="modal fade"
         id="changePasswordModal"
         tabindex="-1"
         aria-labelledby="changePasswordModalLabel"
         aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content change-pw-modal">
                 <form id="changePasswordForm">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="changePasswordModalLabel">
+                    <div class="modal-header border-0 pb-0">
+                        <h5 class="modal-title w-100 text-center" id="changePasswordModalLabel">
                             Change Password
                         </h5>
                         <button
@@ -619,44 +622,54 @@ $transactions = $transactionModel->getTransactionsByUserId($userId);
                             data-bs-dismiss="modal"
                             aria-label="Close"></button>
                     </div>
+                    <div class="modal-body pt-0">
+                        <p class="text-center text-muted mb-4">
+                            Enter your current password and choose a new one.
+                        </p>
 
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="oldPassword" class="form-label">Current Password</label>
+                        <div class="form-floating mb-3 input-with-icon">
                             <input
                                 type="password"
                                 class="form-control"
                                 id="oldPassword"
                                 name="oldPassword"
+                                placeholder="Current Password"
                                 required />
+                            <label for="oldPassword">Current Password</label>
+                            <i class="bi bi-eye-slash toggle-password"></i>
                         </div>
-                        <div class="mb-3">
-                            <label for="newPassword" class="form-label">New Password</label>
+
+                        <div class="form-floating mb-3 input-with-icon">
                             <input
                                 type="password"
                                 class="form-control"
                                 id="newPassword"
                                 name="newPassword"
+                                placeholder="New Password"
                                 required />
+                            <label for="newPassword">New Password</label>
+                            <i class="bi bi-eye-slash toggle-password"></i>
                         </div>
-                        <div class="mb-3">
-                            <label for="confirmPassword" class="form-label">Confirm New Password</label>
+
+                        <div class="form-floating mb-4 input-with-icon">
                             <input
                                 type="password"
                                 class="form-control"
                                 id="confirmPassword"
                                 name="confirmPassword"
+                                placeholder="Confirm New Password"
                                 required />
+                            <label for="confirmPassword">Confirm New Password</label>
+                            <i class="bi bi-eye-slash toggle-password"></i>
                         </div>
                     </div>
-
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary">
+                    <div class="modal-footer border-0 pt-0 flex-column">
+                        <button type="submit" class="btn btn-orange w-100 mb-2">
                             Save Changes
                         </button>
                         <button
                             type="button"
-                            class="btn btn-secondary"
+                            class="btn btn-outline-secondary w-100"
                             data-bs-dismiss="modal">
                             Cancel
                         </button>
@@ -665,11 +678,22 @@ $transactions = $transactionModel->getTransactionsByUserId($userId);
             </div>
         </div>
     </div>
-    <!-- Error alert -->
-    <div
-        id="passwordError"
-        class="alert alert-danger d-none mx-3 mt-2"
-        role="alert"></div>
+
+    <!-- Enhanced Toast Container -->
+    <div class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
+        <div id="toastNotification" class="toast custom-toast shadow-sm border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex align-items-center">
+                <div class="toast-icon me-3 d-flex align-items-center justify-content-center">
+                    <i id="toastIcon" class="bi"></i>
+                </div>
+                <div class="toast-body flex-grow-1" id="toastMessage">
+                    <!-- Message goes here -->
+                </div>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -687,6 +711,41 @@ $transactions = $transactionModel->getTransactionsByUserId($userId);
         let selectedRating = 0;
         let currentTransactionCode = "";
 
+        document.querySelectorAll(".js-scroll-trigger").forEach((link) => {
+            link.addEventListener("click", function() {
+                // Remove 'active' from all nav-links
+                document
+                    .querySelectorAll(".nav-link")
+                    .forEach((el) => el.classList.remove("active"));
+
+                // Add 'active' to the clicked link
+                this.classList.add("active");
+            });
+        });
+
+        document.querySelectorAll('.toggle-password').forEach(icon => {
+            icon.addEventListener('click', () => {
+                const input = icon.closest('.input-with-icon').querySelector('input');
+                const isPwd = input.getAttribute('type') === 'password';
+                input.setAttribute('type', isPwd ? 'text' : 'password');
+                icon.classList.toggle('bi-eye');
+                icon.classList.toggle('bi-eye-slash');
+            });
+        });
+
+        // Limit to 3 checkbox selections
+        document.querySelectorAll("input[name='services']").forEach((cb) => {
+            cb.addEventListener("change", () => {
+                const selected = document.querySelectorAll(
+                    "input[name='services']:checked"
+                );
+                if (selected.length > 3) {
+                    cb.checked = false;
+                    alert("You can select a maximum of 3 services.");
+                }
+            });
+        });
+
         function openReviewModal(transactionId) {
             currentTransactionCode = transactionId;
             $("#transactionIdText").text(`Transaction: ${transactionId}`);
@@ -695,11 +754,7 @@ $transactions = $transactionModel->getTransactionsByUserId($userId);
             $("#reviewModal").modal("show");
         }
 
-        $("#rating .rate").on("click", function() {
-            $("#rating .rate").removeClass("selected");
-            $(this).addClass("selected");
-            selectedRating = $(this).data("value");
-        });
+
 
         function submitRating() {
             if (selectedRating === 0) {
@@ -771,14 +826,6 @@ $transactions = $transactionModel->getTransactionsByUserId($userId);
                 }
             });
         }
-
-        $(document).ready(function() {
-            $("#brgy-services").select2({
-                placeholder: "Select up to 3 services",
-                maximumSelectionLength: 3,
-                allowClear: true,
-            });
-        });
 
         flatpickr("#datetime-picker", {
             enableTime: true,
@@ -1059,21 +1106,19 @@ $transactions = $transactionModel->getTransactionsByUserId($userId);
             });
         }
 
-
-
-        document.querySelectorAll(".js-scroll-trigger").forEach((link) => {
-            link.addEventListener("click", function() {
-                // Remove 'active' from all nav-links
-                document
-                    .querySelectorAll(".nav-link")
-                    .forEach((el) => el.classList.remove("active"));
-
-                // Add 'active' to the clicked link
-                this.classList.add("active");
-            });
-        });
-
         $(document).ready(function() {
+            $("#rating .rate").on("click", function() {
+                $("#rating .rate").removeClass("selected");
+                $(this).addClass("selected");
+                selectedRating = $(this).data("value");
+            });
+
+            $("#brgy-services").select2({
+                placeholder: "Select up to 3 services",
+                maximumSelectionLength: 3,
+                allowClear: true,
+            });
+
             $(".member").hover(
                 function() {
                     $(this).find(".tooltip").fadeIn(200);
@@ -1083,20 +1128,20 @@ $transactions = $transactionModel->getTransactionsByUserId($userId);
                 }
             );
         });
-        // Limit to 3 checkbox selections
-        document.querySelectorAll("input[name='services']").forEach((cb) => {
-            cb.addEventListener("change", () => {
-                const selected = document.querySelectorAll(
-                    "input[name='services']:checked"
-                );
-                if (selected.length > 3) {
-                    cb.checked = false;
-                    alert("You can select a maximum of 3 services.");
-                }
-            });
-        });
     </script>
+
     <script>
+        function showToast(message, type = "primary") {
+            const toastEl = document.getElementById("toastNotification");
+            const toastBody = document.getElementById("toastMessage");
+
+            toastBody.textContent = message;
+            toastEl.className = `toast align-items-center text-white bg-${type} border-0`;
+
+            const toast = new bootstrap.Toast(toastEl);
+            toast.show();
+        }
+
         $("#changePasswordForm").on("submit", function(e) {
             e.preventDefault();
 
@@ -1105,31 +1150,30 @@ $transactions = $transactionModel->getTransactionsByUserId($userId);
             const confirmPassword = $("#confirmPassword").val();
 
             if (newPassword !== confirmPassword) {
-                alert("New password and confirm password do not match!");
+                showToast("New password and confirm password do not match!", "danger");
                 return;
             }
 
             $.ajax({
-                url: "/change-password.php", // 👉 Adjust this URL based on your backend
+                url: "../controllers/UserController.php?action=changePassword",
                 method: "POST",
                 data: {
+                    userId: userId,
                     oldPassword: oldPassword,
                     newPassword: newPassword,
                 },
                 success: function(response) {
-                    if (response.success) {
-                        alert("Password changed successfully!");
+                    const data = JSON.parse(response);
+                    if (data.success) {
+                        showToast("Password changed successfully!", "success");
                         $("#changePasswordModal").modal("hide");
                         $("#changePasswordForm")[0].reset();
                     } else {
-                        alert(
-                            response.message ||
-                            "Failed to change password. Please try again."
-                        );
+                        showToast(data.message || "Failed to change password. Please try again.", "danger");
                     }
                 },
                 error: function() {
-                    alert("Something went wrong. Please try again.");
+                    showToast("Something went wrong. Please try again.", "danger");
                 },
             });
         });

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 04, 2025 at 06:48 PM
+-- Generation Time: May 10, 2025 at 02:38 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -31,10 +31,47 @@ CREATE TABLE `activity_logs` (
   `id` int(11) NOT NULL,
   `user_id` int(11) DEFAULT NULL,
   `role_id` int(11) DEFAULT NULL,
-  `description` text NOT NULL,
+  `activity` varchar(255) NOT NULL,
+  `status` enum('Success','Failed','Pending') DEFAULT 'Success',
   `reference_id` int(11) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `activity_logs`
+--
+
+INSERT INTO `activity_logs` (`id`, `user_id`, `role_id`, `activity`, `status`, `reference_id`, `created_at`) VALUES
+(1, 1, 1, 'Logged in', 'Success', NULL, '2025-04-28 09:09:15'),
+(2, 1, 1, 'Reset a password', 'Success', NULL, '2025-05-01 18:56:15'),
+(3, 1, 1, 'Logged in', 'Pending', NULL, '2025-05-02 06:50:15'),
+(4, 1, 1, 'Exported data', 'Pending', NULL, '2025-04-28 21:45:15'),
+(5, 1, 1, 'Reset a password', 'Failed', NULL, '2025-04-27 16:00:15'),
+(6, 1, 1, 'Changed role access', 'Success', NULL, '2025-04-30 08:57:15'),
+(7, 1, 1, 'Logged in', 'Failed', NULL, '2025-04-27 00:13:15'),
+(8, 1, 1, 'Changed role access', 'Failed', NULL, '2025-05-01 07:17:15'),
+(9, 1, 1, 'Reset a password', 'Success', NULL, '2025-05-04 05:37:15'),
+(10, 1, 1, 'Changed role access', 'Failed', NULL, '2025-05-05 00:36:15'),
+(11, 1, 1, 'Reviewed reports', 'Failed', NULL, '2025-04-29 11:33:15'),
+(12, 1, 1, 'Added a new user', 'Pending', NULL, '2025-05-01 22:34:15'),
+(13, 1, 1, 'Exported data', 'Pending', NULL, '2025-04-28 06:53:15'),
+(14, 1, 1, 'Generated daily summary', 'Success', NULL, '2025-04-27 19:45:15'),
+(15, 1, 1, 'Reviewed reports', 'Pending', NULL, '2025-05-03 14:38:15'),
+(16, 1, 1, 'Added a new user', 'Failed', NULL, '2025-04-27 13:41:15'),
+(17, 1, 1, 'Reviewed user complaints', 'Pending', NULL, '2025-05-03 10:08:15'),
+(18, 1, 1, 'Changed role access', 'Success', NULL, '2025-04-28 15:13:15'),
+(19, 1, 1, 'Approved transaction', 'Pending', 1598, '2025-05-02 17:56:15'),
+(20, 1, 1, 'Reviewed user complaints', 'Success', NULL, '2025-04-29 01:34:15'),
+(21, 2, 2, 'Cancelled appointment', 'Success', NULL, '2025-05-04 05:30:15'),
+(22, 2, 2, 'Updated profile', 'Failed', NULL, '2025-04-30 22:15:15'),
+(23, 2, 2, 'Logged in', 'Success', NULL, '2025-04-29 09:08:15'),
+(24, 2, 2, 'Booked a service', 'Success', 1923, '2025-05-01 02:04:15'),
+(25, 2, 2, 'Viewed transaction history', 'Pending', NULL, '2025-04-28 00:12:15'),
+(26, 2, 2, 'Booked a service', 'Failed', NULL, '2025-04-27 06:33:15'),
+(27, 2, 2, 'Logged in', 'Pending', NULL, '2025-05-01 17:57:15'),
+(28, 2, 2, 'Cancelled appointment', 'Failed', NULL, '2025-04-30 04:21:15'),
+(29, 2, 2, 'Updated profile', 'Success', NULL, '2025-05-01 11:03:15'),
+(30, 2, 2, 'Booked a service', 'Success', 1784, '2025-04-27 03:25:15');
 
 -- --------------------------------------------------------
 
@@ -77,9 +114,10 @@ CREATE TABLE `genders` (
 --
 
 INSERT INTO `genders` (`id`, `gender_name`, `created_at`, `modified_at`) VALUES
-(1, 'Male', '2025-02-17 16:00:00', '2025-02-17 16:00:00'),
-(2, 'Female', '2025-02-17 16:00:00', '2025-02-17 16:00:00'),
-(3, 'Other', '2025-02-17 16:00:00', '2025-02-17 16:00:00')
+(1, 'Male', '2025-02-17 08:00:00', '2025-02-17 08:00:00'),
+(2, 'Female', '2025-02-17 08:00:00', '2025-02-17 08:00:00'),
+(3, 'Other', '2025-02-17 08:00:00', '2025-02-17 08:00:00');
+
 -- --------------------------------------------------------
 
 --
@@ -121,6 +159,58 @@ CREATE TABLE `message_logs` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `notifications`
+--
+
+CREATE TABLE `notifications` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) DEFAULT NULL,
+  `role_id` int(11) DEFAULT NULL,
+  `title` varchar(255) NOT NULL,
+  `message` text NOT NULL,
+  `is_read` tinyint(1) NOT NULL DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `notifications`
+--
+
+INSERT INTO `notifications` (`id`, `user_id`, `role_id`, `title`, `message`, `is_read`, `created_at`) VALUES
+(1, 1, 1, 'Notification', 'User feedback received.', 0, '2025-04-27 02:45:15'),
+(2, 1, 1, 'Notification', 'Critical alert: Disk space low.', 1, '2025-04-28 04:30:15'),
+(3, 1, 1, 'Notification', 'System backup completed.', 0, '2025-05-01 01:20:15'),
+(4, 1, 1, 'Notification', 'Admin password changed.', 0, '2025-05-03 05:45:15'),
+(5, 1, 1, 'Notification', 'Scheduled maintenance notice.', 0, '2025-05-04 00:20:15'),
+(6, 1, 1, 'Notification', 'New report available.', 1, '2025-05-01 02:10:15'),
+(7, 1, 1, 'Notification', 'User feedback received.', 0, '2025-04-27 05:25:15'),
+(8, 1, 1, 'Notification', 'Critical alert: Disk space low.', 0, '2025-05-02 23:15:15'),
+(9, 1, 1, 'Notification', 'System backup completed.', 1, '2025-04-28 06:55:15'),
+(10, 1, 1, 'Notification', 'Admin password changed.', 1, '2025-05-02 07:05:15'),
+(11, 1, 1, 'Notification', 'Scheduled maintenance notice.', 0, '2025-05-03 02:00:15'),
+(12, 1, 1, 'Notification', 'New report available.', 0, '2025-05-02 04:30:15'),
+(13, 1, 1, 'Notification', 'User feedback received.', 0, '2025-05-03 22:25:15'),
+(14, 1, 1, 'Notification', 'System backup completed.', 1, '2025-04-27 09:40:15'),
+(15, 1, 1, 'Notification', 'Admin password changed.', 0, '2025-05-04 03:10:15'),
+(16, 1, 1, 'Notification', 'Scheduled maintenance notice.', 1, '2025-05-03 12:15:15'),
+(17, 1, 1, 'Notification', 'New report available.', 0, '2025-04-30 01:50:15'),
+(18, 1, 1, 'Notification', 'Critical alert: Disk space low.', 1, '2025-04-29 00:00:15'),
+(19, 1, 1, 'Notification', 'System backup completed.', 0, '2025-05-01 23:45:15'),
+(20, 1, 1, 'Notification', 'User feedback received.', 0, '2025-04-29 22:10:15'),
+(21, 2, 2, 'Notification', 'Your transaction is scheduled.', 0, '2025-04-29 03:00:15'),
+(22, 2, 2, 'Notification', 'You missed your appointment.', 1, '2025-04-27 05:15:15'),
+(23, 2, 2, 'Notification', 'Reminder: Upcoming service', 0, '2025-05-01 06:10:15'),
+(24, 2, 2, 'Notification', 'Profile updated successfully.', 0, '2025-05-02 01:45:15'),
+(25, 2, 2, 'Notification', 'Thank you for using our service!', 1, '2025-05-04 00:30:15'),
+(26, 2, 2, 'Notification', 'You missed your appointment.', 0, '2025-04-30 02:20:15'),
+(27, 2, 2, 'Notification', 'Your transaction is scheduled.', 0, '2025-04-27 23:55:15'),
+(28, 2, 2, 'Notification', 'Reminder: Upcoming service', 1, '2025-05-03 08:40:15'),
+(29, 2, 2, 'Notification', 'Thank you for using our service!', 0, '2025-05-01 10:35:15'),
+(30, 2, 2, 'Notification', 'Profile updated successfully.', 0, '2025-05-03 04:00:15');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `queue`
 --
 
@@ -152,17 +242,16 @@ INSERT INTO `queue` (`id`, `transaction_code`, `user_id`, `type`, `status`, `sch
 (9, 'Q-SVQVLT2D', 3, 2, 'Pending', '2025-05-04 12:00:00', '2025-05-04 12:00:00', '2025-05-04 12:00:00', NULL),
 (10, 'Q-SVQVLT52', 3, 2, 'Pending', '2025-05-04 12:30:00', '2025-05-04 12:30:00', '2025-05-04 12:30:00', NULL),
 (11, 'Q-SVQVLTD1', 4, 1, 'Pending', '2025-05-04 08:00:00', '2025-05-04 08:00:00', '2025-05-04 08:00:00', NULL),
-(12, 'Q-SVQVLT8B', 1, 1, 'Pending', '2025-05-04 08:30:00', '2025-05-04 08:30:00', '2025-05-04 08:30:00', NULL),
 (13, 'Q-SVQVLTCB', 5, 1, 'Pending', '2025-05-04 09:00:00', '2025-05-04 09:00:00', '2025-05-04 09:00:00', NULL),
-(14, 'Q-SVQVLT35', 1, 1, 'Pending', '2025-05-04 09:30:00', '2025-05-04 09:30:00', '2025-05-04 09:30:00', NULL),
-(15, 'Q-SVQVLTB5', 1, 1, 'Pending', '2025-05-04 10:00:00', '2025-05-04 10:00:00', '2025-05-04 10:00:00', NULL),
-(16, 'Q-SVQVLT48', 1, 1, 'Pending', '2025-05-04 10:30:00', '2025-05-04 10:30:00', '2025-05-04 10:30:00', NULL),
 (17, 'Q-SVQVLT71', 5, 1, 'Pending', '2025-05-04 11:00:00', '2025-05-04 11:00:00', '2025-05-04 11:00:00', NULL),
-(18, 'Q-SVQVLT56', 1, 1, 'Pending', '2025-05-04 11:30:00', '2025-05-04 11:30:00', '2025-05-04 11:30:00', NULL),
 (19, 'Q-SVQVLT58', 6, 1, 'Pending', '2025-05-04 12:00:00', '2025-05-04 12:00:00', '2025-05-04 12:00:00', NULL),
 (20, 'Q-SVQVLT2B', 3, 1, 'Pending', '2025-05-04 12:30:00', '2025-05-04 12:30:00', '2025-05-04 12:30:00', NULL),
 (49, 'Q-SVQWBI5D', 10, 2, '', '2025-05-05 12:00:00', '2025-05-05 00:26:06', '2025-05-05 00:26:06', NULL),
-(50, 'Q-SVQWML16', 10, 2, '', '2025-05-06 12:00:00', '2025-05-05 00:32:45', '2025-05-05 00:32:45', NULL);
+(50, 'Q-SVQWML16', 10, 2, '', '2025-05-06 12:00:00', '2025-05-05 00:32:45', '2025-05-05 00:32:45', NULL),
+(51, 'Q-SVSMJCC9', 10, 2, '', '2025-05-07 12:00:00', '2025-05-05 22:50:00', '2025-05-05 22:50:00', NULL),
+(52, 'Q-SVSMSVF3', 10, 2, '', '2025-05-17 12:00:00', '2025-05-05 22:55:43', '2025-05-05 22:55:43', NULL),
+(53, 'Q-SW0N3752', 10, 2, '', '2025-05-10 08:00:00', '2025-05-10 06:42:43', '2025-05-10 06:42:43', NULL),
+(54, 'Q-SW0SFQ97', 104, 2, '', '2025-05-17 12:00:00', '2025-05-10 08:38:14', '2025-05-10 08:38:14', NULL);
 
 -- --------------------------------------------------------
 
@@ -217,12 +306,13 @@ INSERT INTO `services` (`id`, `service_name`, `description`, `created_at`, `modi
 (1, 'Barangay Clearance', 'A certification issued to residents for various legal and business purposes.', '2025-02-13 15:17:08', '2025-02-13 15:17:08'),
 (2, 'Business Permit Clearance', 'Required for operating a business within the barangay.', '2025-02-13 15:17:08', '2025-02-13 15:17:08'),
 (3, 'Barangay Indigency Certificate', 'Issued to certify that a resident is indigent.', '2025-02-13 15:17:08', '2025-02-13 15:17:08'),
-(4, 'Residency Certification', 'Proof of residency in the barangay.', '2025-02-13 15:17:08', '2025-02-13 15:17:08');
+(4, 'Residency Certification', 'Proof of residency in the barangay.', '2025-02-13 15:17:08', '2025-05-09 21:48:10'),
+(12, 'Account Verification', 'To access our services, please complete your verification using this feature. Once verified, you’ll gain full access to all available tools and benefits.', '2025-05-10 00:34:54', '2025-05-10 00:34:54');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `settings`
+-- Table structure for table `system_settings`
 --
 
 CREATE TABLE `system_settings` (
@@ -233,12 +323,19 @@ CREATE TABLE `system_settings` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `settings`
+-- Dumping data for table `system_settings`
 --
 
-INSERT INTO `v` (`id`, `name`, `value`, `updated_at`) VALUES
-(1, 'max_transactions_per_day', '2', '2025-03-18 16:01:17'),
-(2, 'enable_sms_notifications', '1', '2025-03-18 16:01:17');
+INSERT INTO `system_settings` (`id`, `name`, `value`, `updated_at`) VALUES
+(1, 'booking_time_start', '06:00', '2025-05-09 22:44:52'),
+(2, 'booking_time_end', '16:30', '2025-05-09 16:30:55'),
+(4, 'no_show_timeout_minutes', '25', '2025-05-09 16:30:55'),
+(5, 'sms_sender_name', 'QPILAPH', '2025-05-09 16:49:52'),
+(6, 'max_transactions_per_day', '3', '2025-05-09 18:44:29'),
+(7, 'enable_sms_notifications', '0', '2025-05-09 22:44:13'),
+(8, 'minimum_booking_lead_time_minutes', '30', '2025-05-09 17:01:13'),
+(9, 'staff_update_cutoff_time', '17:00', '2025-05-09 20:37:45'),
+(10, 'staff_update_start_time', '04:00', '2025-05-09 20:45:56');
 
 -- --------------------------------------------------------
 
@@ -270,23 +367,22 @@ INSERT INTO `transactions` (`id`, `transaction_code`, `user_id`, `queue_id`, `ty
 (3, 'Q-SVQVLT72', 6, 3, 2, 'Pending', NULL, '2025-05-04 09:00:00', '2025-05-04 09:00:00', NULL, NULL),
 (4, 'Q-SVQVLT6F', 5, 4, 2, 'Pending', NULL, '2025-05-04 09:30:00', '2025-05-04 09:30:00', NULL, NULL),
 (5, 'Q-SVQVLT29', 5, 5, 2, 'Pending', NULL, '2025-05-04 10:00:00', '2025-05-04 10:00:00', NULL, NULL),
-(6, 'Q-SVQVLT0C', 6, 6, 2, 'Pending', NULL, '2025-05-04 10:30:00', '2025-05-04 10:30:00', NULL, NULL),
+(6, 'Q-SVQVLT0C', 6, 6, 2, 'In Progress', NULL, '2025-05-04 10:30:00', '2025-05-10 03:35:32', 1, NULL),
 (7, 'Q-SVQVLT8F', 3, 7, 2, 'Pending', NULL, '2025-05-04 11:00:00', '2025-05-04 11:00:00', NULL, NULL),
 (8, 'Q-SVQVLTBA', 6, 8, 2, 'Pending', NULL, '2025-05-04 11:30:00', '2025-05-04 11:30:00', NULL, NULL),
 (9, 'Q-SVQVLT2D', 3, 9, 2, 'Pending', NULL, '2025-05-04 12:00:00', '2025-05-04 12:00:00', NULL, NULL),
-(10, 'Q-SVQVLT52', 3, 10, 2, 'Pending', NULL, '2025-05-04 12:30:00', '2025-05-04 12:30:00', NULL, NULL),
+(10, 'Q-SVQVLT52', 3, 10, 2, 'Closed', NULL, '2025-05-04 12:30:00', '2025-05-10 06:48:32', NULL, NULL),
 (11, 'Q-SVQVLTD1', 4, 11, 1, 'Pending', NULL, '2025-05-04 08:00:00', '2025-05-04 08:00:00', NULL, NULL),
-(12, 'Q-SVQVLT8B', 1, 12, 1, 'Pending', NULL, '2025-05-04 08:30:00', '2025-05-04 08:30:00', NULL, NULL),
 (13, 'Q-SVQVLTCB', 5, 13, 1, 'Pending', NULL, '2025-05-04 09:00:00', '2025-05-04 09:00:00', NULL, NULL),
-(14, 'Q-SVQVLT35', 1, 14, 1, 'Pending', NULL, '2025-05-04 09:30:00', '2025-05-04 09:30:00', NULL, NULL),
-(15, 'Q-SVQVLTB5', 1, 15, 1, 'Pending', NULL, '2025-05-04 10:00:00', '2025-05-04 10:00:00', NULL, NULL),
-(16, 'Q-SVQVLT48', 1, 16, 1, 'Pending', NULL, '2025-05-04 10:30:00', '2025-05-04 10:30:00', NULL, NULL),
 (17, 'Q-SVQVLT71', 5, 17, 1, 'Pending', NULL, '2025-05-04 11:00:00', '2025-05-04 11:00:00', NULL, NULL),
-(18, 'Q-SVQVLT56', 1, 18, 1, 'Pending', NULL, '2025-05-04 11:30:00', '2025-05-04 11:30:00', NULL, NULL),
 (19, 'Q-SVQVLT58', 6, 19, 1, 'Pending', NULL, '2025-05-04 12:00:00', '2025-05-04 12:00:00', NULL, NULL),
 (20, 'Q-SVQVLT2B', 3, 20, 1, 'Pending', NULL, '2025-05-04 12:30:00', '2025-05-04 12:30:00', NULL, NULL),
 (49, 'Q-SVQWBI5D', 10, 49, 2, 'Open', NULL, '2025-05-05 12:00:00', '2025-05-05 00:26:06', NULL, NULL),
-(50, 'Q-SVQWML16', 10, 50, 2, 'Open', NULL, '2025-05-06 12:00:00', '2025-05-05 00:32:45', NULL, NULL);
+(50, 'Q-SVQWML16', 10, 50, 2, 'Open', NULL, '2025-05-06 12:00:00', '2025-05-05 00:32:45', NULL, NULL),
+(51, 'Q-SVSMJCC9', 10, 51, 2, 'Open', NULL, '2025-05-07 12:00:00', '2025-05-05 22:50:00', NULL, NULL),
+(52, 'Q-SVSMSVF3', 10, 52, 2, 'Closed', 4, '2025-05-17 12:00:00', '2025-05-10 06:52:23', NULL, NULL),
+(53, 'Q-SW0N3752', 10, 53, 2, 'Open', NULL, '2025-05-10 08:00:00', '2025-05-10 06:42:43', NULL, NULL),
+(54, 'Q-SW0SFQ97', 104, 54, 2, 'Open', NULL, '2025-05-17 12:00:00', '2025-05-10 08:38:14', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -324,8 +420,8 @@ INSERT INTO `transaction_services` (`id`, `transaction_id`, `service_id`, `reaso
 (338, 5, 2, NULL, 'Pending', NULL),
 (339, 5, 3, NULL, 'Pending', NULL),
 (340, 6, 2, NULL, 'Pending', NULL),
-(341, 6, 1, NULL, 'Pending', NULL),
-(342, 6, 3, NULL, 'Pending', NULL),
+(341, 6, 1, 'dfaf', 'Closed', '2025-05-10 03:35:14'),
+(342, 6, 3, '21q3', 'Closed', '2025-05-10 03:35:32'),
 (343, 7, 2, NULL, 'Pending', NULL),
 (344, 7, 3, NULL, 'Pending', NULL),
 (345, 7, 1, NULL, 'Pending', NULL),
@@ -341,27 +437,12 @@ INSERT INTO `transaction_services` (`id`, `transaction_id`, `service_id`, `reaso
 (355, 11, 1, NULL, 'Pending', NULL),
 (356, 11, 2, NULL, 'Pending', NULL),
 (357, 11, 3, NULL, 'Pending', NULL),
-(358, 12, 2, NULL, 'Pending', NULL),
-(359, 12, 1, NULL, 'Pending', NULL),
-(360, 12, 3, NULL, 'Pending', NULL),
 (361, 13, 2, NULL, 'Pending', NULL),
 (362, 13, 3, NULL, 'Pending', NULL),
 (363, 13, 1, NULL, 'Pending', NULL),
-(364, 14, 3, NULL, 'Pending', NULL),
-(365, 14, 2, NULL, 'Pending', NULL),
-(366, 14, 1, NULL, 'Pending', NULL),
-(367, 15, 1, NULL, 'Pending', NULL),
-(368, 15, 3, NULL, 'Pending', NULL),
-(369, 15, 2, NULL, 'Pending', NULL),
-(370, 16, 3, NULL, 'Pending', NULL),
-(371, 16, 1, NULL, 'Pending', NULL),
-(372, 16, 2, NULL, 'Pending', NULL),
 (373, 17, 2, NULL, 'Pending', NULL),
 (374, 17, 3, NULL, 'Pending', NULL),
 (375, 17, 1, NULL, 'Pending', NULL),
-(376, 18, 2, NULL, 'Pending', NULL),
-(377, 18, 1, NULL, 'Pending', NULL),
-(378, 18, 3, NULL, 'Pending', NULL),
 (379, 19, 2, NULL, 'Pending', NULL),
 (380, 19, 3, NULL, 'Pending', NULL),
 (381, 19, 1, NULL, 'Pending', NULL),
@@ -369,7 +450,14 @@ INSERT INTO `transaction_services` (`id`, `transaction_id`, `service_id`, `reaso
 (383, 20, 1, NULL, 'Pending', NULL),
 (384, 20, 2, NULL, 'Pending', NULL),
 (385, 49, 1, NULL, 'Pending', NULL),
-(386, 50, 2, NULL, 'Pending', NULL);
+(386, 50, 2, NULL, 'Pending', NULL),
+(387, 51, 2, NULL, 'Pending', NULL),
+(388, 52, 2, NULL, 'Pending', NULL),
+(389, 52, 3, NULL, 'Pending', NULL),
+(390, 53, 1, NULL, 'Pending', NULL),
+(391, 53, 2, NULL, 'Pending', NULL),
+(392, 53, 3, NULL, 'Pending', NULL),
+(393, 54, 12, NULL, 'Pending', NULL);
 
 -- --------------------------------------------------------
 
@@ -403,16 +491,19 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `username`, `email`, `password`, `gender_id`, `birthdate`, `address`, `is_verified`, `profile_picture`, `role_id`, `first_name`, `middle_name`, `last_name`, `suffix`, `marital_status_id`, `mobile_number`, `modified_at`, `created_at`) VALUES
-(1, 'john_doe', 'john@example.com', '$2y$10$abcdefg1234567890hashedpassword', 1, '1998-02-03', '', 1, NULL, 2, 'John', 'Michael', 'Doe', 'Jr.', 1, '09276542449', '2025-03-18 15:37:05', '2025-02-17 14:53:05'),
-(2, 'alice_smith', 'alice@example.com', '$2y$10$abcdefg1234567890hashedpassword', 2, '1998-01-03', '', 1, NULL, 2, 'Alice', 'Marie', 'Smith', NULL, 2, '09179876543', '2025-02-19 17:07:01', '2025-02-17 14:53:05'),
-(3, 'mark_gonzalez', 'mark@example.com', '$2y$10$abcdefg1234567890hashedpassword', 1, '1998-02-15', '', 0, NULL, 2, 'Mark', 'Anthony', 'Gonzalez', 'III', 1, NULL, '2025-02-19 17:07:05', '2025-02-17 14:53:05'),
-(4, 'sophia_lopez', 'sophia@example.com', '$2y$10$abcdefg1234567890hashedpassword', 2, '1998-02-17', '', 1, NULL, 2, 'Sophia', NULL, 'Lopez', NULL, 4, '09211231234', '2025-02-19 17:07:09', '2025-02-17 14:53:05'),
+(2, 'alice_smith', 'alice@example.com', '$2y$10$abcdefg1234567890hashedpassword', 2, '1998-01-03', 'asd', 1, '../uploads/profile_681e7a5d977cd3.82780631.png', 1, 'Alice', 'Marie', 'Smith', '', 2, '09179876543', '2025-05-09 21:57:49', '2025-02-17 14:53:05'),
+(3, 'testagain', 'mark@example.com', '$2y$10$6j9SFMu0i7vTmZ02gCsw5.6NiKx5QnkgAVthLmHtwqNFBprz1E8J.', 2, '1998-02-15', 'sdfdsf', 0, NULL, 2, 'Mark', 'Anthony', 'Gonzalez', 'III', 1, '', '2025-05-09 22:01:00', '2025-02-17 14:53:05'),
+(4, 'sophia_lopez', 'sophia@example.com', '$2y$10$mcgWcHLgQXH9dxXym2KVC.QU2FJwYwsOiAg6vRFFUj1iMs62rxuRu', 2, '1998-02-17', '', 1, NULL, 2, 'Sophia', NULL, 'Lopez', NULL, 4, '09211231234', '2025-05-10 00:29:02', '2025-02-17 14:53:05'),
 (5, 'testJohn', 'john@test.com', '$2y$10$j50lJr0HRfGjfSXN5V3q5uIQJI5l5gC7AkNaXkiR1pNVIgHLVoewa', 1, '1998-10-03', 'asdasdasdasd', 0, '../uploads/download.png', 2, 'John', 'Cena', 'Doe', '', 2, '', '2025-02-19 17:07:22', '2025-02-17 16:17:26'),
 (6, 'testaccount', 'testaccount@gmail.com', '$2y$10$KxspuhRxXMPCnWdJafqGLOhqmeUmaSv6hE2RVg/r52rO5wANUruwO', 1, '1999-02-03', 'sadsadasd', 1, '../uploads/mqdefault_6s.webp', 2, 'John', 'Cena', 'Doe', '', 3, '', '2025-02-20 17:20:19', '2025-02-17 16:18:44'),
-(10, 'luffy01', 'monkey.d@luffy.com', '$2y$10$j50lJr0HRfGjfSXN5V3q5uIQJI5l5gC7AkNaXkiR1pNVIgHLVoewa', 1, '2025-02-20', 'sea', 1, '../uploads/one-piece-icons-by-me-v0-qweam8vkaxv91.jpg', 2, 'Luffy', 'Dreamer', 'Monkey', '', 1, '09276542449', '2025-05-04 16:05:41', '2025-02-20 16:10:26'),
+(10, 'luffy01', 'monkey.d@luffy.com', '$2y$10$wOCF5BR/OqtaDik4diuJ1eJ8H1mY5tqx4tAP.OivR8plFjCQvx7Du', 1, '2025-02-20', 'sea', 1, '../uploads/one-piece-icons-by-me-v0-qweam8vkaxv91.jpg', 2, 'Luffy', 'Dreamer', 'Monkey', '', 1, '639276542449', '2025-05-10 00:24:50', '2025-02-20 16:10:26'),
 (101, 'johndoe', 'john.doe@barangay.gov', '$2y$10$O9H5WPaZjDpW4p5oWYSv7.m8sfR/OCbUBkkdxkkKHZdmFBXzLnUNy', 1, '1990-05-15', '123 Main St, Barangay', 1, NULL, 3, 'John', 'A.', 'Doe', NULL, 1, '09171234567', '2025-03-16 08:43:40', '2025-03-16 08:40:46'),
 (102, 'janesmith', 'jane.smith@barangay.gov', '$2y$10$O9H5WPaZjDpW4p5oWYSv7.m8sfR/OCbUBkkdxkkKHZdmFBXzLnUNy', 2, '1988-08-25', '456 Elm St, Barangay', 1, NULL, 3, 'Jane', 'B.', 'Smith', NULL, 2, '09179876543', '2025-03-16 08:43:46', '2025-03-16 08:40:46'),
-(103, 'michaelreyes', 'michael.reyes@barangay.gov', '$2y$10$O9H5WPaZjDpW4p5oWYSv7.m8sfR/OCbUBkkdxkkKHZdmFBXzLnUNy', 1, '1995-02-10', '789 Oak St, Barangay', 1, NULL, 3, 'Michael', 'C.', 'Reyes', 'Jr.', 1, '09175678901', '2025-03-16 08:43:52', '2025-03-16 08:40:46');
+(103, 'michaelreyes', 'michael.reyes@barangay.gov', '$2y$10$O9H5WPaZjDpW4p5oWYSv7.m8sfR/OCbUBkkdxkkKHZdmFBXzLnUNy', 1, '1995-02-10', '789 Oak St, Barangay', 1, NULL, 3, 'Michael', 'C.', 'Reyes', 'Jr.', 1, '09175678901', '2025-03-16 08:43:52', '2025-03-16 08:40:46'),
+(104, 'asd', 'sdf', '$2y$10$98P6nDVjCx7bsw3ra2iYt.NCAGUO8ko54Sn/Yt0vsNFbHLRwXtZDa', 0, NULL, '', 0, NULL, 2, '', NULL, '', NULL, 1, NULL, '2025-05-08 17:51:27', '2025-05-08 17:51:27'),
+(105, 'asdasd', 'sdfaa', '$2y$10$3lhL3DgmDNTcfnfKhKJ.heF5ZPJIqtch9kicH8l2tjlk.44G05uhW', 0, NULL, '', 0, NULL, 2, '', NULL, '', NULL, 1, NULL, '2025-05-08 17:53:17', '2025-05-08 17:53:17'),
+(106, 'asdf', 'xcv@asdasd', '$2y$10$I0X9EnF05M26tdMgpePBhOhU5/hZSjtWz6ZS/6E1hyCgsGLn4RUlq', 0, NULL, '', 0, NULL, 2, '', NULL, '', NULL, 1, NULL, '2025-05-08 17:58:31', '2025-05-08 17:58:31'),
+(112, 'test again', 'test@aerdfas', '$2y$10$Crjx.ZPwmeU3Byh6EEgZFeNjIqmFZyY2oX83tO8wsbys9jiocdwcm', 1, '2025-05-07', 'test again', 1, '../uploads/profile_681e7a8fcc2bd1.56219415.png', 3, 'test again', 'test again', 'test again', 'test again', 2, 'test again', '2025-05-09 21:58:39', '2025-05-09 21:58:39');
 
 -- --------------------------------------------------------
 
@@ -463,7 +554,7 @@ INSERT INTO `user_roles` (`id`, `role_name`, `created_at`, `modified_at`) VALUES
 --
 DROP TABLE IF EXISTS `user_details`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `user_details`  AS SELECT `u`.`id` AS `id`, concat(`u`.`first_name`,' ',`u`.`middle_name`,' ',`u`.`last_name`,' ',`u`.`suffix`) AS `full_name`, `u`.`email` AS `email`, `u`.`username` AS `username`, `u`.`profile_picture` AS `profile_picture`, `u`.`address` AS `address`, `u`.`mobile_number` AS `mobile_number`, `u`.`birthdate` AS `birthdate`, `g`.`gender_name` AS `gender`, `m`.`status_name` AS `marital_status_name`, `u`.`is_verified` AS `is_verified` FROM ((`users` `u` left join `genders` `g` on(`u`.`gender_id` = `g`.`id`)) left join `marital_statuses` `m` on(`u`.`marital_status_id` = `m`.`id`)) WHERE `u`.`role_id` = 2 ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `user_details`  AS SELECT `u`.`id` AS `id`, concat(`u`.`first_name`,' ',`u`.`middle_name`,' ',`u`.`last_name`,' ',`u`.`suffix`) AS `full_name`, `u`.`email` AS `email`, `u`.`username` AS `username`, `u`.`profile_picture` AS `profile_picture`, `u`.`address` AS `address`, `u`.`mobile_number` AS `mobile_number`, `u`.`birthdate` AS `birthdate`, (select `g`.`gender_name` from `genders` `g` where `g`.`id` = `u`.`gender_id` limit 1) AS `gender`, (select `m`.`status_name` from `marital_statuses` `m` where `m`.`id` = `u`.`marital_status_id` limit 1) AS `marital_status_name`, `u`.`is_verified` AS `is_verified` FROM `users` AS `u` WHERE `u`.`role_id` = 2 ;
 
 --
 -- Indexes for dumped tables
@@ -473,7 +564,8 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 -- Indexes for table `activity_logs`
 --
 ALTER TABLE `activity_logs`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_user_id` (`user_id`);
 
 --
 -- Indexes for table `admins`
@@ -482,6 +574,12 @@ ALTER TABLE `admins`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `email` (`email`),
   ADD KEY `idx_admins_email` (`email`);
+
+--
+-- Indexes for table `genders`
+--
+ALTER TABLE `genders`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `marital_statuses`
@@ -498,6 +596,12 @@ ALTER TABLE `message_logs`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_messages_user` (`user_id`),
   ADD KEY `idx_messages_status` (`status`);
+
+--
+-- Indexes for table `notifications`
+--
+ALTER TABLE `notifications`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `queue`
@@ -525,11 +629,10 @@ ALTER TABLE `services`
   ADD KEY `idx_service_name` (`service_name`);
 
 --
--- Indexes for table `settings`
+-- Indexes for table `system_settings`
 --
-ALTER TABLE `settings`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `name` (`name`);
+ALTER TABLE `system_settings`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `transactions`
@@ -576,13 +679,19 @@ ALTER TABLE `user_roles`
 -- AUTO_INCREMENT for table `activity_logs`
 --
 ALTER TABLE `activity_logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
 -- AUTO_INCREMENT for table `admins`
 --
 ALTER TABLE `admins`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `genders`
+--
+ALTER TABLE `genders`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `marital_statuses`
@@ -597,10 +706,16 @@ ALTER TABLE `message_logs`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `notifications`
+--
+ALTER TABLE `notifications`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
+
+--
 -- AUTO_INCREMENT for table `queue`
 --
 ALTER TABLE `queue`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=51;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
 
 --
 -- AUTO_INCREMENT for table `requirements`
@@ -612,31 +727,31 @@ ALTER TABLE `requirements`
 -- AUTO_INCREMENT for table `services`
 --
 ALTER TABLE `services`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
--- AUTO_INCREMENT for table `settings`
+-- AUTO_INCREMENT for table `system_settings`
 --
-ALTER TABLE `settings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+ALTER TABLE `system_settings`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `transactions`
 --
 ALTER TABLE `transactions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=51;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
 
 --
 -- AUTO_INCREMENT for table `transaction_services`
 --
 ALTER TABLE `transaction_services`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=387;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=394;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=104;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=113;
 
 --
 -- AUTO_INCREMENT for table `user_roles`

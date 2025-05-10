@@ -299,7 +299,7 @@ class User
 
     public function getUserMobileByEmail($email)
     {
-        $query = "SELECT mobile_number FROM {$this->table_name} WHERE email = :email LIMIT 1";
+        $query = "SELECT mobile_number FROM {$this->table_name} WHERE email = :email AND role_id != 1 LIMIT 1";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':email', $email, PDO::PARAM_STR);
         $stmt->execute();
@@ -315,5 +315,27 @@ class User
         $stmt->bindParam(':email', $email);
         $stmt->execute();
         return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function changePassword($userId, $newPassword)
+    {
+        $query = "UPDATE " . $this->table_name . " SET password = :password WHERE id = :id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id', $userId);
+        $stmt->bindParam(':password', $newPassword);
+
+        if ($stmt->execute()) {
+            return true;
+        }
+        return false;
+    }
+
+    public function getPasswordHashById($userId)
+    {
+        $query = "SELECT password FROM " . $this->table_name . " WHERE id = :id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id', $userId);
+        $stmt->execute();
+        return $stmt->fetchColumn();
     }
 }

@@ -2,7 +2,6 @@
 require_once '../config/database.php';
 require_once '../models/User.php';
 require_once '../models/SMSNotification.php';
-require_once '../models/SystemSettings.php';
 class UserController
 {
     private $user;
@@ -12,7 +11,6 @@ class UserController
     {
         $this->user = new User($db);
         $this->sms = new SMSNotification($db);
-        $this->systemSettings = SystemSettings::getInstance($db);
     }
 
     // Handle Add User Request
@@ -364,6 +362,67 @@ class UserController
             }
         }
     }
+
+    public function changePassword()
+    {
+        // Only allow POST requests
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode([
+                'success' => false,
+                'message'   => 'Please use POST to change your password.'
+            ]);
+            exit;
+        }
+
+        // 1. Gather & validate input
+        $userId      = filter_input(INPUT_POST, 'userId', FILTER_VALIDATE_INT);
+        $oldPassword = filter_input(INPUT_POST, 'oldPassword', FILTER_UNSAFE_RAW);
+        $newPassword = filter_input(INPUT_POST, 'newPassword', FILTER_UNSAFE_RAW);
+
+        if (!$userId || !$oldPassword || !$newPassword) {
+            echo json_encode([
+                'success' => false,
+                'message'   => 'All fields are required.'
+            ]);
+            return;
+        }
+
+        // 2. Fetch the current password hash
+        $currentHash = $this->user->getPasswordHashById($userId);
+        if (!$currentHash) {
+            echo json_encode([
+                'success' => false,
+                'message'   => 'User not found.'
+            ]);
+            return;
+        }
+
+        // 3. Verify the old password
+        if (!password_verify($oldPassword, $currentHash)) {
+            echo json_encode([
+                'success' => false,
+                'message'   => 'Current password is incorrect.'
+            ]);
+            return;
+        }
+
+        // 4. Hash the new password and update
+        $newHash = password_hash($newPassword, PASSWORD_DEFAULT);
+        $updated = $this->user->updatePassword($userId, $newHash);
+
+        if ($updated) {
+            echo json_encode([
+                'success' => true,
+                'message' => 'Password updated successfully.'
+            ]);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'message'   => 'Unable to update password. Please try again later.'
+            ]);
+        }
+    }
 }
 
 
@@ -403,6 +462,9 @@ switch ($action) {
         break;
     case 'register':
         $controller->registerUser();
+        break;
+    case 'changePassword':
+        $controller->changePassword();
         break;
     default:
         echo json_encode(["error" => "Invalid request"]);

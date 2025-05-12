@@ -36,8 +36,9 @@ unset($_SESSION['error']);
         </div>
 
         <form id="login-form">
+            <input type="hidden" name="is_admin" value="1" id="is-admin">
             <div class="form-group">
-                <input type="text" name="email" placeholder="Email or Username" required>
+                <input type="text" name="identifier" placeholder="Email or Username" required>
             </div>
             <div class="form-group">
                 <input type="password" name="password" placeholder="Password" required>

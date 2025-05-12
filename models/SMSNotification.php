@@ -75,6 +75,19 @@ class SMSNotification
         return $this->semaphore->sendSMS($phoneNumber, $message, $this->getSenderName());
     }
 
+    //registration welcome message
+    public function welcomeMessage($phoneNumber, $firstName, $lastName)
+    {
+        if (!$this->isSMSEnabled()) return false;
+
+        $message = "Welcome ti QPila, $firstName $lastName!\n\n"
+            . "You can now book your transactions online—thank you for registering!\n"
+            . "Be sure to verify your account to make the most of our services.\n"
+            . "Whether you prefer to log in and book online or visit us in person, we’re here to help.";
+
+        return $this->semaphore->sendSMS($phoneNumber, $message, $this->getSenderName());
+    }
+
 
     public function sendReminder($phoneNumber, $scheduledTime)
     {

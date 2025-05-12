@@ -292,75 +292,147 @@ class UserController
     public function registerUser()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $email = htmlspecialchars($_POST['email']);
-            $userName = htmlspecialchars($_POST['username']);
-            $password = htmlspecialchars($_POST['password']);
+            // Sanitize input data
+            $firstName = htmlspecialchars($_POST['firstName'] ?? '');
+            $lastName = htmlspecialchars($_POST['lastName'] ?? '');
+            $gender = htmlspecialchars($_POST['gender'] ?? '');
+            $birthdate = htmlspecialchars($_POST['birthdate'] ?? '');
+            $email = htmlspecialchars($_POST['email'] ?? '');
+            $mobileNumber = htmlspecialchars($_POST['mobileNumber'] ?? '');
+            $userName = htmlspecialchars($_POST['username'] ?? '');
+            $password = $_POST['password'] ?? '';
 
-            // Check if the email and username are provided
-            if (empty($email) || empty($userName) || empty($password)) {
-                echo json_encode(["success" => false, "error" => "All fields are required."]);
+            // Validate required fields
+            if (
+                empty($firstName) || empty($lastName) || empty($gender) || empty($mobileNumber) ||
+                empty($birthdate) || empty($email) || empty($userName) || empty($password)
+            ) {
+                echo json_encode(["success" => false, "message" => "All fields are required."]);
                 return;
             }
 
-            // Check user if exists
-            $checkUserExist = $this->user->checkUserExist($email, $userName);
-            if ($checkUserExist) {
-                echo json_encode(["success" => false, "error" => "User already exists."]);
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                echo json_encode(["success" => false, "message" => "Invalid email format."]);
                 return;
             }
 
+            if (!preg_match("/^[a-zA-Z-' ]*$/", $firstName) || !preg_match("/^[a-zA-Z-' ]*$/", $lastName)) {
+                echo json_encode(["success" => false, "message" => "Name must contain only letters and spaces."]);
+                return;
+            }
+
+            if (!preg_match('/^\+?[0-9]{10,15}$/', $mobileNumber)) {
+                echo json_encode(["success" => false, "message" => "Invalid mobile number."]);
+                return;
+            }
+
+            // Check if the user already exists
+            if ($this->user->checkUserExist($email, $userName)) {
+                echo json_encode(["success" => false, "message" => "User already exists."]);
+                return;
+            }
+
+            // Hash the password
             $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-            // Call the createUser method from the model to add the new user
+            // Register the user using the model
             $result = $this->user->registerUser(
                 $email,
                 $userName,
-                $hashedPassword
+                $hashedPassword,
+                $firstName,
+                $lastName,
+                $gender,
+                $birthdate,
+                $mobileNumber
             );
 
-            // Return the result as JSON
+            $this->sms->welcomeMessage($mobileNumber, $firstName, $lastName);
             echo json_encode(["success" => $result]);
         }
     }
 
     public function resetPassword()
     {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $email = filter_var(trim($_POST['email']), FILTER_SANITIZE_EMAIL);
+        // Read inputs
+        $isMobile = filter_var($_POST['isMobile'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        $contact  = trim($_POST['contact'] ?? '');
 
-            if (empty($email)) {
-                echo json_encode(["success" => false, "message" => "Email is required."]);
-                return;
-            }
-            // Check if the email exists in the database
-            $userMobile = $this->user->getUserMobileByEmail($email);
-            if (!$userMobile) {
-                echo json_encode(["success" => false, "message" => "No account found with that email address."]);
-                return;
-            }
-
-            // Generate a new secure password
-            $newPassword = $this->user->generateNewPassword();
-            $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
-
-            // Attempt to update the password in the database
-            $result = $this->user->resetPassword($email, $hashedPassword);
-
-            if ($result) {
-
-                $this->sms->sendPasswordResetSMS($userMobile, $newPassword);
-
+        // Validate contact
+        if ($isMobile) {
+            // Allow only '+' and digits, then check length
+            $mobile = preg_replace('/[^\d\+]/', '', $contact);
+            if (empty($mobile) || !preg_match('/^\+?\d{7,15}$/', $mobile)) {
                 echo json_encode([
-                    "success" => true,
-                    "message" => "Password reset successful.",
+                    "success" => false,
+                    "message" => "A valid mobile number is required."
                 ]);
-            } else {
+                return;
+            }
+            // Lookup user by mobile
+            $user = $this->user->getByMobile($mobile);
+            if (! $user) {
+                echo json_encode([
+                    "success" => false,
+                    "message" => "No account found with that mobile number."
+                ]);
+                return;
+            }
+            $userId     = $user['id'];
+            $userMobile = $mobile;
+        } else {
+            // Sanitize & validate email
+            $email = filter_var($contact, FILTER_SANITIZE_EMAIL);
+            if (empty($email) || ! filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                echo json_encode([
+                    "success" => false,
+                    "message" => "A valid email address is required."
+                ]);
+                return;
+            }
+            // Lookup user and their mobile by email
+            $userData = $this->user->getUserMobileByEmail($email);
+            if (!$userData) {
                 echo json_encode([
                     "success" => false,
                     "message" => "No account found with that email address."
                 ]);
+                return;
+            } else if ($userData['mobile_number'] == null || empty($userData['mobile_number'])) {
+                echo json_encode([
+                    "success" => false,
+                    "message" => "No mobile number found for that email address. Please contact the administrator."
+                ]);
+                return;
+            } else {
+                $mobileNumber = $userData['mobile_number'];
             }
+            // If you need the userId for the update, you can fetch it similarly:
+            $user = $this->user->getUserByEmail($email);
+            $userId = $user['id'];
         }
+
+        // Generate & hash a new password
+        $newPassword    = $this->user->generateNewPassword();
+        $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
+
+        // Update password in DB (by user ID)
+        $updated = $this->user->changePassword($userId, $hashedPassword);
+        if (! $updated) {
+            echo json_encode([
+                "success" => false,
+                "message" => "Failed to reset password. Please try again."
+            ]);
+            return;
+        }
+
+        // Send the new password via SMS
+        $this->sms->sendPasswordResetSMS($mobileNumber, $newPassword);
+
+        echo json_encode([
+            "success" => true,
+            "message" => "A new password has been sent via SMS."
+        ]);
     }
 
     public function changePassword()

@@ -23,7 +23,10 @@ class SystemSettingController
                 'sms_sender_name',
                 'enable_sms_notifications',
                 'staff_update_cutoff_time',
-                'staff_update_start_time'
+                'staff_update_start_time',
+                'saturday_start_time',
+                'saturday_end_time',
+                'enable_saturday'
             ];
 
             foreach ($updatableKeys as $key) {
@@ -55,7 +58,10 @@ class SystemSettingController
             'sms_sender_name' => $this->systemSettings->get('sms_sender_name', ''),
             'enable_sms_notifications' => $this->systemSettings->get('enable_sms_notifications', '0'),
             'staff_update_cutoff_time' => $this->systemSettings->get('enable_sms_notifications', '18:00'),
-            'staff_update_start_time' => $this->systemSettings->get('staff_update_start_time', '07:00')
+            'staff_update_start_time' => $this->systemSettings->get('staff_update_start_time', '07:00'),
+            'saturday_start_time' => $this->systemSettings->get('saturday_start_time', '08:00'),
+            'saturday_end_time' => $this->systemSettings->get('saturday_end_time', '12:00'),
+            'enable_saturday' => $this->systemSettings->get('enable_saturday', '0') === '1' ? 'checked' : ''
         ];
 
         echo json_encode(['success' => true, 'settings' => $settings]);

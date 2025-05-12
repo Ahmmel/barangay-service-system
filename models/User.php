@@ -259,19 +259,27 @@ class User
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function registerUser($email, $username, $password)
+    public function registerUser($email, $username, $password, $firstName, $lastName, $gender, $birthdate, $mobileNumber)
     {
-        $query = "INSERT INTO " . $this->table_name . " (email, username, password) VALUES (:email, :username, :password)";
+        $query = "INSERT INTO " . $this->table_name . " 
+        (email, username, password, first_name, last_name, gender_id, birthdate, mobile_number) 
+        VALUES (:email, :username, :password, :first_name, :last_name, :gender, :birthdate, :mobile_number)";
+
         $stmt = $this->conn->prepare($query);
+
+        // Bind parameters
         $stmt->bindParam(':email', $email);
         $stmt->bindParam(':username', $username);
         $stmt->bindParam(':password', $password);
+        $stmt->bindParam(':first_name', $firstName);
+        $stmt->bindParam(':last_name', $lastName);
+        $stmt->bindParam(':gender', $gender);
+        $stmt->bindParam(':birthdate', $birthdate);
+        $stmt->bindParam(':mobile_number', $mobileNumber);
 
-        if ($stmt->execute()) {
-            return true;
-        }
-        return false;
+        return $stmt->execute();
     }
+
 
     public function generateNewPassword($length = 8)
     {
@@ -299,13 +307,12 @@ class User
 
     public function getUserMobileByEmail($email)
     {
-        $query = "SELECT mobile_number FROM {$this->table_name} WHERE email = :email AND role_id != 1 LIMIT 1";
+        $query = "SELECT id, mobile_number FROM {$this->table_name} WHERE email = :email AND role_id != 1 LIMIT 1";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':email', $email, PDO::PARAM_STR);
         $stmt->execute();
 
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $result['mobile_number'] ?? null;
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
     public function getUserByEmail($email)
@@ -337,5 +344,14 @@ class User
         $stmt->bindParam(':id', $userId);
         $stmt->execute();
         return $stmt->fetchColumn();
+    }
+
+    public function getByMobile($mobile)
+    {
+        $query = "SELECT * FROM " . $this->table_name . " WHERE mobile_number = :mobile";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':mobile', $mobile);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 }

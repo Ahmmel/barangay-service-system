@@ -7,6 +7,7 @@ $(function () {
   const $registerBtn = $(".register-btn");
   const $loginBtn = $(".login-btn");
   const $forgotBtn = $(".forgot-btn");
+  const methodToggle = document.getElementById("methodToggle");
 
   // Set current year
   $year.text(new Date().getFullYear());
@@ -31,24 +32,17 @@ $(function () {
   // LOGIN
   $loginForm.on("submit", function (e) {
     e.preventDefault();
-    const email = $("#loginUsername").val();
+    const identifier = $("#identifier").val();
     const password = $("#loginPassword").val();
     const rememberMe = $("#rememberMe").is(":checked");
 
     $.post("../controllers/AuthController.php", {
-      email,
+      identifier,
       password,
       rememberMe,
     })
       .done((response) => {
-        let data;
-        try {
-          data = JSON.parse(response);
-        } catch {
-          return showError("Invalid server response. Please try again.");
-        }
-
-        if (data.success) {
+        if (response.success) {
           Swal.fire({
             icon: "success",
             title: "Login Successful",
@@ -56,10 +50,10 @@ $(function () {
             showConfirmButton: false,
             timer: 1200,
           }).then(() => {
-            window.location.href = data.redirect || "index.php";
+            window.location.href = response.redirect || "index.php";
           });
         } else {
-          showError(data.message || "Login failed. Try again.");
+          showError(response.message || "Login failed. Try again.");
         }
       })
       .fail(() => showError("An error occurred, please try again later."));
@@ -68,12 +62,41 @@ $(function () {
   // REGISTER
   $registerForm.on("submit", function (e) {
     e.preventDefault();
-    const username = $("#registerUsername").val();
-    const email = $("#registerEmail").val();
-    const password = $("#registerPassword").val();
-    const confirmPassword = $("#confirmPassword").val();
 
-    if (password !== confirmPassword) {
+    const formArray = $registerForm.serializeArray();
+    const formData = {};
+
+    // Convert serialized array to object
+    formArray.forEach(({ name, value }) => {
+      formData[name] = value.trim();
+    });
+
+    // Required field validation
+    const requiredFields = [
+      "first_name",
+      "last_name",
+      "gender",
+      "birthdate",
+      "mobile_number",
+      "username",
+      "email",
+      "password",
+      "confirm_password",
+    ];
+    console.log(requiredFields);
+    for (const field of requiredFields) {
+      if (!formData[field]) {
+        return Swal.fire({
+          icon: "warning",
+          title: "Incomplete Form",
+          text: "Please complete all required fields before submitting.",
+          confirmButtonColor: "#ff6f3c",
+        });
+      }
+    }
+
+    // Password match check
+    if (formData.password !== formData.confirm_password) {
       return Swal.fire({
         icon: "warning",
         title: "Password Mismatch",
@@ -82,19 +105,25 @@ $(function () {
       });
     }
 
-    $.post("../controllers/UserController.php?action=register", {
-      username,
-      email,
-      password,
-    })
-      .done((response) => {
-        let data;
-        try {
-          data = JSON.parse(response);
-        } catch {
-          return showError("Invalid server response. Please try again.");
-        }
+    // Prepare payload for backend (excluding confirm_password)
+    const payload = {
+      firstName: formData.first_name,
+      lastName: formData.last_name,
+      gender: formData.gender,
+      birthdate: formData.birthdate,
+      mobileNumber: formData.mobile_number,
+      username: formData.username,
+      email: formData.email,
+      password: formData.password,
+    };
 
+    // Submit data
+    $.ajax({
+      url: "../controllers/UserController.php?action=register",
+      type: "POST",
+      data: payload,
+      dataType: "json", // This tells jQuery to expect and parse JSON automatically
+      success: function (data) {
         if (data.success) {
           Swal.fire({
             icon: "success",
@@ -104,54 +133,79 @@ $(function () {
             showConfirmButton: false,
           }).then(() => $loginBtn.click());
         } else {
-          showError(data.message || "Registration failed. Try again.");
+          showError(data.message || "Registration failed. Please try again.");
         }
-      })
-      .fail(() => showError("An error occurred, please try again later."));
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        console.error("Registration error:", textStatus, errorThrown);
+        showError(
+          "An error occurred while submitting the form. Please try again."
+        );
+      },
+    });
   });
 
   // FORGOT PASSWORD AJAX
   $forgotForm.on("submit", function (e) {
     e.preventDefault();
-    const email = $("#forgotEmail").val();
 
-    if (!email) {
-      return Swal.fire({
+    const isMobile = methodToggle.checked; // true → SMS, false → Email
+    const emailVal = $("#forgotEmail").val().trim();
+    const mobileVal = $("#forgotMobile").val().trim();
+    const contact = isMobile ? mobileVal : emailVal;
+
+    // Validate
+    if (!contact) {
+      Swal.fire({
         icon: "warning",
-        title: "Email Required",
-        text: "Please enter your registered email address.",
+        title: isMobile ? "Mobile Number Required" : "Email Required",
+        text: isMobile
+          ? "Please enter your registered mobile number."
+          : "Please enter your registered email address or username.",
         confirmButtonColor: "#ff6f3c",
       });
+      return;
     }
 
-    $.post("../controllers/UserController.php?action=resetPassword", {
-      action: "forgot-password",
-      email: email,
-    })
-      .done((response) => {
-        let data;
-        try {
-          data = JSON.parse(response);
-        } catch {
-          return showForgotError("Invalid server response. Please try again.");
-        }
+    // Payload with explicit flag
+    const payload = {
+      isMobile: isMobile,
+      contact: contact,
+    };
 
+    $.ajax({
+      url: "../controllers/UserController.php?action=resetPassword",
+      method: "POST",
+      data: payload,
+      dataType: "json",
+    })
+      .done((data) => {
         if (data.success) {
           Swal.fire({
             icon: "success",
-            title: "Password Reset Successful",
-            text: "A new password has been sent to your registered mobile number. Please check your SMS and use the new password to log in.",
+            title: "Password Reset Requested",
+            text: isMobile
+              ? "A reset code has been sent via SMS. Please check your mobile."
+              : "An email has been sent with instructions to reset your password.",
             confirmButtonColor: "#ff6f3c",
-          }).then(() => {
-            $(".login-btn").click(); // return to login
-          });
+          }).then(() => $(".login-btn").click());
         } else {
-          showForgotError(data.message || "No account found with that email.");
+          Swal.fire({
+            icon: "error",
+            title: "Reset Failed",
+            text: data.message || "No account found with those credentials.",
+            confirmButtonColor: "#ff6f3c",
+          });
         }
       })
-      .fail(() =>
-        showForgotError("An error occurred, please try again later.")
-      );
+      .fail(() => {
+        Swal.fire({
+          icon: "error",
+          title: "Server Error",
+          text: "An error occurred, please try again later.",
+          confirmButtonColor: "#ff6f3c",
+        });
+      });
   });
 
   // Helper for forgot error
@@ -173,6 +227,19 @@ $(function () {
       confirmButtonColor: "#ff6f3c",
     });
   };
+});
+
+const container = document.querySelector(".forgot-password");
+const toggle = container.querySelector("#methodToggle");
+const inputs = container.querySelectorAll(".contact-input");
+
+toggle.addEventListener("change", () => {
+  const useSms = toggle.checked;
+  inputs.forEach((el) => {
+    const isMobile = el.getAttribute("data-method") === "mobile";
+    el.classList.toggle("active", isMobile === useSms);
+    el.querySelector("input").required = isMobile === useSms;
+  });
 });
 
 // Toggle Dark Mode

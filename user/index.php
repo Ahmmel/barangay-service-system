@@ -4,6 +4,8 @@ include_once '../config/database.php';
 include_once '../models/User.php';
 include_once '../models/Service.php';
 include_once '../models/Transaction.php';
+include_once '../models/SystemSettings.php';
+
 
 // Start the session
 session_start();
@@ -52,6 +54,17 @@ $services = $serviceModel->getServices();
 $transactionModel = new Transaction($db);
 $transactions = $transactionModel->getTransactionsByUserId($userId);
 
+// get system settings
+$systemSettings = SystemSettings::getInstance($db);
+
+$settings = [
+    'booking_time_start' => $systemSettings->get('booking_time_start', '08:00'),
+    'booking_time_end' => $systemSettings->get('booking_time_end', '20:00'),
+    'minimum_booking_lead_time_minutes' => $systemSettings->get('minimum_booking_lead_time_minutes', 30),
+    'saturday_start_time' => $systemSettings->get('saturday_start_time', '08:00'),
+    'saturday_end_time' => $systemSettings->get('saturday_end_time', '12:00'),
+    'enable_saturday' => $systemSettings->get('enable_saturday', '0') === '1' ? 'checked' : ''
+];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -254,18 +267,13 @@ $transactions = $transactionModel->getTransactionsByUserId($userId);
                                 class="form-select"
                                 multiple="multiple"
                                 style="width: 100%">
-                                <?php if ($isVerified) : ?>
-                                    <?php foreach ($services as $service): ?>
-                                        <option value="<?= htmlspecialchars($service['id']) ?>">
-                                            <?= htmlspecialchars($service['service_name']) ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
-                                    <option value="12" selected>
-                                        Account Verification
+                                <?php foreach ($services as $service): ?>
+                                    <?php if ($isVerified && $service['id'] == 1) continue; ?>
+                                    <option value="<?= htmlspecialchars($service['id']) ?>"
+                                        <?= !$isVerified && $service['id'] == 1 ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($service['service_name']) ?>
                                     </option>
-                                <?php endif; ?>
-
+                                <?php endforeach; ?>
                             </select>
                         </form>
                         <div class="d-flex justify-content-end mt-4">
@@ -712,44 +720,73 @@ $transactions = $transactionModel->getTransactionsByUserId($userId);
     </script>
     <script src="../js/user-index.js"></script>
     <script>
+        const bookingStart = "<?php echo $settings['booking_time_start']; ?>";
+        const bookingEnd = "<?php echo $settings['booking_time_end']; ?>";
+        const leadMinutes = <?php echo (int)$settings['minimum_booking_lead_time_minutes']; ?>;
+        const enableSaturday = <?php echo $settings['enable_saturday'] ? 'true' : 'false'; ?>;
+        const satStart = "<?php echo $settings['saturday_start_time']; ?>";
+        const satEnd = "<?php echo $settings['saturday_end_time']; ?>";
+        const [defHour, defMin] = bookingStart.split(':').map(Number);
+
         flatpickr("#datetime-picker", {
             enableTime: true,
             dateFormat: "Y-m-d H:i",
-            minDate: "today",
-            time_24hr: false, // show AM/PM
-            minuteIncrement: 30, // Only 30 minutes
+            time_24hr: false,
+            minuteIncrement: 30,
             position: "above",
-            locale: {
-                firstDayOfWeek: 1, // Monday as first day
-            },
+
+            // set initial time to bookingStart
+            defaultHour: defHour,
+            defaultMinute: defMin,
+
+            // enforce your lead‐time
+            minDate: new Date(Date.now() + leadMinutes * 60000),
+
             disable: [
                 function(date) {
-                    return date.getDay() === 0; // Disable Sundays
-                },
+                    const wd = date.getDay();
+                    if (wd === 0) return true; // Sunday always
+                    if (wd === 6 && !enableSaturday) return true; // Saturday if disabled
+                    return false;
+                }
             ],
+
             onChange: function(selectedDates, dateStr, instance) {
-                const selected = selectedDates[0];
-                if (!selected) return;
+                if (!selectedDates.length) return;
 
-                const hour = selected.getHours();
-                const minute = selected.getMinutes();
+                const d = selectedDates[0];
+                const wd = d.getDay();
+                const hh = d.getHours();
+                const mm = d.getMinutes();
 
-                // Allow only between 8:00 AM and 4:30 PM
-                if (hour < 8 || hour > 16 || (hour === 16 && minute > 30)) {
+                const [startH, startM] = (wd === 6) ?
+                satStart.split(':').map(Number): bookingStart.split(':').map(Number);
+
+                const [endH, endM] = (wd === 6) ?
+                satEnd.split(':').map(Number): bookingEnd.split(':').map(Number);
+
+                const picked = hh * 60 + mm;
+                const lower = startH * 60 + startM;
+                const upper = endH * 60 + endM;
+
+                if (picked < lower || picked > upper) {
                     Swal.fire({
                         toast: true,
-                        position: 'top-end', // Top right corner
+                        position: 'top-end',
                         icon: 'warning',
                         title: '⏰ Invalid Time',
-                        text: 'Please select between 8:00 AM and 4:30 PM.',
+                        text: `Please pick between ${
+            (wd === 6 ? satStart : bookingStart)
+          } and ${
+            (wd === 6 ? satEnd   : bookingEnd)
+          }.`,
                         showConfirmButton: false,
-                        timer: 3000, // Auto-close after 3 seconds
+                        timer: 3000,
                         timerProgressBar: true
                     });
-
                     instance.clear();
                 }
-            },
+            }
         });
     </script>
 </body>

@@ -178,14 +178,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Multi-step Wizard
   const MAX_STEPS = 3;
+
+  // showStep: highlights step n
   window.showStep = (n) => {
     $(".step, .progress-step").removeClass("active");
     $(`#step-${n}, #bar-step-${n}`).addClass("active");
+
+    // If we're on the confirmation screen, populate the summary
     if (n === MAX_STEPS) {
       const ids = $serviceSelect.val() || [];
-      const dt = new Date(
-        $dateTimeInput.val().replace(/-/g, "/")
-      ).toLocaleString("en-PH", {
+      const dtRaw = $dateTimeInput.val().replace(/-/g, "/");
+      const dt = new Date(dtRaw).toLocaleString("en-PH", {
         year: "numeric",
         month: "long",
         day: "numeric",
@@ -193,6 +196,7 @@ document.addEventListener("DOMContentLoaded", () => {
         minute: "2-digit",
         hour12: true,
       });
+
       $("#confirmation-list").html(
         ids
           .map((id) => {
@@ -204,38 +208,53 @@ document.addEventListener("DOMContentLoaded", () => {
       $("#confirm-datetime").text(dt);
     }
   };
-  window.nextStep = (n) => {
-    if (n === 1 && !$serviceSelect.val().length) {
+
+  // nextStep: validates and advances, or bounces back to the same step
+  window.nextStep = (currentStep) => {
+    // step 1 → must pick at least one service
+    if (currentStep === 1 && !$serviceSelect.val().length) {
       return confirmDialog({
         title: "Select Services",
         text: "Please select at least one service.",
-      });
+      }).then(() => showStep(1));
     }
-    if (n === 2 && !$dateTimeInput.val().trim()) {
+
+    // step 2 → must pick a date/time
+    if (currentStep === 2 && !$dateTimeInput.val().trim()) {
       return confirmDialog({
         title: "Select Date and Time",
         text: "Please pick a date/time.",
-      });
+      }).then(() => showStep(2));
     }
-    showStep(n + 1);
+
+    // otherwise move forward
+    showStep(currentStep + 1);
   };
 
   // Booking Confirmation
   window.confirmBooking = () => {
     const services = $serviceSelect.val() || [];
-    const dt = $dateTimeInput.val().trim();
-    if (!services.length || !dt) {
+    const dtRaw = $dateTimeInput.val().trim();
+
+    // Guard: both services and date/time are required
+    if (!services.length || !dtRaw) {
+      const missingStep = !services.length ? 1 : 2;
       return confirmDialog({
         title: "Incomplete!",
-        text: "Select services and date/time",
-      });
+        text: "Select services and date/time.",
+      }).then(() => showStep(missingStep));
     }
+
+    // Disable button to prevent duplicates
+    const $btn = $("#confirmBookingButton");
+    $btn.prop("disabled", true);
+
     $.ajax({
       url: "../controllers/TransactionController.php?action=add",
       method: "POST",
       data: {
         serviceIds: services,
-        scheduledTime: dt,
+        scheduledTime: dtRaw,
         userId,
         transactionType: 2,
       },
@@ -248,23 +267,44 @@ document.addEventListener("DOMContentLoaded", () => {
             text: "Thank you for your request.",
             icon: "success",
           }).then(() => {
-            /* optionally: loadTransactions(userId); */
+            // 1) Clear the wizard fields
+            $serviceSelect.val([]).trigger("change"); // if using Select2; otherwise just .val([])
+            $dateTimeInput.val("");
+
+            // 2) Reset to step 1
+            showStep(1);
+
+            // 3) Reload their transactions
+            loadTransactions(userId);
           });
         } else {
+          // Jump back to the step most likely at fault
+          const errorStep =
+            res.error_type === "schedule"
+              ? 2
+              : res.error_type === "service"
+              ? 1
+              : MAX_STEPS;
+
           confirmDialog({
             title: "Booking Failed",
-            text: res.message,
+            html: res.message,
             icon: "error",
-          });
+          }).then(() => showStep(errorStep));
         }
       })
       .fail(() =>
+        // network/server error: let them retry at confirmation
         confirmDialog({
           title: "Server Error",
           text: "Please try again later.",
           icon: "error",
-        })
-      );
+        }).then(() => showStep(MAX_STEPS))
+      )
+      .always(() => {
+        // Re-enable the button
+        $btn.prop("disabled", false);
+      });
   };
 
   // ==== Transactions Loader & Nav-trigger ====

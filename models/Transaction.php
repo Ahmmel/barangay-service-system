@@ -93,27 +93,161 @@ class Transaction
         }
     }
 
-    public function validateTransaction($userId, $serviceIds, $scheduledTime)
+    public function validateTransaction($userId, array $serviceIds, string $scheduledTime)
     {
-        $maxTransactions = (int) $this->systemSettings->get('max_transactions_per_day', 1);
-        if ($this->countUserTransactionByIdAndDate($userId, $scheduledTime) >= $maxTransactions) {
-            return ["success" => false, "message" => "You have reached the maximum number of transactions allowed for today."];
+        // 1. Parse scheduledTime and ensure it’s a valid DateTime
+        try {
+            $dt = new DateTime($scheduledTime);
+        } catch (Exception $e) {
+            return [
+                "success"    => false,
+                "message"    => "Invalid date/time format.",
+                "error_type" => "schedule"
+            ];
         }
 
+        $now = new DateTime();
+
+        // 2. Cannot book in the past
+        if ($dt < $now) {
+            return [
+                "success"    => false,
+                "message"    => "Scheduled time must be in the future.",
+                "error_type" => "schedule"
+            ];
+        }
+
+        // 3. Max transactions per day
+        $maxTx = (int) $this->systemSettings->get('max_transactions_per_day', 1);
+        if ($this->countUserTransactionByIdAndDate($userId, $scheduledTime) >= $maxTx) {
+            return [
+                "success"    => false,
+                "message"    => "You have reached your daily limit of {$maxTx} transaction(s).",
+                "error_type" => "service"
+            ];
+        }
+
+        // 4. Has existing transaction on the scheduled day
+        if ($this->hasExistingTransaction($userId, $scheduledTime)) {
+            return [
+                "success"    => false,
+                "message"    => "You already have a transaction scheduled at this day.",
+                "error_type" => "schedule"
+            ];
+        }
+
+        // 6.  Prevent double-booking the same service slot if it’s still pending/in-progress
+        if ($this->isServiceSlotTaken($scheduledTime)) {
+            return [
+                "success"    => false,
+                "message"    => "The service is already booked and still pending at that time.",
+                "error_type" => "service"
+            ];
+        }
+
+        // 7. Business hours & days (8:00–16:30, Mon–Sat)
         if (!$this->isValidBookingSchedule($scheduledTime)) {
-            return ["success" => false, "message" => "Bookings can only be made between 8:00 AM - 4:30 PM, Monday to Saturday."];
+            return [
+                "success"    => false,
+                "message"    => "Bookings may only be made 8:00 AM–4:30 PM, Monday–Saturday.",
+                "error_type" => "schedule"
+            ];
         }
 
-        // check if the user has booked the same service within the scheduled time
-        if ($this->hasUserBookedSameService($userId, $scheduledTime, $serviceIds)) {
-            return ["success" => false, "message" => "You have already booked the same service for the selected schedule."];
-        }
-
+        // 8. Lead time (at least 30 min before)
         if (!$this->isValidBookingTime($scheduledTime)) {
-            return ["success" => false, "message" => "Booking must be at least 30 minutes in advance."];
+            return [
+                "success"    => false,
+                "message"    => "Bookings must be made at least 30 minutes in advance.",
+                "error_type" => "schedule"
+            ];
+        }
+
+        // 9. No duplicate service at same slot
+        if ($this->hasUserBookedSameService($userId, $scheduledTime, $serviceIds)) {
+            return [
+                "success"    => false,
+                "message"    => "You already have a booking for this service on the chosen date. Please select a different time or service.",
+                "error_type" => "service"
+            ];
+        }
+
+        // 10. Check for any pending services and collect their names
+        $pending = $this->getPendingBookedServices($userId, $serviceIds);
+        if (!empty($pending)) {
+            // Build natural-language and array versions
+            $last    = array_pop($pending);
+            $nlList  = $pending
+                ? implode(', ', $pending) . " and {$last}"
+                : $last;
+            $allItems = array_merge($pending, [$last]);
+
+            // Build HTML message using <p> and <ul>
+            $messageHtml  = '<p>You already have pending transactions for the following service(s):</p>'
+                . '<ul style="text-align:left; margin:0 0 .5em 1em;">'
+                . '<li>' . implode('</li><li>', $allItems) . '</li>'
+                . '</ul>'
+                . '<p>Please remove ' . $nlList . ' before booking again.</p>';
+
+            return [
+                "success"    => false,
+                "message"    => $messageHtml,
+                "error_type" => "service"
+            ];
         }
 
         return ["success" => true];
+    }
+
+    function getServiceName($serviceId)
+    {
+        $query = "SELECT service_name FROM services WHERE id = :serviceId";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':serviceId', $serviceId, PDO::PARAM_INT);
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ? $row['service_name'] : null;
+    }
+
+    protected function hasExistingTransaction($userId, $scheduledTime)
+    {
+        $sql = "
+        SELECT COUNT(*) AS cnt
+        FROM transactions t
+        WHERE t.user_id = :user_id
+          AND DATE(t.created_at) = DATE(:scheduled_date)
+          AND t.status NOT IN ('Closed', 'Cancelled')
+    ";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+        $stmt->bindParam(':scheduled_date', $scheduledTime, PDO::PARAM_STR);
+        $stmt->execute();
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return ((int)$row['cnt']) > 0;
+    }
+
+    /**
+     * Returns true if there’s any Pending/Assigned queue entry
+     * at $scheduledTime for $serviceId.
+     */
+    protected function isServiceSlotTaken(string $scheduledTime): bool
+    {
+        $sql = "
+        SELECT COUNT(*) AS cnt
+        FROM queue q
+        JOIN transactions t
+          ON t.transaction_code = q.transaction_code
+        WHERE q.scheduled_date  = :scheduled_date
+          AND t.status IN ('Pending', 'In Progress')
+    ";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(':scheduled_date', $scheduledTime, PDO::PARAM_STR);
+        $stmt->execute();
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return ((int)$row['cnt']) > 0;
     }
 
     // Get all transactions with user details and services
@@ -494,29 +628,85 @@ class Transaction
     // Rule: Check if the user has booked the same service(s) on the scheduled date
     public function hasUserBookedSameService($userId, $scheduledTime, array $serviceIds)
     {
-        // Extract date part only
-        $bookingDate = date('Y-m-d', strtotime($scheduledTime));
+        // 1. Get the calendar date of the requested slot
+        try {
+            $date = (new DateTime($scheduledTime))->format('Y-m-d');
+        } catch (Exception $e) {
+            // If the scheduledTime is invalid, treat as “no conflict”
+            return false;
+        }
 
-        // Build a list of service IDs for the query
+        if (empty($serviceIds)) {
+            return false;
+        }
+
+        // 2. Build the IN-list placeholders
         $placeholders = implode(',', array_fill(0, count($serviceIds), '?'));
 
-        $query = "
+        // 3. Query any non-closed booking on that date for those services
+        $sql = "
         SELECT COUNT(*) 
-        FROM transactions t
-        JOIN transaction_services ts ON ts.transaction_id = t.id
-        WHERE DATE(t.created_at) = ?
-          AND t.user_id = ?
-          AND ts.service_id IN ($placeholders)
+          FROM transactions t
+          JOIN transaction_services ts 
+            ON ts.transaction_id = t.id
+         WHERE DATE(t.created_at) = ?
+           AND t.user_id           = ?
+           AND t.status  NOT IN ('Closed','Cancelled')
+           AND ts.service_id IN ($placeholders)
     ";
 
-        $stmt = $this->conn->prepare($query);
+        $stmt = $this->conn->prepare($sql);
 
-        // Bind the values dynamically
-        $params = array_merge([$bookingDate, $userId], $serviceIds);
-
+        // 4. Bind: first the date, then userId, then each service ID
+        $params = array_merge([$date, $userId], $serviceIds);
         $stmt->execute($params);
 
-        return (int) $stmt->fetchColumn() > 0; // return true if user already booked
+        return (int) $stmt->fetchColumn() > 0;
+    }
+
+
+    // Rule: Check if the user has a pending transaction with the same service(s)
+    /**
+     * Returns an array of service names for which the user
+     * has a pending or assigned transaction on the same day.
+     */
+    protected function getPendingBookedServices(int $userId, array $serviceIds)
+    {
+        if (empty($serviceIds)) {
+            return [];
+        }
+
+        // build placeholders for IN clause
+        $ph = implode(',', array_fill(0, count($serviceIds), '?'));
+
+        // note: adjust the date comparison if you want to filter by scheduled_time date
+        $sql = "
+        SELECT DISTINCT ts.service_id
+          FROM transactions t
+          JOIN transaction_services ts
+            ON ts.transaction_id = t.id
+         WHERE t.user_id     = ?
+           AND t.status     NOT IN ('Closed','Cancelled')
+           AND ts.service_id IN ($ph)
+    ";
+
+        $stmt = $this->conn->prepare($sql);
+
+        // first param is userId, then each serviceId
+        $params = array_merge([$userId], $serviceIds);
+        $stmt->execute($params);
+
+        $ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
+        if (!$ids) {
+            return [];
+        }
+
+        // now fetch their names in one query
+        $ph2    = implode(',', array_fill(0, count($ids), '?'));
+        $sql2   = "SELECT service_name FROM services WHERE id IN ($ph2)";
+        $stmt2  = $this->conn->prepare($sql2);
+        $stmt2->execute($ids);
+        return $stmt2->fetchAll(PDO::FETCH_COLUMN);
     }
 
     //Rule: If the user is late by more than 25 minutes, cancel the transaction

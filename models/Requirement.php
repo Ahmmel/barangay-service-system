@@ -125,4 +125,9 @@ class Requirement
 
         return $services;
     }
+
+    public function getLastInsertId()
+    {
+        return $this->conn->lastInsertId();
+    }
 }

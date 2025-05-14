@@ -106,7 +106,7 @@ $disabledAttr = !$isStaffAllowedToUpdate ? 'disabled' : '';
 <!-- End of Content Wrapper -->
 
 <script>
-    const isTransactionPage = true;
+    var isTransactionPage = true;
 </script>
 
 <?php

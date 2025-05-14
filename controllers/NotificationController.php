@@ -11,33 +11,6 @@ class NotificationController
         $this->notificationModel = new Notification($db);
     }
 
-    // Add a new notification
-    public function addNotification()
-    {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $userId = $_POST['userId'] ?? null;
-            $roleId = $_POST['roleId'] ?? null;
-            $title = $_POST['title'] ?? null;
-            $message = $_POST['message'] ?? null;
-
-            if ($userId && $roleId && $title && $message) {
-                $result = $this->notificationModel->createNotification(
-                    $userId,
-                    $roleId,
-                    $title,
-                    $message
-                );
-
-                echo json_encode(["success" => $result]);
-            } else {
-                echo json_encode([
-                    'success' => false,
-                    'message' => 'All fields are required.'
-                ]);
-            }
-        }
-    }
-
     // Get unread notifications
     public function getUnreadNotifications()
     {
@@ -60,9 +33,9 @@ class NotificationController
     {
         if (isset($_POST['notification_id'])) {
             $notificationId = $_POST['notification_id'];
-            $result = $this->notificationModel->markAsRead($notificationId);
+            // $result = $this->notificationModel->markAsRead($notificationId);
 
-            echo json_encode(["success" => $result]);
+            // echo json_encode(["success" => $result]);
         } else {
             echo json_encode([
                 'success' => false,
@@ -79,9 +52,6 @@ $controller = new NotificationController($db);
 $action = $_GET['action'] ?? '';
 
 switch ($action) {
-    case 'add':
-        $controller->addNotification();
-        break;
     case 'getUnread':
         $controller->getUnreadNotifications();
         break;

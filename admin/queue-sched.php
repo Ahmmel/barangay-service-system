@@ -7,6 +7,11 @@ include_once '../models/Queue.php';
 
 $_SESSION["page_title"] = "Queue";
 
+if ($_SESSION['user_role'] !== 'staff') {
+    header('Location: dashboard.php');
+    exit();
+}
+
 $database = new Database();
 $db = $database->getConnection();
 
@@ -19,11 +24,13 @@ if (!empty($scheduledQueue)) {
     $currentTransactionCode = htmlspecialchars($currentlyServing['transaction_code']);
     $currentQueueId = (int)$currentlyServing['id'];
     $currentTransactionId = (int)($currentlyServing['id'] ?? 0);
+    $scheduledDateTime = $currentlyServing['scheduled_date'] ?? '';
 } else {
     $currentTransactionCode = '—';
     $currentQueueId = 0;
     $currentTransactionId = 0;
     $isSchedQueueDisabled = 'disabled';
+    $scheduledDateTime = '';
 }
 ?>
 <style>
@@ -31,7 +38,7 @@ if (!empty($scheduledQueue)) {
     :root {
         --primary-black: #251f21;
         --primary-white: #f1f0ef;
-        --primary-brown: #bc9a8e;
+        --primary-brown: rgb(224, 118, 80);
     }
 
     .queue-item {
@@ -80,7 +87,7 @@ if (!empty($scheduledQueue)) {
     }
 
     .current-number {
-        font-size: 70px;
+        font-size: 65px;
         /* Increased size for large number */
         font-weight: bold;
         color: var(--primary-brown);
@@ -95,7 +102,6 @@ if (!empty($scheduledQueue)) {
     .btn {
         width: 100%;
         padding: 15px;
-        font-size: 18px;
         border-radius: 10px;
         transition: all 0.3s ease;
         margin-bottom: 15px;
@@ -211,7 +217,7 @@ if (!empty($scheduledQueue)) {
                                     <div
                                         class="queue-item mb-2"
                                         id="scheduled-<?= htmlspecialchars($item['id']) ?>"
-                                        data-transaction-id="<?= htmlspecialchars($item['transaction_id'] ?? '') ?>">
+                                        data-transaction-id="<?= htmlspecialchars($item['id'] ?? '') ?>">
                                         <span class="transaction-code"><?= htmlspecialchars($item['transaction_code']) ?></span>
                                         <span class="name"><?= htmlspecialchars($item['display_name']) ?></span>
                                         <i class="fas fa-check-circle" style="color: var(--primary-brown)"></i>
@@ -229,9 +235,14 @@ if (!empty($scheduledQueue)) {
                                 <div class="current-number" id="scheduledCurrentNumber">
                                     <?= $currentTransactionCode ?>
                                 </div>
-                                <div class="timer" id="scheduledTimer">00:00:00</div>
+                                <div class="scheduled-time text-muted text-center mt-2">
+                                    <small>Elapsed Time: <span id="scheduledElapsedTimer">00:00</span></small>
+                                    <div id="noShowNote" class="text-danger mt-1" style="font-weight: bold; display: none;">
+                                        You may now mark this as No Show.
+                                    </div>
+                                </div>
                                 <button
-                                    class="btn btn-primary"
+                                    class="btn btn-primary mt-3"
                                     id="scheduledStartTransaction"
                                     onclick="openUpdateTransactionModal(<?= $currentTransactionId ?>)"
                                     <?= $isSchedQueueDisabled ?>>
@@ -239,10 +250,11 @@ if (!empty($scheduledQueue)) {
                                 </button>
 
                                 <button
-                                    class="btn btn-secondary no-show-btn"
+                                    class="btn btn-secondary no-show-btn mt-2"
                                     id="scheduledNoShow"
                                     data-type="scheduled"
                                     data-transaction-code="<?= $currentTransactionCode ?>"
+                                    disabled
                                     <?= $isSchedQueueDisabled ?>>
                                     <i class="fas fa-user-times me-1"></i> Mark as No Show
                                 </button>
@@ -268,5 +280,55 @@ if (!empty($scheduledQueue)) {
 include_once '../views/templates/admin_footer.php';
 ?>
 <script>
-    showClock = true;
+    var isWalkinPage = false;
+    var isTransactionPage = false;
+    const scheduledStart = new Date("<?= $scheduledDateTime ?>");
+
+    function initElapsedTimer({
+        timerId,
+        noShowBtnId,
+        noteId
+    }) {
+        const timerEl = document.getElementById(timerId);
+        const noShowBtn = document.getElementById(noShowBtnId);
+        const noteEl = document.getElementById(noteId);
+
+        if (!timerEl || !noShowBtn || !noteEl) return;
+
+        if (isNaN(scheduledStart.getTime())) {
+            timerEl.textContent = "----";
+            return;
+        }
+
+        function updateElapsedTime() {
+            const now = new Date();
+            const diffMs = now - scheduledStart;
+
+            if (diffMs < 0) {
+                timerEl.textContent = "00:00";
+                return;
+            }
+
+            const diffMins = Math.floor(diffMs / 60000);
+            const minutes = String(diffMins).padStart(2, "0");
+            const seconds = String(Math.floor((diffMs % 60000) / 1000)).padStart(2, "0");
+
+            timerEl.textContent = `${minutes}:${seconds}`;
+
+            if (diffMins >= 10) {
+                noShowBtn.removeAttribute("disabled");
+                noteEl.style.display = "block";
+            }
+        }
+
+        updateElapsedTime();
+        setInterval(updateElapsedTime, 1000);
+    }
+
+    // Initialize both timers
+    initElapsedTimer({
+        timerId: "scheduledElapsedTimer",
+        noShowBtnId: "scheduledNoShow",
+        noteId: "noShowNote",
+    });
 </script>

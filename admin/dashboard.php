@@ -59,7 +59,7 @@ $currentSessionId = $_SESSION['user_id'];
 
 $activityLogs = $isAdmin
     ? $activityLog->getRecentLogs()
-    : $activityLog->getRecentLogsByStaffId($currentSessionId);
+    : $activityLog->getRecentLogsByStaffId($currentSessionId, false);
 
 ?>
 
@@ -87,8 +87,10 @@ $activityLogs = $isAdmin
                         <thead class="thead-dark">
                             <tr>
                                 <th>Log ID</th>
-                                <th>User ID</th>
-                                <th>Full Name</th>
+                                <?php if ($isAdmin): ?>
+                                    <th>User ID</th>
+                                    <th>Full Name</th>
+                                <?php endif; ?>
                                 <th>Activity</th>
                                 <th>Status</th>
                                 <th>Timestamp</th>
@@ -98,10 +100,11 @@ $activityLogs = $isAdmin
                             <?php foreach ($activityLogs as $log): ?>
                                 <tr>
                                     <td><?= htmlspecialchars($log['id']) ?></td>
-                                    <td><?= htmlspecialchars($log['user_id']) ?></td>
-                                    <td><?= htmlspecialchars($log['fullname']) ?></td>
+                                    <?php if ($isAdmin): ?>
+                                        <td><?= htmlspecialchars($log['user_id']) ?></td>
+                                        <td><?= htmlspecialchars($log['fullname']) ?></td>
+                                    <?php endif; ?>
                                     <td><?= htmlspecialchars($log['activity']) ?></td>
-                                    <td><?= date('F j, Y h:i A', strtotime($log['created_at'])) ?></td>
                                     <td>
                                         <?php
                                         $status = htmlspecialchars($log['status']);
@@ -113,6 +116,7 @@ $activityLogs = $isAdmin
                                         ?>
                                         <span class="badge <?= $badgeClass ?>"><?= $status ?></span>
                                     </td>
+                                    <td><?= date('F j, Y h:i A', strtotime($log['created_at'])) ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>

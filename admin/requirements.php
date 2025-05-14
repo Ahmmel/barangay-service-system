@@ -7,6 +7,12 @@ include_once '../views/templates/admin_header.php';
 include_once '../models/Requirement.php';
 
 $_SESSION["page_title"] = "Service Requirements";
+
+if ($_SESSION['user_role'] !== 'admin') {
+    header('Location: dashboard.php');
+    exit();
+}
+
 $requirement = new Requirement($db);
 $requirements = $requirement->getAllRequirements();
 ?>

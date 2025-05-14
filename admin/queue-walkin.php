@@ -6,6 +6,12 @@ include_once '../views/templates/admin_header.php';
 include_once '../models/Queue.php';
 
 $_SESSION["page_title"] = "Queue";
+
+if ($_SESSION['user_role'] !== 'staff') {
+    header('Location: dashboard.php');
+    exit();
+}
+
 $queueModel = new Queue($db);
 $walkinQueue = $queueModel->getTodayPendingQueues(1); // 1 = Walkin
 $currentlyServing = null;
@@ -16,7 +22,9 @@ if (!empty($walkinQueue)) {
     $currentTransactionCode = htmlspecialchars($currentlyServing['transaction_code']);
     $currentQueueId = (int)$currentlyServing['id'];
     $currentTransactionId = (int)($currentlyServing['id'] ?? 0);
+    $scheduledDateTime = $currentlyServing['scheduled_date'] ?? '';
 } else {
+    $scheduledDateTime = '';
     $currentTransactionCode = '—';
     $currentQueueId = 0;
     $currentTransactionId = 0;
@@ -28,7 +36,7 @@ if (!empty($walkinQueue)) {
     :root {
         --primary-black: #251f21;
         --primary-white: #f1f0ef;
-        --primary-brown: #bc9a8e;
+        --primary-brown: rgb(224, 118, 80);
     }
 
     .queue-item {
@@ -77,7 +85,7 @@ if (!empty($walkinQueue)) {
     }
 
     .current-number {
-        font-size: 45px;
+        font-size: 65px;
         /* Increased size for large number */
         font-weight: bold;
         color: var(--primary-brown);
@@ -92,7 +100,6 @@ if (!empty($walkinQueue)) {
     .btn {
         width: 100%;
         padding: 15px;
-        font-size: 18px;
         border-radius: 10px;
         transition: all 0.3s ease;
         margin-bottom: 15px;
@@ -138,7 +145,7 @@ if (!empty($walkinQueue)) {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
         gap: 20px;
-        max-height: 400px;
+        max-height: 610px;
         overflow-y: auto;
         padding: 10px;
     }
@@ -208,14 +215,14 @@ if (!empty($walkinQueue)) {
                                     <div
                                         class="queue-item mb-2"
                                         id="walkin-<?= htmlspecialchars($item['id']) ?>"
-                                        data-transaction-id="<?= htmlspecialchars($item['transaction_id'] ?? '') ?>">
+                                        data-transaction-id="<?= htmlspecialchars($item['id'] ?? '') ?>">
                                         <span class="transaction-code"><?= htmlspecialchars($item['transaction_code']) ?></span>
                                         <span class="name"><?= htmlspecialchars($item['display_name']) ?></span>
                                         <i class="fas fa-check-circle" style="color: var(--primary-brown)"></i>
                                     </div>
                                 <?php endforeach; ?>
                             <?php else: ?>
-                                <div class="text-muted">No scheduled queues today.</div>
+                                <div class="text-muted">No walk-in queues today.</div>
                             <?php endif; ?>
                         </div>
                         <!-- Current Serving for Walk-in Queue -->
@@ -225,7 +232,12 @@ if (!empty($walkinQueue)) {
                                 <div class="current-number" id="walkinCurrentNumber">
                                     <?= $currentTransactionCode ?>
                                 </div>
-                                <div class="timer" id="walkinTimer">00:00:00</div>
+                                <div class="walkin-time text-muted text-center mt-2">
+                                    <small>Elapsed Time: <span id="walkinElapsedTimer">00:00</span></small>
+                                    <div id="walkinNoShowNote" class="text-danger mt-1" style="font-weight: bold; display: none;">
+                                        You may now mark this as No Show.
+                                    </div>
+                                </div>
                                 <button
                                     class="btn btn-primary"
                                     id="walkinStartTransaction"
@@ -237,6 +249,7 @@ if (!empty($walkinQueue)) {
                                 <button
                                     class="btn btn-secondary no-show-btn"
                                     id="walkinNoShow"
+                                    disabled
                                     data-type="walkin"
                                     data-transaction-code="<?= $currentTransactionCode ?>"
                                     <?= $isSchedQueueDisabled ?>>
@@ -263,5 +276,56 @@ if (!empty($walkinQueue)) {
 include_once '../views/templates/admin_footer.php';
 ?>
 <script>
-    showClock = true;
+    var isWalkinPage = true;
+    var isTransactionPage = false;
+    document.addEventListener("DOMContentLoaded", function() {
+        const scheduledStart = new Date("<?= $scheduledDateTime ?>");
+
+        function initElapsedTimer({
+            timerId,
+            noShowBtnId,
+            noteId
+        }) {
+            const timerEl = document.getElementById(timerId);
+            const noShowBtn = document.getElementById(noShowBtnId);
+            const noteEl = document.getElementById(noteId);
+
+            if (!timerEl || !noShowBtn || !noteEl) return;
+
+            if (isNaN(scheduledStart.getTime())) {
+                timerEl.textContent = "----";
+                return;
+            }
+
+            function updateElapsedTime() {
+                const now = new Date();
+                const diffMs = now - scheduledStart;
+
+                if (diffMs < 0) {
+                    timerEl.textContent = "00:00";
+                    return;
+                }
+
+                const diffMins = Math.floor(diffMs / 60000);
+                const minutes = String(diffMins).padStart(2, "0");
+                const seconds = String(Math.floor((diffMs % 60000) / 1000)).padStart(2, "0");
+
+                timerEl.textContent = `${minutes}:${seconds}`;
+
+                if (diffMins >= 10) {
+                    noShowBtn.removeAttribute("disabled");
+                    noteEl.style.display = "block";
+                }
+            }
+
+            updateElapsedTime();
+            setInterval(updateElapsedTime, 1000);
+        }
+
+        initElapsedTimer({
+            timerId: "walkinElapsedTimer",
+            noShowBtnId: "walkinNoShow",
+            noteId: "walkinNoShowNote",
+        });
+    });
 </script>

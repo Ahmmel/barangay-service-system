@@ -4,19 +4,23 @@ require_once '../models/Transaction.php';
 require_once '../models/Queue.php';
 require_once '../models/SMSNotification.php';
 require_once '../models/Notification.php';
+require_once '../models/ActivityLog.php';
+
 class TransactionController
 {
     private $transaction;
     private $queue;
     private $sms;
-    private $notification;
+    private $notifier;
+    private $logger;
 
     public function __construct($db)
     {
         $this->transaction = new Transaction($db);
         $this->queue = new Queue($db);
         $this->sms = new SMSNotification($db);
-        $this->notification = new Notification($db);
+        $this->notifier = new Notification($db);
+        $this->logger = new ActivityLog($db);
     }
 
     // Get Transaction Prequisites
@@ -77,15 +81,38 @@ class TransactionController
                 throw new Exception($result['message'] ?? 'Failed to create transaction with services');
             }
 
+            $bookingType = "Walk-in";
             // Send SMS confirmation if phone number is available
             $userPhone = $this->transaction->getUserMobileNumber($userId);
             if ($userPhone) {
                 if ($transactionType == 1) {
                     $this->sms->sendWalkInTransactionNotification($userPhone, $result['transaction_code'], $scheduledTime);
                 } else {
+                    $bookingType = "Scheduled";
                     $this->sms->sendTransactionConfirmation($userPhone, $result['transaction_code'], $scheduledTime);
                 }
             }
+
+            // 3) Notify the user
+            $this->notifier->createNotification(
+                $userId,
+                2,
+                'booking_confirmed',
+                $result['transaction_code'],
+                "{$bookingType} Booking Confirmed",
+                "Your booking (ID: {$result['transaction_code']}) for services [" . implode(', ', $serviceIds) . "] on {$scheduledTime} has been confirmed."
+            );
+
+            // 4) Log success
+            $this->logger->logActivity(
+                $userId,
+                2,
+                'transaction',
+                "Created {$bookingType} transaction #{$result['transaction_code']} for user ID {$userId}",
+                'Success',
+                $result['transaction_code'],
+                ['services' => $serviceIds, 'scheduled_at' => $scheduledTime]
+            );
 
             // Return the result
             echo json_encode($result);
@@ -110,6 +137,7 @@ class TransactionController
             $status = $_POST['status'];
             $reason = $_POST['reason'] ?? null;
             $staffId = $_POST['staff_id'] ?? null;
+            $actorRole = (int) $_POST['session_role_id'] ?? null;
 
             if (empty($transactionServiceId) || empty($status) || empty($staffId)) {
                 echo json_encode(['success' => false, 'message' => 'Transaction ID, status, and staff ID are required']);
@@ -123,6 +151,30 @@ class TransactionController
 
             // Update the transaction status
             $result = $this->transaction->updateTransactionStatus($transactionServiceId, $status, $staffId, $reason);
+            if ($result) {
+                $transactionCode = $this->transaction->getTransactionCodeById($transactionServiceId);
+                $this->queue->setToAssignedTransaction($transactionCode, $staffId);
+                // Notify the user
+                $this->notifier->createNotification(
+                    $staffId,
+                    $actorRole,
+                    'transaction_status_updated',
+                    $transactionServiceId,
+                    'Transaction Status Updated',
+                    "Transaction (ID: {$transactionServiceId}) status has been updated to {$status}."
+                );
+
+                // Log the activity
+                $this->logger->logActivity(
+                    $staffId,
+                    $actorRole,
+                    'transaction',
+                    "Updated transaction (ID: {$transactionServiceId}) status to {$status}",
+                    'Success',
+                    $transactionServiceId,
+                    ['status' => $status, 'reason' => $reason]
+                );
+            }
             echo json_encode(['success' => $result]);
             return;
         }
@@ -199,6 +251,29 @@ class TransactionController
 
             // Rate the transaction
             $result = $this->transaction->rateTransaction($transactionCode, $rating);
+
+            if ($result) {
+                // Notify the user
+                $this->notifier->createNotification(
+                    $transactionCode,
+                    2,
+                    'transaction_rated',
+                    $transactionCode,
+                    'Transaction Rated',
+                    "Your transaction (ID: {$transactionCode}) has been rated with {$rating} stars."
+                );
+
+                // Log the activity
+                $this->logger->logActivity(
+                    $transactionCode,
+                    2,
+                    'transaction',
+                    "Rated transaction (ID: {$transactionCode}) with {$rating} stars",
+                    'Success',
+                    $transactionCode,
+                    ['rating' => $rating]
+                );
+            }
             echo json_encode(['success' => $result]);
         }
     }

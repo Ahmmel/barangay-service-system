@@ -756,4 +756,12 @@ class Transaction
 
         return (int) $stmt->fetchColumn();
     }
+
+    public function getTransactionCodeById($transactionId)
+    {
+        $query = "SELECT transaction_code FROM transactions WHERE id = :transactionId";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([':transactionId' => $transactionId]);
+        return $stmt->fetchColumn();
+    }
 }

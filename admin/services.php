@@ -6,6 +6,11 @@ session_start();
 include_once '../views/templates/admin_header.php';
 include_once '../models/Service.php';
 
+if ($_SESSION['user_role'] !== 'admin') {
+    header('Location: dashboard.php');
+    exit();
+}
+
 $_SESSION["page_title"] = "Services";
 $service = new Service($db);
 $services = $service->getServices();

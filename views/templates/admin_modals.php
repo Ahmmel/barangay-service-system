@@ -37,6 +37,9 @@
       <div class="modal-body">
         <!-- Add User Form -->
         <form id="addUserForm" method="POST" enctype="multipart/form-data">
+          <input type="hidden" value="<?php echo $_SESSION['user_id']; ?>" name="session_user_id">
+          <input type="hidden" value="<?php echo $_SESSION['username'] ?>" name="session_username">
+          <input type="hidden" value="<?php echo $_SESSION['role_id'] ?>" name="session_role_id">
           <div class="form-row">
             <!-- First Name, Middle Name, Last Name -->
             <div class="form-group col-md-4">
@@ -182,6 +185,9 @@
         <!-- Edit User Form -->
         <form id="editUserForm" method="POST" enctype="multipart/form-data">
           <input type="hidden" id="editUserId" name="userId">
+          <input type="hidden" value="<?php echo $_SESSION['user_id']; ?>" name="session_user_id">
+          <input type="hidden" value="<?php echo $_SESSION['username'] ?>" name="session_username">
+          <input type="hidden" value="<?php echo $_SESSION['role_id'] ?>" name="session_role_id">
 
           <!-- First Name, Middle Name, Last Name -->
           <div class="form-row">
@@ -329,6 +335,9 @@
         </div>
         <p class="text-center">Are you sure you want to permanently delete this user? This action cannot be undone, and all data related to this user will be lost. Please confirm your decision.</p>
         <input type="hidden" id="deleteUserId">
+        <input type="hidden" value="<?php echo $_SESSION['user_id']; ?>" id="delUserSessionUserId">
+        <input type="hidden" value="<?php echo $_SESSION['username'] ?>" id="delUserSessionUsername">
+        <input type="hidden" value="<?php echo $_SESSION['role_id'] ?>" id="delUserSessionRoleId">
       </div>
       <div class="modal-footer d-flex justify-content-between">
         <!-- Left-aligned button (Cancel) -->
@@ -355,6 +364,9 @@
       <div class="modal-body">
         <!-- Add Service Form -->
         <form id="addServiceForm">
+          <input type="hidden" value="<?php echo $_SESSION['user_id']; ?>" name="session_user_id">
+          <input type="hidden" value="<?php echo $_SESSION['username'] ?>" name="session_username">
+          <input type="hidden" value="<?php echo $_SESSION['role_id'] ?>" name="session_role_id">
           <div class="form-row">
             <!-- Service Name -->
             <div class="form-group col-md-12">
@@ -394,6 +406,9 @@
       <div class="modal-body">
         <!-- Edit Service Form -->
         <form id="editServiceForm" method="POST">
+          <input type="hidden" value="<?php echo $_SESSION['user_id']; ?>" name="session_user_id">
+          <input type="hidden" value="<?php echo $_SESSION['username'] ?>" name="session_username">
+          <input type="hidden" value="<?php echo $_SESSION['role_id'] ?>" name="session_role_id">
           <input type="hidden" id="editServiceId" name="serviceId" /> <!-- Hidden field for service ID -->
 
           <div class="form-row">
@@ -442,6 +457,9 @@
           Are you sure you want to permanently delete this service? This action cannot be undone, and all related data will be lost. Please confirm your decision.
         </p>
         <input type="hidden" id="deleteServiceId">
+        <input type="hidden" value="<?php echo $_SESSION['user_id']; ?>" id="delServiceSessionUserId>
+        <input type=" hidden" value="<?php echo $_SESSION['username'] ?>" id="delServiceSessionUsername">
+        <input type="hidden" value="<?php echo $_SESSION['role_id'] ?>" id="delServiceSessionRoleId">
       </div>
       <div class="modal-footer d-flex justify-content-between">
         <!-- Left-aligned button (Cancel) -->
@@ -564,6 +582,9 @@
           Are you sure you want to permanently delete this requirement? This action cannot be undone, and all data related to this requirement will be lost. Please confirm your decision.
         </p>
         <input type="hidden" id="deleteRequirementId">
+        <input type="hidden" value="<?php echo $_SESSION['user_id']; ?>" id="delRequirementSessionUserId">
+        <input type="hidden" value="<?php echo $_SESSION['username'] ?>" id="delRequirementSessionUsername">
+        <input type="hidden" value="<?php echo $_SESSION['role_id'] ?>" id="delRequirementSessionRoleId">
       </div>
       <div class="modal-footer d-flex justify-content-between">
         <!-- Left-aligned button (Cancel) -->
@@ -595,6 +616,10 @@
         <!-- Add Transaction Form -->
         <form id="addTransactionForm" method="POST" onsubmit="return validateServices()">
           <input type="hidden" name="userId" id="transactionUserId" />
+          <input type="hidden" value="<?php echo $_SESSION['user_id']; ?>" name="session_user_id">
+          <input type="hidden" value="<?php echo $_SESSION['username'] ?>" name="session_username">
+          <input type="hidden" value="<?php echo $_SESSION['role_id'] ?>" name="session_role_id">
+
           <!-- User ID Input -->
           <div class="form-row">
             <div class="form-group col-md-12">
@@ -721,6 +746,7 @@
         <!-- Services Table -->
         <h6 class="font-weight-bold mb-3"><i class="fas fa-cogs"></i> Services Requested</h6>
         <table class="table table-hover table-bordered">
+          <input type="hidden" value="<?php echo $_SESSION['role_id'] ?>" id="transactionUpdateSessionRoleId">
           <thead class="thead-dark">
             <tr>
               <th><i class="fas fa-box"></i> Service</th>

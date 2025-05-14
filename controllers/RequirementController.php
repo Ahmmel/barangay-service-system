@@ -1,40 +1,85 @@
 <?php
-require_once '../config/database.php';
-require_once '../models/Requirement.php';
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../models/Requirement.php';
+require_once __DIR__ . '/../models/Notification.php';
+require_once __DIR__ . '/../models/ActivityLog.php';
 
 class RequirementController
 {
     private $requirementModel;
+    private $notifier;
+    private $logger;
 
     public function __construct($db)
     {
         $this->requirementModel = new Requirement($db);
+        $this->notifier         = new Notification($db);
+        $this->logger           = new ActivityLog($db);
     }
 
     // Handle Add Requirement Request
     public function addRequirement()
     {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // Collect all necessary parameters from the POST request
-            $serviceId = isset($_POST['serviceId']) ? $_POST['serviceId'] : null;
-            $description = isset($_POST['description']) ? htmlspecialchars($_POST['description']) : null;
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') return;
 
-            // Check if required parameters are provided
-            if ($serviceId && $description) {
-                // Call the createRequirement method from the model to add the new requirement
-                $result = $this->requirementModel->createRequirement(
-                    $serviceId,
-                    $description
+        // Actor info (always passed)
+        $actorId   = (int) ($_POST['session_user_id']   ?? 0);
+        $actorName =         ($_POST['session_username'] ?? 'An administrator');
+        $actorRole = (int) ($_POST['session_role_id']   ?? 0);
+
+        $serviceId   = $_POST['serviceId'] ?? null;
+        $description = !empty($_POST['description'])
+            ? htmlspecialchars($_POST['description'])
+            : null;
+
+        if ($serviceId && $description) {
+            $ok = $this->requirementModel->createRequirement($serviceId, $description);
+            if ($ok) {
+                $newId = (int) $this->requirementModel->getLastInsertId();
+                // Notify staff/admins
+                $this->notifier->createNotification(
+                    null,
+                    2,
+                    'requirement_created',
+                    $newId,
+                    'New Requirement Added',
+                    "Requirement '{$description}' (ID: {$newId}) for Service ID {$serviceId} was created by {$actorName}."
                 );
-
-                // Return the result as JSON
-                echo json_encode(["success" => $result]);
+                // Log success
+                $this->logger->logActivity(
+                    $actorId,
+                    $actorRole,
+                    'requirement',
+                    "Created requirement ID {$newId} for service ID {$serviceId}",
+                    'Success',
+                    $newId
+                );
             } else {
-                echo json_encode([
-                    'success' => false,
-                    'message' => 'Service ID and Description are required.'
-                ]);
+                // Log failure
+                $this->logger->logActivity(
+                    $actorId,
+                    $actorRole,
+                    'requirement',
+                    "Failed to create requirement for service ID {$serviceId}",
+                    'Failed'
+                );
             }
+            echo json_encode(['success' => $ok]);
+        } else {
+            // Log invalid input
+            $this->logger->logActivity(
+                $actorId,
+                $actorRole,
+                'requirement',
+                'Attempted add requirement with missing data',
+                'Failed',
+                null,
+                ['serviceId' => $serviceId, 'description' => $description]
+            );
+            echo json_encode([
+                'success' => false,
+                'message' => 'Service ID and Description are required.'
+            ]);
         }
     }
 
@@ -49,18 +94,14 @@ class RequirementController
     public function getRequirementById()
     {
         if (isset($_GET['requirement_id']) && is_numeric($_GET['requirement_id'])) {
-            $requirementId = $_GET['requirement_id'];
-
-            // Get the services
-            $services = $this->requirementModel->getServices();
-            // Get the requirement details by ID
-            $requirementDetails = $this->requirementModel->getRequirementById($requirementId);
-
-            if (!empty($requirementDetails) && !empty($services)) {
+            $id                = (int) $_GET['requirement_id'];
+            $services          = $this->requirementModel->getServices();
+            $requirementDetail = $this->requirementModel->getRequirementById($id);
+            if ($requirementDetail && $services) {
                 echo json_encode([
-                    'success' => true,
-                    'requirement' => $requirementDetails,
-                    'services' => $services
+                    'success'     => true,
+                    'requirement' => $requirementDetail,
+                    'services'    => $services
                 ]);
             } else {
                 echo json_encode([
@@ -79,37 +120,125 @@ class RequirementController
     // Handle Edit Requirement Request
     public function editRequirement()
     {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $id = $_POST['requirementId'];
-            $description = isset($_POST['description']) ? htmlspecialchars($_POST['description']) : null;
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') return;
 
-            if ($description) {
-                // Call the updateRequirement method from the model
-                $result = $this->requirementModel->updateRequirement(
+        $actorId   = (int) ($_POST['session_user_id']   ?? 0);
+        $actorName =         ($_POST['session_username'] ?? 'An administrator');
+        $actorRole = (int) ($_POST['session_role_id']   ?? 0);
+
+        $id          = (int) $_POST['requirementId'];
+        $description = !empty($_POST['description'])
+            ? htmlspecialchars($_POST['description'])
+            : null;
+        if ($description) {
+            $old = $this->requirementModel->getRequirementById($id);
+            $ok  = $this->requirementModel->updateRequirement($id, $description);
+            if ($ok) {
+                $this->notifier->createNotification(
+                    null,
+                    2,
+                    'requirement_updated',
                     $id,
-                    $description
+                    'Requirement Updated',
+                    "Requirement (ID: {$id}) was updated by {$actorName}."
                 );
-
-                echo json_encode(["success" => $result]);
+                $changes = [];
+                if ($old && $old['description'] !== $description) {
+                    $changes['Description'] = ['old' => $old['description'], 'new' => $description];
+                }
+                $this->logger->logActivity(
+                    $actorId,
+                    $actorRole,
+                    'requirement',
+                    "Updated requirement ID {$id}",
+                    'Success',
+                    $id,
+                    ['changes' => $changes]
+                );
             } else {
-                echo json_encode([
-                    'success' => false,
-                    'message' => 'Service ID and Description are required.'
-                ]);
+                $this->logger->logActivity(
+                    $actorId,
+                    $actorRole,
+                    'requirement',
+                    "Failed to update requirement ID {$id}",
+                    'Failed',
+                    $id
+                );
             }
+            echo json_encode(['success' => $ok]);
+        } else {
+            $this->logger->logActivity(
+                $actorId,
+                $actorRole,
+                'requirement',
+                'Attempted update requirement with missing description',
+                'Failed',
+                $id
+            );
+            echo json_encode([
+                'success' => false,
+                'message' => 'Description is required.'
+            ]);
         }
     }
 
     // Handle Delete Requirement Request
     public function deleteRequirement()
     {
-        if (isset($_POST['requirement_id'])) {
-            $result = $this->requirementModel->deleteRequirement($_POST['requirement_id']);
-            echo json_encode(["success" => $result]);
-        } else {
+        $actorId   = (int) ($_POST['session_user_id']   ?? 0);
+        $actorName =         ($_POST['session_username'] ?? 'An administrator');
+        $actorRole = (int) ($_POST['session_role_id']   ?? 0);
+
+        if (empty($_POST['requirement_id'])) {
+            $this->logger->logActivity(
+                $actorId,
+                $actorRole,
+                'requirement',
+                'Attempted delete with invalid requirement ID',
+                'Failed',
+                null,
+                ['payload' => $_POST]
+            );
             echo json_encode([
                 'success' => false,
                 'message' => 'Invalid requirement ID.'
+            ]);
+            return;
+        }
+        $id   = (int) $_POST['requirement_id'];
+        $old  = $this->requirementModel->getRequirementById($id);
+        $desc = $old['description'] ?? "ID {$id}";
+        $ok   = $this->requirementModel->deleteRequirement($id);
+        if ($ok) {
+            $this->notifier->createNotification(
+                null,
+                2,
+                'requirement_deleted',
+                $id,
+                'Requirement Deleted',
+                "Requirement '{$desc}' (ID: {$id}) was deleted by {$actorName}."
+            );
+            $this->logger->logActivity(
+                $actorId,
+                $actorRole,
+                'requirement',
+                "Deleted requirement '{$desc}' (ID: {$id})",
+                'Success',
+                $id
+            );
+            echo json_encode(['success' => true]);
+        } else {
+            $this->logger->logActivity(
+                $actorId,
+                $actorRole,
+                'requirement',
+                "Failed to delete requirement ID {$id}",
+                'Failed',
+                $id
+            );
+            echo json_encode([
+                'success' => false,
+                'message' => 'Unable to delete requirement.'
             ]);
         }
     }
@@ -118,12 +247,9 @@ class RequirementController
     public function getRequirementsByServiceId()
     {
         if (isset($_GET['service_id']) && is_numeric($_GET['service_id'])) {
-            $serviceId = $_GET['service_id'];
-
-            // Get the requirements associated with the service ID
-            $requirementsForService = $this->requirementModel->getRequirementsByServiceId($serviceId);
-
-            echo json_encode($requirementsForService);
+            $serviceId = (int) $_GET['service_id'];
+            $reqs = $this->requirementModel->getRequirementsByServiceId($serviceId);
+            echo json_encode($reqs);
         } else {
             echo json_encode([
                 'success' => false,

@@ -354,4 +354,9 @@ class User
         $stmt->execute();
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+
+    public function getLastInsertId()
+    {
+        return $this->conn->lastInsertId();
+    }
 }

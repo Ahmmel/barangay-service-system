@@ -67,7 +67,7 @@ class QueueController
             $staffId = $_POST['staff_id'] ?? null;
 
             if ($transactionCode && $staffId) {
-                $this->queue->markNoShow($transactionCode, $staffId);
+                $this->queue->setToAssignedTransaction($transactionCode, $staffId);
                 $this->transaction->setCancelStatusByTransactionCode($transactionCode, $staffId);
                 echo json_encode(['success' => true]);
                 return;

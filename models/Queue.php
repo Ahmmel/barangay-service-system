@@ -18,7 +18,7 @@ class Queue
 
         // SQL query to insert the record into the table
         $query = "INSERT INTO " . $this->table_name . " (transaction_code, user_id, type, status, scheduled_date, created_at) 
-              VALUES (:transaction_code, :user_id, :type, 'open', :scheduled_date, NOW())";
+              VALUES (:transaction_code, :user_id, :type, 'Pending', :scheduled_date, NOW())";
 
         // Prepare the statement
         $stmt = $this->conn->prepare($query);
@@ -89,7 +89,7 @@ class Queue
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function markNoShow($transactionCode, $staffId)
+    public function setToAssignedTransaction($transactionCode, $staffId)
     {
         $query = "UPDATE " . $this->table_name . " SET status = 'Assigned', updated_by_staff_id = :staffId WHERE transaction_code = :transactionCode";
         $stmt = $this->conn->prepare($query);

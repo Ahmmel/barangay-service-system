@@ -6,6 +6,11 @@ include_once '../models/SystemSettings.php';
 
 $_SESSION["page_title"] = "System Settings";
 
+if ($_SESSION['user_role'] !== 'admin') {
+    header('Location: dashboard.php');
+    exit();
+}
+
 $systemSettings = SystemSettings::getInstance($db);
 
 $settings = [

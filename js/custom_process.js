@@ -173,7 +173,10 @@ function openEditUserModal(userId) {
         } else {
           // Admins can see all role options
           result.roles.forEach(function (role) {
-            roleOptions += `<option value="${role.id}">${role.role_name}</option>`;
+            roleOptions += `<option value="${role.id}"
+            ${role.id == result.user.role_id ? "selected" : ""}>${
+              role.role_name
+            }</option>`;
           });
         }
         $("#editRole").html(roleOptions); // Inject the options into the Role dropdown
@@ -574,6 +577,11 @@ const getServiceActions = (service) => {
               }, 'Cancelled')">
                 <i class="fas fa-times-circle"></i> Set to Cancelled
               </button>
+              <button class="btn btn-warning btn-sm btn-rounded ml-2" onclick="processStatusChanged(${
+                service.id
+              }, 'ToBeFollowed')">
+                <i class="fas fa-check-circle"></i> Set To Be Followed
+              </button>
               <button class="btn btn-success btn-sm btn-rounded ml-2" onclick="processStatusChanged(${
                 service.id
               }, 'Closed')">
@@ -607,7 +615,7 @@ function updateStatus(serviceId) {
 // Function to save the reason and update the service status to closed
 function processStatusChanged(serviceId, status) {
   const reason = $(`#reason_${serviceId}`).val();
-
+  const roleId = $("#transactionUpdateSessionRoleId").val(); // Get the role ID from the hidden field
   if (!reason) {
     showErrorException("Please provide a reason before saving.");
     return;
@@ -621,6 +629,7 @@ function processStatusChanged(serviceId, status) {
       status: status,
       staff_id: currentSessionId,
       reason: reason,
+      session_role_id: roleId,
     },
     success: function (response) {
       const result = JSON.parse(response);
@@ -634,6 +643,8 @@ function processStatusChanged(serviceId, status) {
           badgeHtml = `<span class="badge badge-success"><i class="fas fa-check-circle"></i> Closed</span>`;
         } else if (status === "Cancelled") {
           badgeHtml = `<span class="badge badge-danger"><i class="fas fa-times-circle"></i> Cancelled</span>`;
+        } else if (status === "ToBeFollowed") {
+          badgeHtml = `<span class="badge badge-warning"><i class="fas fa-clock"></i> To Be Followed</span>`;
         }
 
         $statusCell.html(badgeHtml);
@@ -659,7 +670,9 @@ function processStatusChanged(serviceId, status) {
           .every((row) => {
             const statusText = $(row).find("td").eq(1).text().trim();
             return (
-              statusText.includes("Closed") || statusText.includes("Cancelled")
+              statusText.includes("Closed") ||
+              statusText.includes("Cancelled") ||
+              statusText.includes("To Be Followed")
             );
           });
 
@@ -691,8 +704,23 @@ function processStatusChanged(serviceId, status) {
               }, 100);
             });
           } else {
-            $("#updateTransactionModal").modal("hide");
-            moveNextScheduledToNowServing();
+            Swal.fire({
+              title: "All services completed",
+              text: "Proceeding to the next transaction.",
+              icon: "success",
+              confirmButtonText: "OK",
+              confirmButtonColor: "#28a745",
+              allowOutsideClick: false,
+              allowEscapeKey: false,
+            }).then(() => {
+              $("#updateTransaction").modal("hide");
+
+              if (!isWalkinPage) {
+                moveNextScheduledToNowServing();
+              } else {
+                moveNextWalkinToNowServing();
+              }
+            });
           }
         }
       } else {
@@ -768,7 +796,11 @@ function handleNoShow(transactionCode) {
               "The transaction was cancelled.",
               "success"
             ).then(() => {
-              moveNextScheduledToNowServing(); // Move next in line
+              if (!isWalkinPage) {
+                moveNextScheduledToNowServing();
+              } else {
+                moveNextWalkinToNowServing();
+              }
             });
           } else {
             Swal.fire(
@@ -786,54 +818,61 @@ function handleNoShow(transactionCode) {
   });
 }
 
-function moveNextScheduledToNowServing() {
-  const $nextItem = $("#scheduledQueueList .queue-item").first();
+function moveNextToNowServing(config) {
+  const {
+    queueSelector,
+    currentNumberSelector,
+    startButtonSelector,
+    noShowButtonSelector,
+    label,
+  } = config;
 
-  if ($nextItem.length === 0) {
-    $("#scheduledCurrentNumber").text("—");
-    $("#scheduledStartTransaction, #scheduledNoShow").prop("disabled", true);
-    Swal.fire("Done", "No more scheduled transactions.", "info");
+  const $nextItem = $(`${queueSelector} .queue-item`).first();
+
+  if (!$nextItem.length) {
+    $(currentNumberSelector).text("—");
+    $(startButtonSelector).prop("disabled", true);
+    $(noShowButtonSelector).prop("disabled", true);
+    Swal.fire("Done", `No more ${label} transactions.`, "info");
     return;
   }
 
   const transactionCode = $nextItem.find(".transaction-code").text().trim();
-  const queueId = $nextItem.attr("id").replace("scheduled-", "");
   const transactionId = $nextItem.data("transaction-id");
 
   $nextItem.fadeOut(300, function () {
     $(this).remove();
 
-    // Update Now Serving panel
-    $("#scheduledCurrentNumber").text(transactionCode);
-    $("#scheduledStartTransaction").data("queue-id", queueId);
-    $("#scheduledNoShow")
-      .data("queue-id", queueId)
-      .data("transaction-id", transactionId);
+    // Update UI
+    $(currentNumberSelector).text(transactionCode);
+
+    $(startButtonSelector)
+      .prop("disabled", false)
+      .attr("onclick", `openUpdateTransactionModal(${transactionId})`);
+
+    $(noShowButtonSelector)
+      .prop("disabled", false)
+      .data("transaction-code", transactionCode);
+  });
+}
+
+function moveNextScheduledToNowServing() {
+  moveNextToNowServing({
+    queueSelector: "#scheduledQueueList",
+    currentNumberSelector: "#scheduledCurrentNumber",
+    startButtonSelector: "#scheduledStartTransaction",
+    noShowButtonSelector: "#scheduledNoShow",
+    label: "scheduled",
   });
 }
 
 function moveNextWalkinToNowServing() {
-  const $nextItem = $("#walkinQueueList .queue-item").first();
-  if ($nextItem.length === 0) {
-    $("#walkinCurrentNumber").text("—");
-    $("#walkinStartTransaction, #walkinNoShow").prop("disabled", true);
-    Swal.fire("Done", "No more walk-in transactions.", "info");
-    return;
-  }
-
-  const transactionCode = $nextItem.find(".transaction-code").text().trim();
-  const queueId = $nextItem.attr("id").replace("walkin-", "");
-  const transactionId = $nextItem.data("transaction-id");
-
-  $nextItem.fadeOut(300, function () {
-    $(this).remove();
-
-    // Update Now Serving panel
-    $("#walkinCurrentNumber").text(transactionCode);
-    $("#walkinStartTransaction").data("queue-id", queueId);
-    $("#walkinNoShow")
-      .data("queue-id", queueId)
-      .data("transaction-id", transactionId);
+  moveNextToNowServing({
+    queueSelector: "#walkinQueueList",
+    currentNumberSelector: "#walkinCurrentNumber",
+    startButtonSelector: "#walkinStartTransaction",
+    noShowButtonSelector: "#walkinNoShow",
+    label: "walk-in",
   });
 }
 
@@ -1015,6 +1054,9 @@ $(document).ready(function () {
   // Handle the Delete Action
   $("#confirmDeleteUserBtn").on("click", function () {
     var userId = $("#deleteUserId").val(); // Get the user ID from the hidden field
+    const sessionUserId = $("#delUserSessionUserId").val(); // Get the user ID from the hidden field
+    const sessionUsername = $("#delUserSessionUsername").val(); // Get the user ID from the hidden field
+    const sessionRoleId = $("#delUserSessionRoleId").val(); // Get the user ID from the hidden field
 
     if (userId) {
       $.ajax({
@@ -1022,6 +1064,9 @@ $(document).ready(function () {
         type: "POST",
         data: {
           user_id: userId,
+          session_user_id: sessionUserId,
+          session_username: sessionUsername,
+          session_role_id: sessionRoleId,
         },
         success: function (response) {
           if (
@@ -1145,6 +1190,9 @@ $(document).ready(function () {
 
   $("#confirmDeleteServiceBtn").on("click", function () {
     var serviceId = $("#deleteServiceId").val(); // Get the user ID from the hidden field
+    const sessionUserId = $("#delServiceSessionUserId").val(); // Get the user ID from the hidden field
+    const sessionUsername = $("#delServiceSessionUsername").val(); // Get the user ID from the hidden field
+    const sessionRoleId = $("#delServiceSessionRoleId").val(); // Get the user ID from the hidden field
 
     if (serviceId) {
       $.ajax({
@@ -1152,6 +1200,9 @@ $(document).ready(function () {
         type: "POST",
         data: {
           service_id: serviceId,
+          session_user_id: sessionUserId,
+          session_username: sessionUsername,
+          session_role_id: sessionRoleId,
         },
         success: function (response) {
           if (
@@ -1274,6 +1325,9 @@ $(document).ready(function () {
 
   $("#confirmDeleteRequirementBtn").on("click", function () {
     var requirementId = $("#deleteRequirementId").val(); // Get the user ID from the hidden field
+    const sessionUserId = $("#delRequirementSessionUserId").val(); // Get the user ID from the hidden field
+    const sessionUsername = $("#delRequirementSessionUsername").val(); // Get the user ID from the hidden field
+    const sessionRoleId = $("#delRequirementSessionRoleId").val(); // Get the user ID from the hidden field
 
     if (requirementId) {
       $.ajax({
@@ -1281,6 +1335,9 @@ $(document).ready(function () {
         type: "POST",
         data: {
           requirement_id: requirementId,
+          session_user_id: sessionUserId,
+          session_username: sessionUsername,
+          session_role_id: sessionRoleId,
         },
         success: function (response) {
           if (
@@ -1470,9 +1527,14 @@ $(document).ready(function () {
               <td>${data.transaction.date_closed || ""}</td>
               <td>${data.transaction.status}</td>
               <td>
-                <button class="btn btn-info btn-sm" onclick="openUpdateTransactionModal(${
-                  data.transaction.transaction_id
-                })">Update Status</button>
+                <button 
+                  ${data.transaction.date_closed ? "hidden" : ""} 
+                  class="btn btn-info btn-sm" 
+                  onclick="openUpdateTransactionModal(${
+                    data.transaction.transaction_id
+                  })">
+                  Update Status
+                </button>
               </td>
             </tr>
           `;

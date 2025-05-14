@@ -98,5 +98,9 @@ class Service
 
         return false;
     }
+
+    public function getLastInsertId()
+    {
+        return $this->conn->lastInsertId();
+    }
 }
-?>

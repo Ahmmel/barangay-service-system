@@ -86,19 +86,20 @@ class TransactionController
             $userPhone = $this->transaction->getUserMobileNumber($userId);
             if ($userPhone) {
                 if ($transactionType == 1) {
-                    $this->sms->sendWalkInTransactionNotification($userPhone, $result['transaction_code'], $scheduledTime);
+                    $this->sms->sendWalkInTransactionNotification($userPhone, $result['transaction_code'], $scheduledTime, $serviceIds);
                 } else {
                     $bookingType = "Scheduled";
-                    $this->sms->sendTransactionConfirmation($userPhone, $result['transaction_code'], $scheduledTime);
+                    $this->sms->sendTransactionConfirmation($userPhone, $result['transaction_code'], $scheduledTime, $serviceIds);
                 }
             }
 
+            $transactionID = $this->transaction->getTransactionIdByCode($result['transaction_code']);
             // 3) Notify the user
             $this->notifier->createNotification(
                 $userId,
                 2,
                 'booking_confirmed',
-                $result['transaction_code'],
+                $transactionID,
                 "{$bookingType} Booking Confirmed",
                 "Your booking (ID: {$result['transaction_code']}) for services [" . implode(', ', $serviceIds) . "] on {$scheduledTime} has been confirmed."
             );
@@ -110,7 +111,7 @@ class TransactionController
                 'transaction',
                 "Created {$bookingType} transaction #{$result['transaction_code']} for user ID {$userId}",
                 'Success',
-                $result['transaction_code'],
+                $transactionID,
                 ['services' => $serviceIds, 'scheduled_at' => $scheduledTime]
             );
 
@@ -277,6 +278,28 @@ class TransactionController
             echo json_encode(['success' => $result]);
         }
     }
+
+    //checkBookingAvailability
+    public function checkBookingAvailability()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $scheduledTime = $_POST['scheduled_time'];
+
+            if (empty($scheduledTime)) {
+                echo json_encode(['success' => false, 'message' => 'Service ID and scheduled time are required']);
+                return;
+            }
+
+            // Check booking availability
+            $isAvailable = $this->transaction->isServiceSlotTaken($scheduledTime);
+
+            if ($isAvailable) {
+                echo json_encode(['success' => true, 'message' => 'Booking is available']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'The selected time slot is already booked. Please choose another time.']);
+            }
+        }
+    }
 }
 
 $database = new Database();
@@ -309,6 +332,9 @@ switch ($action) {
         break;
     case 'rateTransaction':
         $controller->rateTransaction();
+        break;
+    case 'checkBookingAvailability':
+        $controller->checkBookingAvailability();
         break;
     default:
         echo json_encode(['error' => 'Invalid request']);

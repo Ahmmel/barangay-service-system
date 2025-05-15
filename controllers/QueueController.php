@@ -2,16 +2,19 @@
 require_once '../config/Database.php';
 require_once '../models/Queue.php';
 require_once '../models/Transaction.php';
+require_once '../models/SMSNotification.php';
 
 class QueueController
 {
     private $queue;
     private $transaction;
+    private $sms;
 
     public function __construct($db)
     {
         $this->queue = new Queue($db);
         $this->transaction = new Transaction($db);
+        $this->sms = new SMSNotification($db);
     }
 
     // Add a new queue entry
@@ -33,13 +36,6 @@ class QueueController
                 echo json_encode(['success' => false, 'message' => 'Missing required fields.']);
             }
         }
-    }
-
-    // Get the next pending queue
-    public function getCurrentQueue()
-    {
-        $data = $this->queue->getCurrentQueue();
-        echo json_encode($data ?: []);
     }
 
     // Assign a queue to staff
@@ -69,6 +65,7 @@ class QueueController
             if ($transactionCode && $staffId) {
                 $this->queue->setToAssignedTransaction($transactionCode, $staffId);
                 $this->transaction->setCancelStatusByTransactionCode($transactionCode, $staffId);
+                $this->notifyNextQueue();
                 echo json_encode(['success' => true]);
                 return;
             } else {
@@ -76,6 +73,16 @@ class QueueController
                 echo json_encode(['success' => false, 'message' => 'Missing required parameters.']);
                 return;
             }
+        }
+    }
+
+    private function notifyNextQueue()
+    {
+        // Get the next queue details
+        $nextQueueTransactionCode = $this->queue->getTodayNextQueueCode();
+        if ($nextQueueTransactionCode) {
+            // Send notification to the next queue
+            $this->sms->sendOptionalEarlyArrivalNotification($nextQueueTransactionCode);
         }
     }
 }
@@ -94,9 +101,6 @@ $action = $_GET['action'] ?? '';
 switch ($action) {
     case 'add':
         $controller->addQueue();
-        break;
-    case 'current':
-        $controller->getCurrentQueue();
         break;
     case 'assign':
         $controller->assignQueue();

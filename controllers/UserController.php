@@ -193,20 +193,27 @@ class UserController
 
     public function getUserPrequisite()
     {
-        $database = new Database();
-        $db = $database->getConnection();
-
-        // Instantiate the User model
-        $user = new User($db);
-
-        $userRoles = $user->getUserRoles();
-        $userGenders = $user->getUserGenders();
-        $maritalStatuses = $user->getMaritalStatus();
+        $userRoles = $this->user->getUserRoles();
+        $userGenders = $this->user->getUserGenders();
+        $maritalStatuses = $this->user->getMaritalStatus();
 
         // Return the success response with user details
         echo json_encode([
             'success' => true,
             'roles' => $userRoles,
+            'genders' => $userGenders,
+            'marital_statuses' => $maritalStatuses
+        ]);
+    }
+
+    public function getRegistrationPrequiset()
+    {
+        $userGenders = $this->user->getUserGenders();
+        $maritalStatuses = $this->user->getMaritalStatus();
+
+        // Return the success response with user details
+        echo json_encode([
+            'success' => true,
             'genders' => $userGenders,
             'marital_statuses' => $maritalStatuses
         ]);
@@ -646,7 +653,7 @@ class UserController
                 return;
             }
             $userId     = $user['id'];
-            $userMobile = $mobile;
+            $mobileNumber = $mobile;
         } else {
             // Sanitize & validate email
             $email = filter_var($contact, FILTER_SANITIZE_EMAIL);
@@ -803,6 +810,40 @@ class UserController
             ]);
         }
     }
+
+    public function validatePreRegistration()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $email = htmlspecialchars(trim($_POST['email']));
+            $userName = htmlspecialchars(trim($_POST['username']));
+            $mobileNumber = htmlspecialchars(trim($_POST['mobile_number']));
+
+            $errors = [];
+
+            if ($this->user->checkEmailExists($email)) {
+                $errors[] = "Email is already in use.";
+            }
+
+            if ($this->user->checkUsernameExists($userName)) {
+                $errors[] = "Username is already taken.";
+            }
+
+            if (!empty($mobileNumber) && $this->user->checkMobileExists($mobileNumber)) {
+                $errors[] = "Mobile number is already registered.";
+            }
+
+            if (!empty($errors)) {
+                echo json_encode([
+                    "success" => false,
+                    "messages" => $errors
+                ]);
+                return;
+            }
+
+            // All checks passed
+            echo json_encode(["success" => true]);
+        }
+    }
 }
 
 
@@ -827,6 +868,12 @@ switch ($action) {
         break;
     case 'getUsers':
         $controller->getUsers();
+        break;
+    case 'getRegistrationPrequiset':
+        $controller->getRegistrationPrequiset();
+        break;
+    case 'validatePreRegistration':
+        $controller->validatePreRegistration();
         break;
     case 'getUserById':
         $controller->getUserById();

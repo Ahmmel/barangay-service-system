@@ -137,11 +137,11 @@ class Transaction
         }
 
         // 6.  Prevent double-booking the same service slot if it’s still pending/in-progress
-        if ($this->isServiceSlotTaken($scheduledTime)) {
+        if (!$this->isServiceSlotTaken($scheduledTime)) {
             return [
                 "success"    => false,
-                "message"    => "The service is already booked and still pending at that time.",
-                "error_type" => "service"
+                "message"    => "The selected time slot is already booked. Please choose another time.",
+                "error_type" => "schedule"
             ];
         }
 
@@ -231,7 +231,7 @@ class Transaction
      * Returns true if there’s any Pending/Assigned queue entry
      * at $scheduledTime for $serviceId.
      */
-    protected function isServiceSlotTaken(string $scheduledTime): bool
+    public function isServiceSlotTaken(string $scheduledTime): bool
     {
         $sql = "
         SELECT COUNT(*) AS cnt
@@ -239,15 +239,14 @@ class Transaction
         JOIN transactions t
           ON t.transaction_code = q.transaction_code
         WHERE q.scheduled_date  = :scheduled_date
-          AND t.status IN ('Pending', 'In Progress')
+          AND t.status NOT IN ('Closed', 'Cancelled', 'Pending')
     ";
 
         $stmt = $this->conn->prepare($sql);
         $stmt->bindParam(':scheduled_date', $scheduledTime, PDO::PARAM_STR);
         $stmt->execute();
-
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        return ((int)$row['cnt']) > 0;
+        return ((int)$row['cnt']) <= 0;
     }
 
     // Get all transactions with user details and services
@@ -762,6 +761,14 @@ class Transaction
         $query = "SELECT transaction_code FROM transactions WHERE id = :transactionId";
         $stmt = $this->conn->prepare($query);
         $stmt->execute([':transactionId' => $transactionId]);
+        return $stmt->fetchColumn();
+    }
+
+    public function getTransactionIdByCode($transactionCode)
+    {
+        $query = "SELECT id FROM transactions WHERE transaction_code = :transactionCode";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([':transactionCode' => $transactionCode]);
         return $stmt->fetchColumn();
     }
 }

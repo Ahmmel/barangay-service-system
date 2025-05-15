@@ -209,27 +209,129 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // nextStep: validates and advances, or bounces back to the same step
+  // nextStep: Validates current step before progressing to the next one
   window.nextStep = (currentStep) => {
-    // step 1 → must pick at least one service
-    if (currentStep === 1 && !$serviceSelect.val().length) {
-      return confirmDialog({
-        title: "Select Services",
-        text: "Please select at least one service.",
-      }).then(() => showStep(1));
+    const showAlert = async (title, text, step, icon = "info") => {
+      await Swal.fire({ title, text, icon, confirmButtonText: "OK" });
+      showStep(step);
+    };
+
+    const selectedServices = $serviceSelect.val();
+    const selectedDateTime = $dateTimeInput.val().trim();
+
+    // Step 1 → Require at least one selected service
+    if (currentStep === 1) {
+      if (!selectedServices || !selectedServices.length) {
+        return showAlert(
+          "Select Services",
+          "Please select at least one service.",
+          1
+        );
+      }
+      return showStep(currentStep + 1);
     }
 
-    // step 2 → must pick a date/time
-    if (currentStep === 2 && !$dateTimeInput.val().trim()) {
-      return confirmDialog({
-        title: "Select Date and Time",
-        text: "Please pick a date/time.",
-      }).then(() => showStep(2));
+    // Step 2 → Require valid date/time and check availability
+    if (currentStep === 2) {
+      if (!selectedDateTime) {
+        return showAlert("Select Date and Time", "Please pick a date/time.", 2);
+      }
+
+      // Check if the date/time is available before moving to Step 3
+      $.ajax({
+        url: "../controllers/TransactionController.php?action=checkBookingAvailability",
+        method: "POST",
+        data: { scheduled_time: selectedDateTime },
+        dataType: "json",
+      })
+        .then((data) => {
+          if (!data.success) {
+            return showAlert(
+              "Date Unavailable",
+              data.message ||
+                "This date and time is already booked. Please select another slot.",
+              2,
+              "warning"
+            );
+          }
+
+          // ✅ Proceed to Step 3
+          showStep(currentStep + 1);
+
+          // 🔄 After step is shown, populate confirmation & requirements
+          populateConfirmation(selectedServices);
+        })
+        .catch((error) => {
+          console.error("Validation error:", error);
+          Swal.fire({
+            icon: "error",
+            title: "Connection Error",
+            text: "Could not validate the selected date/time. Please try again.",
+            confirmButtonText: "OK",
+          });
+        });
+
+      return; // wait for async
     }
 
-    // otherwise move forward
+    // Default: Go to next step
     showStep(currentStep + 1);
   };
+
+  function populateConfirmation(selectedServices) {
+    // Render selected services
+    $("#confirmation-list").html(
+      selectedServices
+        .map((id) => {
+          const text = $serviceSelect.find(`option[value="${id}"]`).text();
+          return `<li class="list-group-item"><strong>${text}</strong></li>`;
+        })
+        .join("")
+    );
+
+    // Fetch and display service requirements
+    $.ajax({
+      url: "../controllers/RequirementController.php?action=getRequirementsByServiceIds",
+      method: "POST",
+      contentType: "application/json",
+      data: JSON.stringify({ service_ids: selectedServices }),
+      dataType: "json",
+    })
+      .then((resp) => {
+        if (resp.success) {
+          const grouped = {};
+          resp.data.forEach((req) => {
+            if (!grouped[req.service_id]) grouped[req.service_id] = [];
+            grouped[req.service_id].push(req.description);
+          });
+
+          const requirementHtml = selectedServices
+            .map((id) => {
+              const name = $serviceSelect.find(`option[value="${id}"]`).text();
+              const reqs = grouped[id] || [];
+              const items = reqs.map((r) => `<li>${r}</li>`).join("");
+              return `
+                <li class="list-group-item">
+                  <strong>${name} Requirements:</strong>
+                  <ul>${items || "<li>No specific requirements.</li>"}</ul>
+                </li>`;
+            })
+            .join("");
+
+          $("#requirement-list").html(requirementHtml);
+        } else {
+          $("#requirement-list").html(
+            "<li class='list-group-item text-danger'>Unable to load requirements.</li>"
+          );
+        }
+      })
+      .catch((error) => {
+        console.error("Error loading requirements:", error);
+        $("#requirement-list").html(
+          "<li class='list-group-item text-danger'>Failed to load requirements.</li>"
+        );
+      });
+  }
 
   // Booking Confirmation
   window.confirmBooking = () => {

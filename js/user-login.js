@@ -7,7 +7,6 @@ $(function () {
   const $registerBtn = $(".register-btn");
   const $loginBtn = $(".login-btn");
   const $forgotBtn = $(".forgot-btn");
-  const methodToggle = document.getElementById("methodToggle");
 
   // Set current year
   $year.text(new Date().getFullYear());
@@ -148,20 +147,14 @@ $(function () {
   // FORGOT PASSWORD AJAX
   $forgotForm.on("submit", function (e) {
     e.preventDefault();
-
-    const isMobile = methodToggle.checked; // true → SMS, false → Email
-    const emailVal = $("#forgotEmail").val().trim();
     const mobileVal = $("#forgotMobile").val().trim();
-    const contact = isMobile ? mobileVal : emailVal;
 
     // Validate
-    if (!contact) {
+    if (!mobileVal) {
       Swal.fire({
         icon: "warning",
-        title: isMobile ? "Mobile Number Required" : "Email Required",
-        text: isMobile
-          ? "Please enter your registered mobile number."
-          : "Please enter your registered email address or username.",
+        title: "Mobile Number Required",
+        text: "Please enter your registered mobile number.",
         confirmButtonColor: "#ff6f3c",
       });
       return;
@@ -169,8 +162,8 @@ $(function () {
 
     // Payload with explicit flag
     const payload = {
-      isMobile: isMobile,
-      contact: contact,
+      isMobile: true,
+      contact: mobileVal,
     };
 
     $.ajax({
@@ -184,9 +177,7 @@ $(function () {
           Swal.fire({
             icon: "success",
             title: "Password Reset Requested",
-            text: isMobile
-              ? "A reset code has been sent via SMS. Please check your mobile."
-              : "An email has been sent with instructions to reset your password.",
+            text: "A reset code has been sent via SMS. Please check your mobile.",
             confirmButtonColor: "#ff6f3c",
           }).then(() => $(".login-btn").click());
         } else {
@@ -227,19 +218,6 @@ $(function () {
       confirmButtonColor: "#ff6f3c",
     });
   };
-});
-
-const container = document.querySelector(".forgot-password");
-const toggle = container.querySelector("#methodToggle");
-const inputs = container.querySelectorAll(".contact-input");
-
-toggle.addEventListener("change", () => {
-  const useSms = toggle.checked;
-  inputs.forEach((el) => {
-    const isMobile = el.getAttribute("data-method") === "mobile";
-    el.classList.toggle("active", isMobile === useSms);
-    el.querySelector("input").required = isMobile === useSms;
-  });
 });
 
 // Toggle Dark Mode

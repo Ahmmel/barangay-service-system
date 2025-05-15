@@ -67,7 +67,7 @@
         }
 
         .forgot-password .contact-input {
-            display: none;
+            display: block;
             align-items: center;
             gap: 0.75rem;
             margin-bottom: 1.25rem;
@@ -319,60 +319,6 @@
                 </div>
             </form>
         </div>
-
-        <!-- Registration Form -->
-        <!-- <div class="form-box register">
-            <form id="registerForm">
-                <h1>Registration</h1>
-
-                <div class="input-box">
-                    <input type="text" id="firstName" placeholder="First Name" required>
-                    <i class='bx bx-id-card'></i>
-                </div>
-
-                <div class="input-box">
-                    <input type="text" id="lastName" placeholder="Last Name" required>
-                    <i class='bx bx-id-card'></i>
-                </div>
-
-                <div class="input-box">
-                    <input type="text" id="registerUsername" placeholder="Username" required>
-                    <i class='bx bx-user'></i>
-                </div>
-
-                <div class="input-box">
-                    <input type="email" id="registerEmail" placeholder="Email" required>
-                    <i class='bx bx-envelope'></i>
-                </div>
-
-                <div class="input-box">
-                    <select id="registerGender" required>
-                        <option value="" disabled selected>Gender</option>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                        <option value="other">Other</option>
-                    </select>
-                    <i class='bx bx-gender-ambiguous'></i>
-                </div>
-
-                <div class="input-box">
-                    <input type="date" id="registerBirthdate" placeholder="Birthdate" required>
-                    <i class='bx bx-calendar'></i>
-                </div>
-
-                <div class="input-box">
-                    <input type="password" id="registerPassword" placeholder="Password" required>
-                    <i class='bx bx-lock-open'></i>
-                </div>
-
-                <div class="input-box">
-                    <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
-                    <i class='bx bx-lock-alt'></i>
-                </div>
-
-                <button type="submit" class="btn">Register</button>
-            </form>
-        </div> -->
         <div class="form-box register wizard">
             <div class="container">
                 <ul class="wizard-progress">
@@ -392,21 +338,18 @@
                             <i class='bx bx-id-card'></i>
                         </div>
                         <div class="input-group">
-                            <select id="registerGender" name="gender" required>
-                                <option value="" disabled selected>Gender</option>
-                                <option value="1">Male</option>
-                                <option value="2">Female</option>
-                                <option value="3">Other</option>
-                            </select>
-                            <i class='bx bx-gender-ambiguous'></i>
-                        </div>
-                        <div class="input-group">
                             <input type="date" name="birthdate" id="registerBirthdate" required>
                             <i class='bx bx-calendar'></i>
                         </div>
                         <div class="input-group">
-                            <input type="tel" name="mobile_number" id="registerMobile" placeholder="Mobile Number" pattern="[0-9]{10,15}" required>
-                            <i class='bx bx-phone'></i>
+                            <select id="registerGender" name="gender" required>
+                                <option value="" disabled selected>Gender</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <select id="registerMaritalStatus" name="marital_status" required>
+                                <option value="" disabled selected>Marital Status</option>
+                            </select>
                         </div>
                         <div class="buttons">
                             <button type="button" class="btn btn-next">Next</button>
@@ -421,6 +364,10 @@
                         <div class="input-group">
                             <input type="email" name="email" id="registerEmail" placeholder="Email" required>
                             <i class='bx bx-envelope'></i>
+                        </div>
+                        <div class="input-group">
+                            <input type="tel" name="mobile_number" id="registerMobile" placeholder="Mobile Number" pattern="[0-9]{10,15}" required>
+                            <i class='bx bx-phone'></i>
                         </div>
                         <div class="buttons">
                             <button type="button" class="btn btn-prev">Previous</button>
@@ -450,27 +397,11 @@
         <div class="form-box forgot-password">
             <form id="forgotForm">
                 <h1>Forgot Password</h1>
-                <p>Select one of the following methods to get your password reset information..</p>
+                <p>Enter your mobile number to proceed with account recovery via SMS.</p>
 
                 <!-- Modern Toggle Switch -->
                 <div class="toggle-switch">
-                    <span>Reset via Email</span>
-                    <input type="checkbox" id="methodToggle" />
-                    <label for="methodToggle" class="switch-label">
-                        <span class="slider"></span>
-                    </label>
                     <span>Reset via SMS</span>
-                </div>
-
-                <!-- Email / Username Input -->
-                <div class="input-box contact-input active" data-method="email">
-                    <input
-                        type="text"
-                        id="forgotEmail"
-                        name="forgotEmail"
-                        placeholder="Email"
-                        required />
-                    <i class="bx bx-envelope"></i>
                 </div>
 
                 <!-- Mobile Number Input -->
@@ -506,6 +437,39 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="../js/user-login.js"></script>
     <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            fetch('../controllers/UserController.php?action=getRegistrationPrequiset')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Populate Gender Dropdown
+                        const genderSelect = document.getElementById("registerGender");
+                        genderSelect.innerHTML = `<option value="" disabled selected>Gender</option>`;
+                        data.genders.forEach(g => {
+                            const option = document.createElement("option");
+                            option.value = g.id;
+                            option.textContent = g.gender_name;
+                            genderSelect.appendChild(option);
+                        });
+
+                        // Populate Marital Status Dropdown
+                        const maritalSelect = document.getElementById("registerMaritalStatus");
+                        maritalSelect.innerHTML = `<option value="" disabled selected>Marital Status</option>`;
+                        data.marital_statuses.forEach(m => {
+                            const option = document.createElement("option");
+                            option.value = m.id;
+                            option.textContent = m.status_name;
+                            maritalSelect.appendChild(option);
+                        });
+                    } else {
+                        console.error("Failed to load dropdown options.");
+                    }
+                })
+                .catch(error => {
+                    console.error("AJAX error:", error);
+                });
+        });
+
         const form = document.getElementById('registerForm');
         const steps = document.querySelectorAll('.wizard-step');
         const progressItems = document.querySelectorAll('.wizard-progress li');
@@ -523,16 +487,51 @@
             if (e.target.matches('.btn-next')) {
                 const inputs = steps[currentStep].querySelectorAll('input, select');
                 let valid = true;
+
+                // Validate required inputs
                 inputs.forEach(inp => {
                     if (!inp.checkValidity()) valid = false;
                 });
+
                 if (!valid) {
                     steps[currentStep].querySelector('input').reportValidity();
                     return;
                 }
+
+                // Only run AJAX validation if it's Step 2 (index 1)
+                if (currentStep === 1) {
+                    const formData = new FormData(form);
+
+                    fetch('../controllers/UserController.php?action=validatePreRegistration', {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (!data.success) {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Validation Error',
+                                    html: '<ul style="text-align:left;">' + data.messages.map(msg => `<li>${msg}</li>`).join('') + '</ul>',
+                                });
+                            } else {
+                                // Go to next step if validated
+                                currentStep = Math.min(currentStep + 1, steps.length - 1);
+                                showStep(currentStep);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Validation failed:', error);
+                        });
+
+                    return; // wait for AJAX before proceeding
+                }
+
+                // Normal step transition for other steps
                 currentStep = Math.min(currentStep + 1, steps.length - 1);
                 showStep(currentStep);
             }
+
             if (e.target.matches('.btn-prev')) {
                 currentStep = Math.max(currentStep - 1, 0);
                 showStep(currentStep);

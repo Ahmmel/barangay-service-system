@@ -249,6 +249,39 @@ class User
         return $stmt->rowCount() > 0;
     }
 
+    // checkEmailExists
+    public function checkEmailExists($email)
+    {
+        $query = "SELECT * FROM " . $this->table_name . " WHERE email = :email AND role_id IN (2, 3)";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':email', $email);
+        $stmt->execute();
+
+        return $stmt->rowCount() > 0;
+    }
+
+    // checkUsernameExists
+    public function checkUsernameExists($username)
+    {
+        $query = "SELECT * FROM " . $this->table_name . " WHERE username = :username AND role_id IN (2, 3)";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':username', $username);
+        $stmt->execute();
+
+        return $stmt->rowCount() > 0;
+    }
+
+    //checkMobileExists
+    public function checkMobileExists($mobile)
+    {
+        $query = "SELECT * FROM " . $this->table_name . " WHERE mobile_number = :mobile AND role_id IN (2, 3)";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':mobile', $mobile);
+        $stmt->execute();
+
+        return $stmt->rowCount() > 0;
+    }
+
     // Get user details by ID
     public function getUserDetailsById($userId)
     {

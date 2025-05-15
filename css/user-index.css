@@ -11061,7 +11061,7 @@ section.profile-section .profile-section-content {
     font-family: "Segoe UI", sans-serif;
 }
 
-.progressbar {
+.wizard-container .progressbar {
     counter-reset: step;
     display: flex;
     justify-content: space-between;
@@ -11069,7 +11069,7 @@ section.profile-section .profile-section-content {
     position: relative;
 }
 
-.progressbar::before {
+.wizard-container .progressbar::before {
     content: "";
     position: absolute;
     top: 50%;
@@ -11080,7 +11080,7 @@ section.profile-section .profile-section-content {
     z-index: 0;
 }
 
-.progress-step {
+.wizard-container .progress-step {
     width: 40px;
     height: 40px;
     border-radius: 50%;
@@ -11095,33 +11095,38 @@ section.profile-section .profile-section-content {
     transition: all 0.3s ease;
 }
 
-.progress-step.active,
-.progress-step.completed {
-    background-color: #0d6efd;
+.wizard-container .progress-step.active,
+.wizard-container .progress-step.completed {
+    background-color: #b95b39;
     color: #fff;
 }
 
-.step {
+.wizard-container .step {
     display: none;
     animation: fadeIn 0.3s ease-in-out;
 }
 
-.step.active {
+.wizard-container .step.active {
     display: block;
 }
 
-.form-check {
+.wizard-container .form-check {
     margin-bottom: 0.75rem;
 }
 
-.btn-group {
+.wizard-container .btn-group {
     display: flex;
     justify-content: space-between;
     margin-top: 1.5rem;
 }
 
-.btn {
+.wizard-container .btn {
     min-width: 120px;
+}
+
+#requirement-list ul {
+  margin-left: 1.25rem;
+  margin-top: 0.25rem;
 }
 
 ul#confirmation-list {
@@ -11300,35 +11305,6 @@ ul#confirmation-list {
 #services button.btn-primary {
     color: white;
     font-weight: 500;
-}
-
-.progressbar {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 20px;
-}
-
-.progress-step {
-    width: 30px;
-    height: 30px;
-    background: lightgray;
-    border-radius: 50%;
-    text-align: center;
-    line-height: 30px;
-    font-weight: bold;
-}
-
-.progress-step.active {
-    background: #0d6efd;
-    color: white;
-}
-
-.step {
-    display: none;
-}
-
-.step.active {
-    display: block;
 }
 
 #confirmation-list {

@@ -17,22 +17,22 @@ class SystemSettingController
             $updatableKeys = [
                 'booking_time_start',
                 'booking_time_end',
-                'minimum_booking_lead_time_minutes',
-                'max_transactions_per_day',
                 'no_show_timeout_minutes',
                 'sms_sender_name',
+                'max_transactions_per_day',
                 'enable_sms_notifications',
+                'minimum_booking_lead_time_minutes',
                 'staff_update_cutoff_time',
                 'staff_update_start_time',
+                'enable_saturday',
                 'saturday_start_time',
-                'saturday_end_time',
-                'enable_saturday'
+                'saturday_end_time'
             ];
 
             foreach ($updatableKeys as $key) {
                 $value = $_POST[$key] ?? null;
 
-                if ($key === 'enable_sms_notifications') {
+                if ($key === 'enable_sms_notifications' || $key === 'enable_saturday') {
                     $value = $value ? '1' : '0';
                 }
 

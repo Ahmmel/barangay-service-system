@@ -264,6 +264,25 @@ class RequirementController
         $services = $this->requirementModel->getServices();
         echo json_encode($services);
     }
+
+    public function getRequirementsByServiceIds()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $input = json_decode(file_get_contents('php://input'), true);
+            $serviceIds = $input['service_ids'] ?? [];
+
+            if (empty($serviceIds)) {
+                echo json_encode(['success' => false, 'message' => 'No service IDs provided.']);
+                return;
+            }
+
+            $requirements = $this->requirementModel->getRequirementsForServices($serviceIds);
+            echo json_encode([
+                'success' => true,
+                'data' => $requirements
+            ]);
+        }
+    }
 }
 
 $database = new Database();
@@ -297,6 +316,9 @@ switch ($action) {
     case 'getServices':
         $controller->getServices();
         break;
+    case 'getRequirementsByServiceIds':
+        $controller->getRequirementsByServiceIds();
+        break;
     default:
-        echo json_encode(["error" => "Invalid request"]);
+        echo json_encode(["error" => "Invalid request2"]);
 }

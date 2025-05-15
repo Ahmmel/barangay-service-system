@@ -319,16 +319,26 @@ $settings = [
                     <!-- Step 3 -->
                     <div class="step" id="step-3">
                         <h5 class="mb-3 fw-semibold">Confirm Your Request</h5>
+
+                        <!-- Selected Services -->
                         <div class="mb-3">
                             <p class="mb-1 fw-bold">Selected Services:</p>
-                            <ul
-                                id="confirmation-list"
-                                class="list-group list-group-flush"></ul>
+                            <ul id="confirmation-list" class="list-group list-group-flush"></ul>
                         </div>
+
+                        <!-- Service Requirements -->
+                        <div class="mb-4">
+                            <p class="mb-1 fw-bold">Requirements:</p>
+                            <ul id="requirement-list" class="list-group list-group-flush"></ul>
+                        </div>
+
+                        <!-- Selected Date/Time -->
                         <div class="mb-4">
                             <p class="mb-1 fw-bold">Date & Time:</p>
                             <span id="confirm-datetime" class="text-primary"></span>
                         </div>
+
+                        <!-- Buttons -->
                         <div class="d-flex justify-content-between">
                             <button
                                 type="button"
@@ -344,6 +354,7 @@ $settings = [
                             </button>
                         </div>
                     </div>
+
                 </div>
             </div>
         </section>
@@ -398,7 +409,7 @@ $settings = [
 
                                     <!-- Date -->
                                     <td>
-                                        <?= htmlspecialchars(date('F d, Y', strtotime($transaction['created_at']))) ?>
+                                        <?= htmlspecialchars(date('F d, Y h:i A', strtotime($transaction['created_at']))) ?>
                                     </td>
 
                                     <!-- Review Button -->
@@ -727,26 +738,24 @@ $settings = [
         const satStart = "<?php echo $settings['saturday_start_time']; ?>";
         const satEnd = "<?php echo $settings['saturday_end_time']; ?>";
         const [defHour, defMin] = bookingStart.split(':').map(Number);
-
         flatpickr("#datetime-picker", {
             enableTime: true,
             dateFormat: "Y-m-d H:i",
             time_24hr: false,
-            minuteIncrement: 30,
+            minuteIncrement: leadMinutes,
             position: "above",
+            minDate: "today",
 
-            // set initial time to bookingStart
+
+            // set default time to bookingStart
             defaultHour: defHour,
             defaultMinute: defMin,
-
-            // enforce your lead‐time
-            minDate: new Date(Date.now() + leadMinutes * 60000),
 
             disable: [
                 function(date) {
                     const wd = date.getDay();
-                    if (wd === 0) return true; // Sunday always
-                    if (wd === 6 && !enableSaturday) return true; // Saturday if disabled
+                    if (wd === 0) return true; // Disable Sunday
+                    if (wd === 6 && !enableSaturday) return true; // Disable Saturday if not allowed
                     return false;
                 }
             ],
@@ -755,6 +764,28 @@ $settings = [
                 if (!selectedDates.length) return;
 
                 const d = selectedDates[0];
+                const now = new Date();
+
+                // Check if it's for today and respect lead time
+                if (
+                    d.toDateString() === now.toDateString() &&
+                    d.getTime() < now.getTime() + leadMinutes * 60000
+                ) {
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'warning',
+                        title: '⏰ Too Soon',
+                        text: `Please book at least ${leadMinutes} minutes in advance.`,
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true
+                    });
+                    instance.clear();
+                    return;
+                }
+
+                // Validate selected time against allowed start/end
                 const wd = d.getDay();
                 const hh = d.getHours();
                 const mm = d.getMinutes();
@@ -775,11 +806,11 @@ $settings = [
                         position: 'top-end',
                         icon: 'warning',
                         title: '⏰ Invalid Time',
-                        text: `Please pick between ${
-            (wd === 6 ? satStart : bookingStart)
-          } and ${
-            (wd === 6 ? satEnd   : bookingEnd)
-          }.`,
+                        text: `Please pick a time between ${
+                    wd === 6 ? satStart : bookingStart
+                } and ${
+                    wd === 6 ? satEnd : bookingEnd
+                }.`,
                         showConfirmButton: false,
                         timer: 3000,
                         timerProgressBar: true

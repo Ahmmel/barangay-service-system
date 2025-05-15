@@ -39,12 +39,19 @@ class Queue
         }
     }
 
-    public function getCurrentQueue()
+    public function getTodayNextQueueCode()
     {
-        $query = "SELECT * FROM " . $this->table_name . " WHERE status = 'Pending' ORDER BY created_at ASC LIMIT 1";
+        $query = "SELECT transaction_code FROM " . $this->table_name . " 
+                  WHERE status = 'Pending' 
+                  AND DATE(created_at) = CURDATE()
+                  ORDER BY created_at ASC 
+                  LIMIT 1";
+
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $result ? $result['transaction_code'] : null;
     }
 
     public function nextQueue($queue_id, $staff_id)

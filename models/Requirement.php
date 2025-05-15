@@ -130,4 +130,13 @@ class Requirement
     {
         return $this->conn->lastInsertId();
     }
+
+    public function getRequirementsForServices(array $serviceIds)
+    {
+        $placeholders = implode(',', array_fill(0, count($serviceIds), '?'));
+        $query = "SELECT service_id, description FROM requirements WHERE service_id IN ($placeholders)";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute($serviceIds);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

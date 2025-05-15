@@ -27,18 +27,19 @@ if (!$userDetails) {
     header("Location: logout.php");
     exit();
 }
+
 $userDetails = $userDetails[0]; // Assuming you want the first result
 $email = $userDetails['email'];
 $username = $userDetails['username'];
 $isVerified = $userDetails['is_verified'];
-$fullName = $isVerified ? $userDetails['full_name'] : "-";
-$gender = $isVerified ? $userDetails['gender'] : "-";
-$birthdate = $isVerified ? date('F j, Y', strtotime($userDetails['birthdate'])) : "-";
+$fullName = $userDetails['full_name'];
+$gender = $userDetails['gender'];
+$birthdate = date('F j, Y', strtotime($userDetails['birthdate']));
 $address = $isVerified ? $userDetails['address'] : "-";
-$maritalStatus = $isVerified ? $userDetails['marital_status_name']  : "-";
-$mobileNumber = $isVerified ? $userDetails['mobile_number'] : "-";
+$maritalStatus = $userDetails['marital_status_name'];
+$mobileNumber = $userDetails['mobile_number'];
 $profilePicture = $isVerified ? $userDetails['profile_picture'] : "../images/default.svg";
-$headerName = $isVerified ? $userDetails['full_name'] : $username;
+$headerName = $userDetails['full_name'];
 
 $words = explode(' ', $headerName);
 // Get the first name
@@ -268,7 +269,13 @@ $settings = [
                                 multiple="multiple"
                                 style="width: 100%">
                                 <?php foreach ($services as $service): ?>
-                                    <?php if ($isVerified && $service['id'] == 1) continue; ?>
+                                    <?php
+                                    // If not verified and the service ID is not 1, skip
+                                    if (!$isVerified && $service['id'] != 1) continue;
+
+                                    // If verified and service ID is 1, optionally skip (if needed)
+                                    // if ($isVerified && $service['id'] == 1) continue; // Uncomment if necessary
+                                    ?>
                                     <option value="<?= htmlspecialchars($service['id']) ?>"
                                         <?= !$isVerified && $service['id'] == 1 ? 'selected' : '' ?>>
                                         <?= htmlspecialchars($service['service_name']) ?>

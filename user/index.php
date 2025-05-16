@@ -732,9 +732,99 @@ $settings = [
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
     <script>
+        const $ratingStars = $("#rating .rate");
+        const $modalReview = $("#reviewModal");
         var userId = "<?php echo $userId; ?>";
-        let selectedRating = 0;
-        let currentTransactionCode = "";
+        var selectedRating = 0;
+        var currentTransactionCode = "";
+        // Rating Modal
+
+        window.openReviewModal = (code) => {
+            currentTransactionCode = code;
+            $("#transactionIdText").text(`Transaction: ${code}`);
+            selectedRating = 0;
+            $ratingStars.removeClass("selected");
+            $modalReview.modal("show");
+        };
+        $ratingStars.on("click", function() {
+            $ratingStars.removeClass("selected");
+            $(this).addClass("selected");
+            selectedRating = $(this).data("value");
+        });
+
+
+        function submitRating() {
+            if (selectedRating === 0) {
+                Swal.fire({
+                    toast: true,
+                    icon: "warning",
+                    title: "Please select a rating before submitting!",
+                    position: "top-end",
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                });
+                return;
+            }
+
+            // Hide the modal immediately
+            $("#reviewModal").modal("hide");
+
+            // Send the rating to server via AJAX first
+            $.ajax({
+                url: "../controllers/TransactionController.php?action=rateTransaction", // Adjust to your real endpoint
+                method: "POST",
+                data: {
+                    transaction_code: currentTransactionCode,
+                    rating: selectedRating,
+                },
+                dataType: "json",
+                success: function(response) {
+                    if (response.success) {
+                        // Build the stars based on rating
+                        let stars = "";
+                        for (let i = 1; i <= 5; i++) {
+                            stars += i <= selectedRating ? "⭐" : "☆";
+                        }
+
+                        // Find the correct table row and update the Review column
+                        $(`td:contains(${currentTransactionCode})`).each(function() {
+                            if ($(this).text() === currentTransactionCode) {
+                                const reviewCell = $(this).siblings().last();
+                                reviewCell.html(
+                                    `<span style="font-size: 1.2rem;">${stars}</span>`
+                                );
+                            }
+                        });
+
+                        // Show success toast
+                        Swal.fire({
+                            toast: true,
+                            icon: "success",
+                            title: "Thank you for your review!",
+                            position: "top-end",
+                            showConfirmButton: false,
+                            timer: 2500,
+                            timerProgressBar: true,
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Failed!",
+                            text: response.message || "Unable to submit rating. Please try again.",
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error(xhr.responseText);
+                    Swal.fire({
+                        icon: "error",
+                        title: "Server Error!",
+                        text: "Something went wrong. Please try again later.",
+                    });
+                },
+            });
+        }
     </script>
     <script src="../js/user-index.js"></script>
     <script>

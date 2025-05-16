@@ -256,22 +256,22 @@ class TransactionController
             if ($result) {
                 // Notify the user
                 $this->notifier->createNotification(
-                    $transactionCode,
+                    null,
                     2,
                     'transaction_rated',
-                    $transactionCode,
+                    null,
                     'Transaction Rated',
                     "Your transaction (ID: {$transactionCode}) has been rated with {$rating} stars."
                 );
 
                 // Log the activity
                 $this->logger->logActivity(
-                    $transactionCode,
+                    null,
                     2,
                     'transaction',
                     "Rated transaction (ID: {$transactionCode}) with {$rating} stars",
                     'Success',
-                    $transactionCode,
+                    null,
                     ['rating' => $rating]
                 );
             }

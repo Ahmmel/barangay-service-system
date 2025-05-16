@@ -8,8 +8,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const changeForm = document.getElementById("changePasswordForm");
   const $serviceSelect = $("#brgy-services");
   const $dateTimeInput = $("#datetime-picker");
-  const $ratingStars = $("#rating .rate");
-  const $modalReview = $("#reviewModal");
   const $txnTableBody = $("#transactions table tbody");
 
   // Utility to show Toasts and Dialogs
@@ -116,64 +114,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       })
       .fail(() => toast("Something went wrong. Please try again.", "danger"));
-  });
-
-  // Rating Modal
-  let currentTxn = "";
-  let selectedRating = 0;
-  window.openReviewModal = (code) => {
-    currentTxn = code;
-    $("#transactionIdText").text(`Transaction: ${code}`);
-    selectedRating = 0;
-    $ratingStars.removeClass("selected");
-    $modalReview.modal("show");
-  };
-  $ratingStars.on("click", function () {
-    $ratingStars.removeClass("selected");
-    $(this).addClass("selected");
-    selectedRating = $(this).data("value");
-  });
-  $("#submitRatingBtn").on("click", () => {
-    if (!selectedRating) {
-      return toast("Please select a rating before submitting!", "warning");
-    }
-    $modalReview.modal("hide");
-    $.ajax({
-      url: "../controllers/TransactionController.php?action=rateTransaction",
-      method: "POST",
-      data: {
-        transaction_code: currentTxn,
-        rating: selectedRating,
-      },
-      dataType: "json",
-    })
-      .done((res) => {
-        if (res.success) {
-          const stars = [...Array(5)]
-            .map((_, i) => (i < selectedRating ? "★" : "☆"))
-            .join("");
-          $txnTableBody
-            .find(`td:contains(${currentTxn})`)
-            .filter((i, td) => td.textContent === currentTxn)
-            .siblings()
-            .last()
-            .html(`<span style="font-size:1.2rem">${stars}</span>`);
-          toast("Thank you for your review!");
-        } else {
-          confirmDialog({
-            title: "Failed!",
-            text: res.message || "Unable to submit rating.",
-            icon: "error",
-          });
-        }
-      })
-      .fail(() =>
-        confirmDialog({
-          title: "Server Error!",
-          text: "Please try again later.",
-          icon: "error",
-        })
-      );
   });
 
   // Multi-step Wizard

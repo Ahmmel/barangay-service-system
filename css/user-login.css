@@ -10,7 +10,7 @@
     --font-family: "Poppins", sans-serif;
     --container-width: 850px;
     --container-height: 550px;
-    --border-radius: 30px;
+    --border-radius: 20px;
     --input-radius: 8px;
     --btn-height: 48px;
     --form-padding: 40px;
@@ -35,9 +35,8 @@ html[data-theme="dark"] body {
     color: #f0f0f0;
 }
 
-html[data-theme="dark"] .container {
+html[data-theme="dark"] .container, .container-wizard {
     background: #2e2e3a;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
 }
 
 html[data-theme="dark"] .form-box {
@@ -395,72 +394,13 @@ form {
     color: var(--hover-color);
 }
 
-@media screen and (max-width: 650px) {
-    .container {
-        height: calc(100vh - 40px);
-    }
-
-    .form-box {
-        bottom: 0;
-        width: 100%;
-        height: 70%;
-    }
-
-    .container.active .form-box,
-    .container.forgot-mode .form-box {
-        right: 0;
-        bottom: 30%;
-    }
-
-    .toggle-box::before {
-        left: 0;
-        top: -270%;
-        width: 100%;
-        height: 300%;
-        border-radius: 20vw;
-    }
-
-    .container.active .toggle-box::before,
-    .container.forgot-mode .toggle-box::before {
-        top: 70%;
-    }
-
-    .toggle-panel {
-        width: 100%;
-        height: 30%;
-    }
-
-    .toggle-panel.toggle-left {
-        top: 0;
-    }
-
-    .toggle-panel.toggle-right {
-        bottom: -30%;
-    }
-
-    .container.active .toggle-panel.toggle-right {
-        bottom: 0;
-    }
-}
-
-@media screen and (max-width: 400px) {
-    .form-box {
-        padding: 20px;
-    }
-
-    .toggle-panel h1 {
-        font-size: 30px;
-    }
-}
-
 html[data-theme="dark"] body {
     background: linear-gradient(135deg, #1e1e2f, #2a2a40);
     color: #f0f0f0;
 }
 
-html[data-theme="dark"] .container {
-    background: #2e2e3a;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
+html[data-theme="dark"] .container, html[data-theme="dark"] .container-wizard {
+    background: #2e2e3a !important;
 }
 
 html[data-theme="dark"] .form-box {
@@ -468,17 +408,17 @@ html[data-theme="dark"] .form-box {
     color: #fff;
 }
 
-html[data-theme="dark"] .input-box input {
+html[data-theme="dark"] .input-box input, html[data-theme="dark"] #registerForm .input-group input {
     background: #3a3a4a;
     color: #fff;
 }
 
-html[data-theme="dark"] .input-box input:focus {
+html[data-theme="dark"] .input-box input:focus, html[data-theme="dark"] #registerForm .input-group input:focus {
     background: #4a4a5a;
     color: #fff;
 }
 
-html[data-theme="dark"] .input-box input::placeholder {
+html[data-theme="dark"] .input-box input::placeholder, html[data-theme="dark"] #registerForm .input-group input::placeholder {
     color: #aaa;
 }
 
@@ -540,5 +480,366 @@ body::before {
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+.forgot-password .toggle-switch {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    user-select: none;
+}
+
+.forgot-password .toggle-switch input[type="checkbox"] {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.forgot-password .switch-label {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 30px;
+}
+
+.forgot-password .switch-label .slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background-color: #ddd;
+    border-radius: 30px;
+    transition: background-color 0.3s;
+}
+
+.forgot-password .switch-label .slider::before {
+    content: "";
+    position: absolute;
+    width: 26px;
+    height: 26px;
+    left: 2px;
+    top: 2px;
+    background-color: #fff;
+    border-radius: 50%;
+    transition: transform 0.3s;
+}
+
+.forgot-password .toggle-switch input:checked+.switch-label .slider {
+    background-color: #007bff;
+}
+
+.forgot-password .toggle-switch input:checked+.switch-label .slider::before {
+    transform: translateX(30px);
+}
+
+.forgot-password .contact-input {
+    display: block;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+
+.forgot-password .contact-input.active {
+    display: flex;
+}
+
+.forgot-password .contact-input input {
+    flex: 1;
+}
+
+/* Wizard Container */
+.container-wizard {
+    margin: 0 auto;
+    padding: 2.5rem .5rem .5rem .5rem;
+    width: 100%;
+    max-width: 500px;
+    background: #fff;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    border-radius: 8px;
+}
+
+/* Progress Bar */
+.wizard-progress {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    list-style: none;
+    padding: 0;
+    margin-bottom: 2rem;
+    counter-reset: step;
+}
+
+.wizard-progress li {
+    position: relative;
+    flex: 1 1 25%;
+    min-width: 60px;
+    text-align: center;
+    color: #aaa;
+    padding: 0 0.5rem;
+    transition: color 0.3s ease;
+}
+
+.wizard-progress li::before {
+    counter-increment: step;
+    content: counter(step);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    margin-bottom: 0.5rem;
+    border: 2px solid #aaa;
+    border-radius: 50%;
+    font-size: 1rem;
+    background: #fff;
+    color: #aaa;
+    transition: all 0.3s ease;
+}
+
+.wizard-progress li::after {
+    content: '';
+    position: absolute;
+    top: 1rem;
+    left: calc(50% + 1rem);
+    right: calc(-50% + 1rem);
+    height: 2px;
+    background: #aaa;
+    z-index: -1;
+    transition: background 0.3s ease;
+}
+
+.wizard-progress li:first-child::after {
+    left: 50%;
+}
+
+.wizard-progress li:last-child::after {
+    right: 50%;
+}
+
+.wizard-progress li.active,
+.wizard-progress li.completed {
+    color: #ff6f3c;
+}
+
+.wizard-progress li.active::before,
+.wizard-progress li.completed::before {
+    border-color: #ff6f3c;
+    background: #ff6f3c;
+    color: #fff;
+}
+
+.wizard-progress li.completed::after {
+    background: #ff6f3c;
+}
+
+/* Steps */
+.wizard-step {
+    display: none;
+    width: 100%;
+}
+
+.wizard-step.active {
+    display: block;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+
+/* Inputs */
+.wizard-step .input-group {
+    position: relative;
+    margin-bottom: .90rem;
+}
+
+.wizard-step .input-group input,
+.wizard-step .input-group select {
+    width: 100%;
+    padding: 0.75rem 2.5rem 0.75rem 0.75rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease;
+}
+
+.wizard-step .input-group input:focus,
+.wizard-step .input-group select:focus {
+    border-color: #ff6f3c;
+    outline: none;
+}
+
+.wizard-step .input-group i {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    font-size: 1.1rem;
+    color: #888;
+}
+
+/* Buttons */
+.wizard-step .buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: space-between;
+    margin-top: 1.2rem;
+}
+
+.wizard-step .buttons .btn {
+    flex: 1 1 48%;
+    padding: 0.75rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    text-align: center;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+.wizard-step .btn-prev {
+    background: #ccc;
+    color: #333;
+}
+
+.wizard-step .btn-prev:hover {
+    background: #bbb;
+}
+
+.wizard-step .btn-next,
+.wizard-step .btn-submit {
+    background: #ff6f3c;
+    color: #fff;
+}
+
+.wizard-step .btn-next:hover,
+f .wizard-step .btn-submit:hover {
+    background: #e65a2e;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media screen and (max-width: 650px) {
+    .container {
+        height: calc(100vh - 40px);
+    }
+
+    .form-box {
+        bottom: 0;
+        width: 100%;
+        height: 70%;
+    }
+
+    .container.active .form-box,
+    .container.forgot-mode .form-box {
+        right: 0;
+        bottom: 30%;
+        transition: bottom 0.3s ease;
+    }
+
+    .toggle-box::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: -270%;
+        width: 100%;
+        height: 300%;
+        border-radius: 20vw !important;
+        transition: top 0.3s ease;
+    }
+
+    .container.active .toggle-box::before,
+    .container.forgot-mode .toggle-box::before {
+        top: 70%;
+        left: 0 !important;
+        margin-top: 20px;
+    }
+
+    .toggle-panel {
+        width: 100%;
+        height: 30%;
+        position: absolute;
+    }
+
+    .toggle-panel.toggle-left {
+        top: 0;
+    }
+
+    .toggle-panel.toggle-right {
+        transition: bottom 0.5s ease, transition-delay 0.10s;
+        transition-delay: 0.3s;
+        bottom: -30%;
+    }
+
+    .container.active .toggle-panel.toggle-right,
+    .container.forgot-mode .toggle-panel.toggle-right {
+        top: unset;
+        height: 22%;
+        bottom: 15px;
+        left: 0;
+        width: 100%;
+        margin-top: 0;
+        text-align: center;
+        transition-delay: 0s;
+    }
+
+    .container.active .toggle-panel.toggle-left,
+    .container.forgot-mode .toggle-panel.toggle-left {
+        top: -40% !important;
+        left: unset;
+        transition: top 0.3s ease;
+        
+    }
+
+    .wizard-step .input-group input,
+    .wizard-step .input-group select {
+        padding: 0.6rem 2rem 0.6rem 0.6rem; /* less padding */
+        font-size: 0.9rem; /* smaller font size */
+    }
+
+    .wizard-step .input-group i {
+        right: 0.6rem;
+        font-size: 1rem; /* smaller icon */
+    }
+
+    .wizard-step .input-group {
+        margin-bottom: 0.75rem; /* optional: tighter spacing */
+    }
+
+    .toggle-panel h1 {
+        font-size: large;
+        margin: 0px;
+    }
+
+    .form-box.register,
+    .form-box.forgot-password {
+        visibility: hidden;
+        opacity: 0;
+    }
+}
+
+@media screen and (max-width: 400px) {
+    .form-box {
+        padding: 20px;
+    }
+
+    .toggle-panel h1 {
+        font-size: 30px;
     }
 }

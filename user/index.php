@@ -857,13 +857,16 @@ $settings = [
                 }
             ],
 
-            onChange: function(selectedDates, dateStr, instance) {
+            onClose: function(selectedDates, dateStr, instance) {
                 if (!selectedDates.length) return;
 
                 const d = selectedDates[0];
                 const now = new Date();
 
-                // Check if it's for today and respect lead time
+                now.setSeconds(0, 0);
+                d.setSeconds(0, 0);
+
+                // Check if booking is too soon
                 if (
                     d.toDateString() === now.toDateString() &&
                     d.getTime() < now.getTime() + leadMinutes * 60000
@@ -882,7 +885,7 @@ $settings = [
                     return;
                 }
 
-                // Validate selected time against allowed start/end
+                // Validate selected time range
                 const wd = d.getDay();
                 const hh = d.getHours();
                 const mm = d.getMinutes();
@@ -904,10 +907,10 @@ $settings = [
                         icon: 'warning',
                         title: '⏰ Invalid Time',
                         text: `Please pick a time between ${
-                    wd === 6 ? satStart : bookingStart
-                } and ${
-                    wd === 6 ? satEnd : bookingEnd
-                }.`,
+                wd === 6 ? satStart : bookingStart
+            } and ${
+                wd === 6 ? satEnd : bookingEnd
+            }.`,
                         showConfirmButton: false,
                         timer: 3000,
                         timerProgressBar: true

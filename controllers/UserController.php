@@ -1,9 +1,9 @@
 <?php
-require_once '../config/database.php';
-require_once '../models/User.php';
-require_once '../models/ActivityLog.php';
-require_once '../models/Notification.php';
-require_once '../models/SMSNotification.php';
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../models/User.php';
+require_once __DIR__ . '/../models/ActivityLog.php';
+require_once __DIR__ . '/../models/Notification.php';
+require_once __DIR__ . '/../models/SMSNotification.php';
 class UserController
 {
     private $user;

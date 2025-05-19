@@ -3,9 +3,9 @@
 session_start();
 
 // Initialization
-include_once '../views/templates/admin_header.php';
-include_once '../models/User.php';
-include_once '../models/ActivityLog.php';
+include_once __DIR__ . '/../views/templates/admin_header.php';
+include_once __DIR__ . '/../models/User.php';
+include_once __DIR__ . '/../models/ActivityLog.php';
 
 $_SESSION["page_title"] = "Dashboard";
 
@@ -64,12 +64,12 @@ $activityLogs = $isAdmin
 ?>
 
 <!-- Sidebar -->
-<?php include('../views/templates/side_bar.php'); ?>
+<?php include(__DIR__ . '/../views/templates/side_bar.php'); ?>
 
 <!-- Content Wrapper -->
 <div id="content-wrapper" class="d-flex flex-column">
     <div id="content">
-        <?php include('../views/templates/top_bar.php'); ?>
+        <?php include(__DIR__ . '/../views/templates/top_bar.php'); ?>
 
         <div class="container-fluid">
             <!-- Role-Specific Dashboard -->
@@ -83,51 +83,53 @@ $activityLogs = $isAdmin
             <!-- Activity Logs -->
             <div class="row mt-4">
                 <div class="card-body">
-                    <table id="activityLogTable" class="table table-bordered table-striped">
-                        <thead class="thead-dark">
-                            <tr>
-                                <th>Log ID</th>
-                                <?php if ($isAdmin): ?>
-                                    <th>User ID</th>
-                                    <th>Full Name</th>
-                                <?php endif; ?>
-                                <th>Activity</th>
-                                <th>Status</th>
-                                <th>Timestamp</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($activityLogs as $log): ?>
+                    <div class="table-responsive">
+                        <table id="activityLogTable" class="table table-bordered table-striped dt-responsive nowrap">
+                            <thead class="thead-dark">
                                 <tr>
-                                    <td><?= htmlspecialchars($log['id']) ?></td>
+                                    <th>Log ID</th>
                                     <?php if ($isAdmin): ?>
-                                        <td><?= htmlspecialchars($log['user_id']) ?></td>
-                                        <td><?= htmlspecialchars($log['fullname']) ?></td>
+                                        <th>User ID</th>
+                                        <th>Full Name</th>
                                     <?php endif; ?>
-                                    <td><?= htmlspecialchars($log['activity']) ?></td>
-                                    <td>
-                                        <?php
-                                        $status = htmlspecialchars($log['status']);
-                                        $badgeClass = match ($status) {
-                                            'Pending' => 'badge-warning',
-                                            'Failed' => 'badge-danger',
-                                            default => 'badge-success'
-                                        };
-                                        ?>
-                                        <span class="badge <?= $badgeClass ?>"><?= $status ?></span>
-                                    </td>
-                                    <td><?= date('F j, Y h:i A', strtotime($log['created_at'])) ?></td>
+                                    <th>Activity</th>
+                                    <th>Status</th>
+                                    <th>Timestamp</th>
                                 </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($activityLogs as $log): ?>
+                                    <tr>
+                                        <td><?= htmlspecialchars($log['id']) ?></td>
+                                        <?php if ($isAdmin): ?>
+                                            <td><?= htmlspecialchars($log['user_id']) ?></td>
+                                            <td><?= htmlspecialchars($log['fullname']) ?></td>
+                                        <?php endif; ?>
+                                        <td><?= htmlspecialchars($log['activity']) ?></td>
+                                        <td>
+                                            <?php
+                                            $status = htmlspecialchars($log['status']);
+                                            $badgeClass = match ($status) {
+                                                'Pending' => 'badge-warning',
+                                                'Failed' => 'badge-danger',
+                                                default => 'badge-success'
+                                            };
+                                            ?>
+                                            <span class="badge <?= $badgeClass ?>"><?= $status ?></span>
+                                        </td>
+                                        <td><?= date('F j, Y h:i A', strtotime($log['created_at'])) ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Footer -->
-    <?php include('../views/templates/footer.php'); ?>
+    <?php include(__DIR__ . '/../views/templates/footer.php'); ?>
 </div>
 
-<?php include_once '../views/templates/admin_footer.php'; ?>
+<?php include_once __DIR__ . '/../views/templates/admin_footer.php'; ?>

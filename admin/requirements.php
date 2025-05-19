@@ -3,8 +3,8 @@
 session_start();
 
 // Include necessary files
-include_once '../views/templates/admin_header.php';
-include_once '../models/Requirement.php';
+include_once __DIR__ . '/../views/templates/admin_header.php';
+include_once __DIR__ . '/../models/Requirement.php';
 
 $_SESSION["page_title"] = "Service Requirements";
 
@@ -18,7 +18,7 @@ $requirements = $requirement->getAllRequirements();
 ?>
 
 <!-- Sidebar -->
-<?php include('../views/templates/side_bar.php'); ?>
+<?php include(__DIR__ . '/../views/templates/side_bar.php'); ?>
 <!-- End of Sidebar -->
 
 <!-- Content Wrapper -->
@@ -26,7 +26,7 @@ $requirements = $requirement->getAllRequirements();
     <!-- Main Content -->
     <div id="content">
         <!-- Topbar -->
-        <?php include('../views/templates/top_bar.php'); ?>
+        <?php include(__DIR__ . '/../views/templates/top_bar.php'); ?>
         <!-- End of Topbar -->
 
         <!-- Begin Page Content -->
@@ -68,13 +68,13 @@ $requirements = $requirement->getAllRequirements();
     <!-- End of Main Content -->
 
     <!-- Footer -->
-    <?php include('../views/templates/footer.php'); ?>
+    <?php include(__DIR__ . '/../views/templates/footer.php'); ?>
     <!-- End of Footer -->
 </div>
 <!-- End of Content Wrapper -->
 <?php
 // Include footer template
-include_once '../views/templates/admin_footer.php';
+include_once __DIR__ . '/../views/templates/admin_footer.php';
 ?>
 
 <!-- Add Requirement Modal -->

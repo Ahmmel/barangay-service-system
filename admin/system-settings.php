@@ -1,8 +1,8 @@
 <?php
 session_start();
 
-include_once '../views/templates/admin_header.php';
-include_once '../models/SystemSettings.php';
+include_once __DIR__ . '/../views/templates/admin_header.php';
+include_once __DIR__ . '/../models/SystemSettings.php';
 
 $_SESSION["page_title"] = "System Settings";
 
@@ -29,11 +29,11 @@ $settings = [
 ];
 ?>
 
-<?php include('../views/templates/side_bar.php'); ?>
+<?php include(__DIR__ . '/../views/templates/side_bar.php'); ?>
 
 <div id="content-wrapper" class="d-flex flex-column">
     <div id="content">
-        <?php include('../views/templates/top_bar.php'); ?>
+        <?php include(__DIR__ . '/../views/templates/top_bar.php'); ?>
         <div class="container my-5">
             <h2 class="mb-4 text-primary">
                 <i class="fas fa-cog me-2"></i>System Settings
@@ -193,10 +193,10 @@ $settings = [
         </div>
     </div>
 
-    <?php include('../views/templates/footer.php'); ?>
+    <?php include(__DIR__ . '/../views/templates/footer.php'); ?>
 </div>
 
-<?php include_once '../views/templates/admin_footer.php'; ?>
+<?php include_once __DIR__ . '/../views/templates/admin_footer.php'; ?>
 
 <!-- Bootstrap Tooltip + Client-side validation -->
 <script>

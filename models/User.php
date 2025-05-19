@@ -1,5 +1,5 @@
 <?php
-require_once '../models/SystemSettings.php';
+require_once __DIR__ . '/../models/SystemSettings.php';
 class User
 {
     private $conn;

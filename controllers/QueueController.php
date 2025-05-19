@@ -1,8 +1,8 @@
 <?php
-require_once '../config/Database.php';
-require_once '../models/Queue.php';
-require_once '../models/Transaction.php';
-require_once '../models/SMSNotification.php';
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../models/Queue.php';
+require_once __DIR__ . '/../models/Transaction.php';
+require_once __DIR__ . '/../models/SMSNotification.php';
 
 class QueueController
 {

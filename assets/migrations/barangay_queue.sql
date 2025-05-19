@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 15, 2025 at 10:25 PM
+-- Generation Time: May 17, 2025 at 07:04 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -46,7 +46,21 @@ CREATE TABLE `activity_logs` (
 INSERT INTO `activity_logs` (`id`, `user_id`, `role_id`, `entity_type`, `activity`, `status`, `reference_id`, `meta`, `created_at`) VALUES
 (1, 13, NULL, 'auth', 'Successful login for user \'luffy01\'', 'Success', NULL, '{\"ip\":\"::1\",\"user_agent\":\"Mozilla\\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\\/537.36 (KHTML, like Gecko) Chrome\\/136.0.0.0 Safari\\/537.36\"}', '2025-05-15 20:12:21'),
 (2, NULL, NULL, 'auth', 'Failed login for user \'luffy012\'', 'Failed', NULL, '{\"ip\":\"::1\",\"user_agent\":\"Mozilla\\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\\/537.36 (KHTML, like Gecko) Chrome\\/136.0.0.0 Safari\\/537.36\"}', '2025-05-15 20:12:36'),
-(3, 16, NULL, 'auth', 'Successful login for user \'luffy012\'', 'Success', NULL, '{\"ip\":\"::1\",\"user_agent\":\"Mozilla\\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\\/537.36 (KHTML, like Gecko) Chrome\\/136.0.0.0 Safari\\/537.36\"}', '2025-05-15 20:12:41');
+(3, 16, NULL, 'auth', 'Successful login for user \'luffy012\'', 'Success', NULL, '{\"ip\":\"::1\",\"user_agent\":\"Mozilla\\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\\/537.36 (KHTML, like Gecko) Chrome\\/136.0.0.0 Safari\\/537.36\"}', '2025-05-15 20:12:41'),
+(4, 1, NULL, 'auth', 'Successful login for admin/staff \'johndoe\'', 'Success', NULL, '{\"ip\":\"::1\",\"user_agent\":\"Mozilla\\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\\/537.36 (KHTML, like Gecko) Chrome\\/136.0.0.0 Safari\\/537.36\"}', '2025-05-16 00:58:34'),
+(5, 1, 3, 'auth', 'User \'johndoe\' (ID: 1) logged out', 'Success', 1, NULL, '2025-05-16 00:58:42'),
+(6, 3, NULL, 'auth', 'Successful login for admin/staff \'admin\'', 'Success', NULL, '{\"ip\":\"::1\",\"user_agent\":\"Mozilla\\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\\/537.36 (KHTML, like Gecko) Chrome\\/136.0.0.0 Safari\\/537.36\"}', '2025-05-16 00:58:46'),
+(7, 19, 2, 'user', 'User \'test02131\' registered', 'Success', 19, '{\"email\":\"test02131@test02131.com\"}', '2025-05-16 01:00:13'),
+(8, 19, NULL, 'auth', 'Successful login for user \'test02131@test02131.com\'', 'Success', NULL, '{\"ip\":\"::1\",\"user_agent\":\"Mozilla\\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\\/537.36 (KHTML, like Gecko) Chrome\\/136.0.0.0 Safari\\/537.36\"}', '2025-05-16 01:01:31'),
+(9, 3, NULL, 'auth', 'User \'admin\' (ID: 3) logged out', 'Success', 3, NULL, '2025-05-16 01:01:49'),
+(10, 1, NULL, 'auth', 'Successful login for admin/staff \'johndoe\'', 'Success', NULL, '{\"ip\":\"::1\",\"user_agent\":\"Mozilla\\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\\/537.36 (KHTML, like Gecko) Chrome\\/136.0.0.0 Safari\\/537.36\"}', '2025-05-16 01:01:54'),
+(11, 1, 3, 'user', 'Edited user \'test02131\' (ID: 19)', 'Success', 19, '{\"changes\":{\"Gender\":{\"old\":null,\"new\":2},\"Marital Status\":{\"old\":null,\"new\":2},\"Address\":{\"old\":\"\",\"new\":\"asd\"}}}', '2025-05-16 01:02:56'),
+(12, 19, 2, 'transaction', 'Created Scheduled transaction #Q-SWBXN7A5 for user ID 19', 'Success', 1, '{\"services\":[\"1\"],\"scheduled_at\":\"2025-05-16 09:20\"}', '2025-05-16 01:04:19'),
+(13, 1, 3, 'transaction', 'Updated transaction (ID: 1) status to Closed', 'Success', 1, '{\"status\":\"Closed\",\"reason\":\"ok\"}', '2025-05-16 01:04:41'),
+(14, 1, 3, 'user', 'Edited user \'test02131\' (ID: 19)', 'Success', 19, '{\"changes\":{\"Gender\":{\"old\":null,\"new\":2},\"Marital Status\":{\"old\":null,\"new\":2},\"Verification Status\":{\"old\":0,\"new\":1}}}', '2025-05-16 01:04:55'),
+(15, 19, NULL, 'auth', 'Successful login for user \'test02131@test02131.com\'', 'Success', NULL, '{\"ip\":\"::1\",\"user_agent\":\"Mozilla\\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\\/537.36 (KHTML, like Gecko) Chrome\\/136.0.0.0 Safari\\/537.36\"}', '2025-05-16 01:05:08'),
+(16, NULL, 2, 'transaction', 'Rated transaction (ID: Q-SWBXN7A5) with 5 stars', 'Success', NULL, '{\"rating\":\"5\"}', '2025-05-16 01:22:51'),
+(17, 20, 2, 'user', 'User \'sdfzxczxc\' registered', 'Success', 20, '{\"email\":\"zxczxc@zxczxc.com\"}', '2025-05-17 02:47:44');
 
 -- --------------------------------------------------------
 
@@ -137,6 +151,25 @@ CREATE TABLE `notifications` (
   `read_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `notifications`
+--
+
+INSERT INTO `notifications` (`id`, `user_id`, `role_id`, `type`, `reference_id`, `title`, `message`, `is_read`, `created_at`, `read_at`) VALUES
+(1, 1, NULL, 'login_success', NULL, 'New Sign-In', 'You just signed in from IP ::1.', 0, '2025-05-16 00:58:34', NULL),
+(2, 3, NULL, 'login_success', NULL, 'New Sign-In', 'You just signed in from IP ::1.', 0, '2025-05-16 00:58:46', NULL),
+(3, 19, NULL, 'welcome', 19, 'Welcome to QPILA', 'Hi tesasdt, your account has been created! Please verify your email to get started.', 0, '2025-05-16 01:00:13', NULL),
+(4, NULL, 2, 'new_registration', 19, 'New User Registered', 'User \'test02131\' (ID 19) just signed up.', 0, '2025-05-16 01:00:13', NULL),
+(5, 1, NULL, 'login_success', NULL, 'New Sign-In', 'You just signed in from IP ::1.', 0, '2025-05-16 01:01:54', NULL),
+(6, 19, NULL, 'account_updated', 19, 'Profile Updated', 'Your profile was updated by johndoe. Changed: Gender, Marital Status, Address. If you didn\'t request this, please contact support.', 0, '2025-05-16 01:02:56', NULL),
+(7, 19, 2, 'booking_confirmed', 1, 'Scheduled Booking Confirmed', 'Your booking (ID: Q-SWBXN7A5) for services [1] on 2025-05-16 09:20 has been confirmed.', 0, '2025-05-16 01:04:19', NULL),
+(8, 1, 3, 'transaction_status_updated', 1, 'Transaction Status Updated', 'Transaction (ID: 1) status has been updated to Closed.', 0, '2025-05-16 01:04:41', NULL),
+(9, 19, NULL, 'account_updated', 19, 'Profile Updated', 'Your profile was updated by johndoe. Changed: Gender, Marital Status, Verification Status. If you didn\'t request this, please contact support.', 0, '2025-05-16 01:04:55', NULL),
+(10, NULL, 2, 'transaction_rated', NULL, 'Transaction Rated', 'Your transaction (ID: Q-SWBXN7A5) has been rated with 5 stars.', 0, '2025-05-16 01:22:01', NULL),
+(11, NULL, 2, 'transaction_rated', NULL, 'Transaction Rated', 'Your transaction (ID: Q-SWBXN7A5) has been rated with 5 stars.', 0, '2025-05-16 01:22:51', NULL),
+(12, 20, NULL, 'welcome', 20, 'Welcome to QPILA', 'Hi test, your account has been created! Please verify your email to get started.', 0, '2025-05-17 02:47:44', NULL),
+(13, NULL, 2, 'new_registration', 20, 'New User Registered', 'User \'sdfzxczxc\' (ID 20) just signed up.', 0, '2025-05-17 02:47:44', NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -154,6 +187,13 @@ CREATE TABLE `queue` (
   `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `updated_by_staff_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `queue`
+--
+
+INSERT INTO `queue` (`id`, `transaction_code`, `user_id`, `type`, `status`, `scheduled_date`, `created_at`, `updated_at`, `updated_by_staff_id`) VALUES
+(1, 'Q-SWBXN7A5', 19, 2, 'Assigned', '2025-05-16 09:20:00', '2025-05-16 09:04:19', '2025-05-16 09:04:41', 1);
 
 -- --------------------------------------------------------
 
@@ -228,7 +268,7 @@ INSERT INTO `system_settings` (`id`, `name`, `value`, `updated_at`) VALUES
 (4, 'no_show_timeout_minutes', '25', '2025-05-09 08:30:55'),
 (5, 'sms_sender_name', 'Qpila', '2025-05-12 07:14:25'),
 (6, 'max_transactions_per_day', '3', '2025-05-09 10:44:29'),
-(7, 'enable_sms_notifications', '1', '2025-05-15 18:02:26'),
+(7, 'enable_sms_notifications', '0', '2025-05-16 00:58:53'),
 (8, 'minimum_booking_lead_time_minutes', '10', '2025-05-15 16:08:46'),
 (9, 'staff_update_cutoff_time', '23:59', '2025-05-14 13:55:18'),
 (10, 'staff_update_start_time', '04:00', '2025-05-09 12:45:56'),
@@ -256,6 +296,13 @@ CREATE TABLE `transactions` (
   `date_closed` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `transactions`
+--
+
+INSERT INTO `transactions` (`id`, `transaction_code`, `user_id`, `queue_id`, `type`, `status`, `rating`, `created_at`, `updated_at`, `handled_by_staff_id`, `date_closed`) VALUES
+(1, 'Q-SWBXN7A5', 19, 1, 2, 'Closed', 5, '2025-05-16 09:20:00', '2025-05-16 09:20:17', 1, '2025-05-16 09:04:41');
+
 -- --------------------------------------------------------
 
 --
@@ -270,6 +317,13 @@ CREATE TABLE `transaction_services` (
   `status` enum('Pending','ToBeFollowed','Cancelled','Closed') NOT NULL DEFAULT 'Pending',
   `completed_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `transaction_services`
+--
+
+INSERT INTO `transaction_services` (`id`, `transaction_id`, `service_id`, `reason`, `status`, `completed_at`) VALUES
+(1, 1, 1, 'ok', 'Closed', '2025-05-16 09:04:41');
 
 -- --------------------------------------------------------
 
@@ -317,7 +371,9 @@ INSERT INTO `users` (`id`, `username`, `email`, `password`, `gender_id`, `birthd
 (14, 'johndoestaff', 'john.doe@barangay.gov', '$2y$10$O9H5WPaZjDpW4p5oWYSv7.m8sfR/OCbUBkkdxkkKHZdmFBXzLnUNy', 1, '1990-05-15', '123 Main St, Barangay', 1, NULL, 3, 'John', 'A.', 'Doe', NULL, 1, '09171234567', '2025-03-16 00:43:40', '2025-03-16 00:40:46'),
 (16, 'luffy012', 'john.do2e@example.com', '$2y$10$NL2ZVHptchtWp/RsuYrCEOFkBZ6uxT0a2rDgvQiWnoYcM2g6rLBMK', 1, '2025-05-16', '', 0, NULL, 2, 'testt', NULL, 'testt', NULL, 1, '09171234524', '2025-05-15 16:06:31', '2025-05-15 16:06:31'),
 (17, 'Zoro01', 'zoro@roronoa.com', '$2y$10$v1lnFIsrb5YrRClM6bb0peTRwIA59RPT/ad5lI2mv5n6pDTax5oHy', 1, '1992-05-13', '', 0, NULL, 2, 'Zoro', NULL, 'Roronoa', NULL, 1, '09276542441', '2025-05-15 18:12:04', '2025-05-15 18:07:27'),
-(18, 'final', 'final@test.com', '$2y$10$xmM.45zsmDbHdz2JJBXzje9b9SidjgqiDDGsXFT5PkmtalpKyMyh2', 1, '2025-05-16', '', 0, NULL, 2, 'Final', NULL, 'Test', NULL, 1, '09276542449', '2025-05-15 18:13:15', '2025-05-15 18:13:15');
+(18, 'final', 'final@test.com', '$2y$10$xmM.45zsmDbHdz2JJBXzje9b9SidjgqiDDGsXFT5PkmtalpKyMyh2', 1, '2025-05-16', '', 0, NULL, 2, 'Final', NULL, 'Test', NULL, 1, '09276542449', '2025-05-15 18:13:15', '2025-05-15 18:13:15'),
+(19, 'test02131', 'test02131@test02131.com', '$2y$10$YTAdljlhEBjBdmp5m1KEKuRfHofDgfkL4snR2JVcW4ecSDEgS1wLi', 2, '2000-05-14', 'asd', 1, NULL, 2, 'tesasdt', '', 'testdfghb', '', 2, '09276542332', '2025-05-16 01:04:55', '2025-05-16 01:00:13'),
+(20, 'sdfzxczxc', 'zxczxc@zxczxc.com', '$2y$10$M3ym35VaFAD81Tg5.mndXuu/cRVEgeMWmh60UiJZpgwES6GdvI/Vq', 1, '2025-05-16', '', 0, NULL, 2, 'test', NULL, 'test', NULL, 1, '12345564534', '2025-05-17 02:47:44', '2025-05-17 02:47:44');
 
 -- --------------------------------------------------------
 
@@ -486,7 +542,7 @@ ALTER TABLE `user_roles`
 -- AUTO_INCREMENT for table `activity_logs`
 --
 ALTER TABLE `activity_logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `admins`
@@ -510,13 +566,13 @@ ALTER TABLE `marital_statuses`
 -- AUTO_INCREMENT for table `notifications`
 --
 ALTER TABLE `notifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `queue`
 --
 ALTER TABLE `queue`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `requirements`
@@ -540,19 +596,19 @@ ALTER TABLE `system_settings`
 -- AUTO_INCREMENT for table `transactions`
 --
 ALTER TABLE `transactions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `transaction_services`
 --
 ALTER TABLE `transaction_services`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `user_roles`

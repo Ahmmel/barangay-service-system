@@ -928,6 +928,7 @@ setInterval(updateClock, 1000);
 function initTablesAndSelects() {
   const dataTableOptions = {
     pageLength: 10,
+    responsive: true,
     lengthChange: false,
     searching: true,
     ordering: true,

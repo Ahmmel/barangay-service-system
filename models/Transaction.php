@@ -1,6 +1,6 @@
 <?php
-require_once '../config/Database.php';
-require_once '../models/SystemSettings.php';
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../models/SystemSettings.php';
 
 class Transaction
 {
@@ -770,5 +770,23 @@ class Transaction
         $stmt = $this->conn->prepare($query);
         $stmt->execute([':transactionCode' => $transactionCode]);
         return $stmt->fetchColumn();
+    }
+
+    public function getAllRatedTransactions()
+    {
+        $query = "SELECT 
+                t.transaction_code,
+                t.rating,
+                t.created_at,
+                u.first_name,
+                u.last_name
+              FROM transactions t
+              JOIN users u ON u.id = t.user_id
+              WHERE t.rating IS NOT NULL
+              ORDER BY t.created_at DESC";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }

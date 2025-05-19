@@ -1,8 +1,8 @@
 <?php
-require_once '../config/Database.php';
-require_once '../config/SemaphoreAPI.php';
-require_once '../models/SystemSettings.php';
-require_once '../models/Requirement.php';
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/SemaphoreAPI.php';
+require_once __DIR__ . '/../models/SystemSettings.php';
+require_once __DIR__ . '/../models/Requirement.php';
 
 class SMSNotification
 {

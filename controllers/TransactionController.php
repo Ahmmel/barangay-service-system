@@ -1,10 +1,10 @@
 <?php
-require_once '../config/database.php';
-require_once '../models/Transaction.php';
-require_once '../models/Queue.php';
-require_once '../models/SMSNotification.php';
-require_once '../models/Notification.php';
-require_once '../models/ActivityLog.php';
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../models/Transaction.php';
+require_once __DIR__ . '/../models/Queue.php';
+require_once __DIR__ . '/../models/SMSNotification.php';
+require_once __DIR__ . '/../models/Notification.php';
+require_once __DIR__ . '/../models/ActivityLog.php';
 
 class TransactionController
 {

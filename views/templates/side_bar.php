@@ -66,8 +66,15 @@
         </a>
     </li>
 
-    <!-- System Settings -->
     <?php if ($isAdmin): ?>
+        <!-- Ratings -->
+        <li class="nav-item <?= ($currentPage === 'ratings.php') ? 'active' : '' ?>">
+            <a class="nav-link" href="ratings.php">
+                <i class="fas fa-fw fa-star"></i>
+                <span>Ratings</span>
+            </a>
+        </li>
+        <!-- System Settings -->
         <li class="nav-item <?= ($currentPage === 'system-settings.php') ? 'active' : '' ?>">
             <a class="nav-link" href="system-settings.php">
                 <i class="fas fa-fw fa-cogs"></i>

@@ -1,6 +1,6 @@
 <?php
-require_once '../config/database.php';
-require_once '../models/Notification.php';
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../models/Notification.php';
 
 class NotificationController
 {

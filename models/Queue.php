@@ -1,12 +1,15 @@
 <?php
+require_once __DIR__ . '/../models/SystemSettings.php';
 class Queue
 {
     private $conn;
     private $table_name = "queue";
+    private $systemSettings;
 
     public function __construct($db)
     {
         $this->conn = $db;
+        $this->systemSettings = SystemSettings::getInstance($this->conn);
     }
 
     public function addQueue($user_id, $transaction_type, $transaction_code, $scheduled_date = null)
@@ -69,30 +72,35 @@ class Queue
     // Get today queue by type
     public function getTodayPendingQueues($type)
     {
+        $start = $this->systemSettings->get('booking_time_start', '08:00');
+        $end = $this->systemSettings->get('booking_time_end', '16:30');
         $query = "
-                SELECT 
-                    q.id,
-                    q.transaction_code,
-                    u.first_name,
-                    CONCAT(u.first_name, ' ', LEFT(u.last_name, 1), '.') AS display_name,
-                    q.type,
-                    q.status,
-                    q.scheduled_date,
-                    q.created_at
-                FROM queue q
-                INNER JOIN users u ON q.user_id = u.id
-                WHERE q.type = :type
-                AND q.status = 'Pending'
-                AND q.scheduled_date BETWEEN 
-                    DATE_FORMAT(CURDATE(), '%Y-%m-%d 08:00:00') 
-                    AND 
-                    DATE_FORMAT(CURDATE(), '%Y-%m-%d 16:30:00')
-                ORDER BY q.scheduled_date ASC;
-            ";
+        SELECT 
+            q.id,
+            q.transaction_code,
+            u.first_name,
+            CONCAT(u.first_name, ' ', LEFT(u.last_name, 1), '.') AS display_name,
+            q.type,
+            q.status,
+            q.scheduled_date,
+            q.created_at
+        FROM queue q
+        INNER JOIN users u ON q.user_id = u.id
+        WHERE q.type = :type
+        AND q.status = 'Pending'
+        AND q.scheduled_date BETWEEN 
+            CONCAT(CURDATE(), ' ', :start_time)
+            AND 
+            CONCAT(CURDATE(), ' ', :end_time)
+        ORDER BY q.scheduled_date ASC
+    ";
 
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":type", $type);
+        $stmt->bindParam(":start_time", $start);
+        $stmt->bindParam(":end_time", $end);
         $stmt->execute();
+
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 

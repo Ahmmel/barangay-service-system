@@ -1,4 +1,7 @@
 <?php
+// Set timezone globally
+date_default_timezone_set('Asia/Manila');
+
 session_start();
 // Include necessary files
 include_once __DIR__ . '/../views/templates/admin_header.php';

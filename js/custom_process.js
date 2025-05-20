@@ -764,6 +764,8 @@ function getStatusHtml(status) {
       return '<span class="badge badge-danger"><i class="fas fa-times-circle"></i> Cancelled</span>';
     case "Closed":
       return '<span class="badge badge-success"><i class="fas fa-check-circle"></i> Closed</span>';
+    case "ToBeFollowed":
+      return '<span class="badge badge-info"><i class="fas fa-hourglass-half"></i> To Be Followed</span>';
     default:
       return '<span class="badge badge-secondary"><i class="fas fa-question-circle"></i> Unknown</span>';
   }
@@ -830,28 +832,54 @@ function moveNextToNowServing(config) {
   const $nextItem = $(`${queueSelector} .queue-item`).first();
 
   if (!$nextItem.length) {
+    // No more queue entries — disable buttons and show info
     $(currentNumberSelector).text("—");
-    $(startButtonSelector).prop("disabled", true);
-    $(noShowButtonSelector).prop("disabled", true);
+
+    $(startButtonSelector)
+      .prop("disabled", true)
+      .addClass("disabled")
+      .css({ "pointer-events": "none", opacity: 0.6 });
+
+    $(noShowButtonSelector)
+      .prop("disabled", true)
+      .addClass("disabled")
+      .css({ "pointer-events": "none", opacity: 0.6 });
+
+    console.log(
+      "Start button disabled:",
+      $(startButtonSelector).prop("disabled")
+    );
+    console.log(
+      "No-show button disabled:",
+      $(noShowButtonSelector).prop("disabled")
+    );
+
     Swal.fire("Done", `No more ${label} transactions.`, "info");
     return;
   }
 
+  // Extract transaction info from the next item
   const transactionCode = $nextItem.find(".transaction-code").text().trim();
   const transactionId = $nextItem.data("transaction-id");
 
+  // Fade out and remove the item from the queue
   $nextItem.fadeOut(300, function () {
     $(this).remove();
 
-    // Update UI
+    // Update the current "Now Serving" number
     $(currentNumberSelector).text(transactionCode);
 
+    // Enable buttons with proper attributes
     $(startButtonSelector)
       .prop("disabled", false)
+      .removeClass("disabled")
+      .css({ "pointer-events": "", opacity: "" })
       .attr("onclick", `openUpdateTransactionModal(${transactionId})`);
 
     $(noShowButtonSelector)
       .prop("disabled", false)
+      .removeClass("disabled")
+      .css({ "pointer-events": "", opacity: "" })
       .data("transaction-code", transactionCode);
   });
 }

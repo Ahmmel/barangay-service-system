@@ -93,7 +93,7 @@ class Transaction
         }
     }
 
-    public function validateTransaction($userId, array $serviceIds, string $scheduledTime)
+    public function validateTransaction($userId, array $serviceIds, string $scheduledTime, $transactionType = 1)
     {
         // 1. Parse scheduledTime and ensure it’s a valid DateTime
         try {
@@ -108,23 +108,52 @@ class Transaction
 
         $now = new DateTime();
 
-        // 2. Cannot book in the past
-        if ($dt < $now) {
-            return [
-                "success"    => false,
-                "message"    => "Scheduled time must be in the future.",
-                "error_type" => "schedule"
-            ];
-        }
+        if ($transactionType != 1) {
+            // 2. Cannot book in the past
+            if ($dt < $now) {
+                return [
+                    "success"    => false,
+                    "message"    => "Scheduled time must be in the future.",
+                    "error_type" => "schedule"
+                ];
+            }
 
-        // 3. Max transactions per day
-        $maxTx = (int) $this->systemSettings->get('max_transactions_per_day', 1);
-        if ($this->countUserTransactionByIdAndDate($userId, $scheduledTime) >= $maxTx) {
-            return [
-                "success"    => false,
-                "message"    => "You have reached your daily limit of {$maxTx} transaction(s).",
-                "error_type" => "service"
-            ];
+            // 3. Max transactions per day
+            $maxTx = (int) $this->systemSettings->get('max_transactions_per_day', 1);
+            if ($this->countUserTransactionByIdAndDate($userId, $scheduledTime) >= $maxTx) {
+                return [
+                    "success"    => false,
+                    "message"    => "You have reached your daily limit of {$maxTx} transaction(s).",
+                    "error_type" => "service"
+                ];
+            }
+
+            // 6.  Prevent double-booking the same service slot if it’s still pending/in-progress
+            if (!$this->isServiceSlotTaken($scheduledTime)) {
+                return [
+                    "success"    => false,
+                    "message"    => "The selected time slot is already booked. Please choose another time.",
+                    "error_type" => "schedule"
+                ];
+            }
+
+            // 7. Business hours & days (8:00–16:30, Mon–Sat)
+            if (!$this->isValidBookingSchedule($scheduledTime)) {
+                return [
+                    "success"    => false,
+                    "message"    => "Bookings may only be made 8:00 AM–4:30 PM, Monday–Saturday.",
+                    "error_type" => "schedule"
+                ];
+            }
+
+            // 8. Lead time (at least 30 min before)
+            if (!$this->isValidBookingTime($scheduledTime)) {
+                return [
+                    "success"    => false,
+                    "message"    => "Bookings must be made at least 30 minutes in advance.",
+                    "error_type" => "schedule"
+                ];
+            }
         }
 
         // 4. Has existing transaction on the scheduled day
@@ -132,33 +161,6 @@ class Transaction
             return [
                 "success"    => false,
                 "message"    => "You already have a transaction scheduled at this day.",
-                "error_type" => "schedule"
-            ];
-        }
-
-        // 6.  Prevent double-booking the same service slot if it’s still pending/in-progress
-        if (!$this->isServiceSlotTaken($scheduledTime)) {
-            return [
-                "success"    => false,
-                "message"    => "The selected time slot is already booked. Please choose another time.",
-                "error_type" => "schedule"
-            ];
-        }
-
-        // 7. Business hours & days (8:00–16:30, Mon–Sat)
-        if (!$this->isValidBookingSchedule($scheduledTime)) {
-            return [
-                "success"    => false,
-                "message"    => "Bookings may only be made 8:00 AM–4:30 PM, Monday–Saturday.",
-                "error_type" => "schedule"
-            ];
-        }
-
-        // 8. Lead time (at least 30 min before)
-        if (!$this->isValidBookingTime($scheduledTime)) {
-            return [
-                "success"    => false,
-                "message"    => "Bookings must be made at least 30 minutes in advance.",
                 "error_type" => "schedule"
             ];
         }
@@ -239,6 +241,7 @@ class Transaction
         JOIN transactions t
           ON t.transaction_code = q.transaction_code
         WHERE q.scheduled_date  = :scheduled_date
+          AND t.type = 2
           AND t.status NOT IN ('Closed', 'Cancelled', 'Pending')
     ";
 
@@ -453,9 +456,21 @@ class Transaction
         }
 
         $transaction_id = $transaction['transaction_id'];
+        $transactionCode = $this->getTransactionCodeById($transaction_id);
+
+        //Update queue status
+        $updateQueue = "UPDATE queue 
+                SET status = 'Assigned', updated_by_staff_id = :staffId 
+                WHERE transaction_code = :transactionCode";
+        $stmt = $this->conn->prepare($updateQueue);
+        $stmt->execute([
+            ':staffId' => $staffId,
+            ':transactionCode' => $transactionCode
+        ]);
+
 
         // Check if there are any other records with the same transaction_id and pending status
-        $query = "SELECT COUNT(*) FROM transaction_services WHERE transaction_id = :transaction_id AND status = 'pending'";
+        $query = "SELECT COUNT(*) FROM transaction_services WHERE transaction_id = :transaction_id AND status = 'Pending'";
         $stmt = $this->conn->prepare($query);
         $stmt->execute([':transaction_id' => $transaction_id]);
 

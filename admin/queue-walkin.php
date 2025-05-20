@@ -1,4 +1,7 @@
 <?php
+// Set timezone globally
+date_default_timezone_set('Asia/Manila');
+
 session_start();
 
 // Include necessary files
@@ -251,8 +254,7 @@ if (!empty($walkinQueue)) {
                                     id="walkinNoShow"
                                     disabled
                                     data-type="walkin"
-                                    data-transaction-code="<?= $currentTransactionCode ?>"
-                                    <?= $isSchedQueueDisabled ?>>
+                                    data-transaction-code="<?= $currentTransactionCode ?>">
                                     <i class="fas fa-user-times me-1"></i> Mark as No Show
                                 </button>
                             </div>

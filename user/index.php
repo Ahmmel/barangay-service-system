@@ -1,4 +1,7 @@
 <?php
+// Set timezone globally
+date_default_timezone_set('Asia/Manila');
+
 // Include database connection and user model
 include_once '../config/database.php';
 include_once '../models/User.php';

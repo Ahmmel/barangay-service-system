@@ -1,4 +1,6 @@
 <?php
+// Set timezone globally
+date_default_timezone_set('Asia/Manila');
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../models/Transaction.php';
 require_once __DIR__ . '/../models/Queue.php';
@@ -58,7 +60,7 @@ class TransactionController
         try {
 
             // Validate transaction
-            $validator = $this->transaction->validateTransaction($userId, $serviceIds, $scheduledTime);
+            $validator = $this->transaction->validateTransaction($userId, $serviceIds, $scheduledTime, $transactionType);
             if (!$validator['success']) {
                 echo json_encode($validator);
                 return;
@@ -153,8 +155,6 @@ class TransactionController
             // Update the transaction status
             $result = $this->transaction->updateTransactionStatus($transactionServiceId, $status, $staffId, $reason);
             if ($result) {
-                $transactionCode = $this->transaction->getTransactionCodeById($transactionServiceId);
-                $this->queue->setToAssignedTransaction($transactionCode, $staffId);
                 // Notify the user
                 $this->notifier->createNotification(
                     $staffId,
